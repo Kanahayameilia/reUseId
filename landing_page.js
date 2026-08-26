@@ -11,12 +11,17 @@
   revealEls.forEach(el=>io.observe(el));
 
   // Smooth nav CTA scroll (placeholder actions)
-  document.querySelectorAll('.btn-primary, .nav-cta').forEach(btn=>{
-    btn.addEventListener('click', (e)=>{
-      e.preventDefault();
-      document.getElementById('how')?.scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.btn-primary').forEach(btn=>{
+  btn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    document.getElementById('how')?.scrollIntoView({
+      behavior: 'smooth'
     });
   });
-  document.querySelector('.btn-secondary')?.addEventListener('click', ()=>{
-    document.getElementById('why')?.scrollIntoView({behavior:'smooth'});
+});
+
+document.querySelector('.btn-secondary')?.addEventListener('click', ()=>{
+  document.getElementById('why')?.scrollIntoView({
+    behavior: 'smooth'
   });
+});

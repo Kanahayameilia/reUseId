@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jaket Denim Oversize — Re:Use.ID</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="detail.css">
+</head>
+<body id="detailBody">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="browse.html" class="logo">
+      <span class="mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C7 6 4 10.5 4 14.5C4 18.6 7.4 22 12 22C16.6 22 20 18.6 20 14.5C20 10.5 17 6 12 2Z" fill="white"/></svg>
+      </span>
+      Re:Use.ID
+    </a>
+    <a href="browse.html" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Kembali ke Jelajahi Barang
+    </a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="detail-grid">
+
+    <!-- LEFT: photos (filled by detail.js) -->
+    <section class="gallery">
+      <div class="main-photo">
+        <img id="mainPhoto" src="" alt="">
+      </div>
+      <div class="thumb-row" id="thumbRow"></div>
+    </section>
+
+    <!-- RIGHT: info (filled by detail.js) -->
+    <section class="info">
+      <span class="badge" id="itemBadge"></span>
+      <h1 class="item-name" id="itemName"></h1>
+      <div class="condition-tag" id="itemCondition"></div>
+
+      <p class="description" id="itemDescription"></p>
+
+      <div class="tags" id="itemTags"></div>
+
+      <div class="owner-card">
+        <img class="owner-avatar" id="ownerAvatar" src="" alt="">
+        <div class="owner-info">
+          <div class="owner-name" id="ownerName"></div>
+          <div class="owner-rating" id="ownerRating"></div>
+        </div>
+        <a href="#" class="profile-link">Lihat Profil</a>
+      </div>
+
+      <div class="location-row" id="itemLocation"></div>
+
+      <div class="cta-row">
+        <button class="btn-filled">Ajukan Barter</button>
+        <button class="btn-outline">Hubungi Pemilik</button>
+      </div>
+    </section>
+
+  </div>
+
+  <section class="similar-section">
+    <h2>Barang Serupa di Dekatmu</h2>
+    <div class="similar-scroll" id="similarScroll"></div>
+  </section>
+
+</main>
+
+<script src="item_data.js"></script>
+<script src="detail.js"></script>
+</body>
+</html>

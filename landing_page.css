@@ -254,8 +254,12 @@
   .footer-bottom{display:flex; justify-content:space-between; font-size:0.82rem; color:rgba(245,240,232,0.5); flex-wrap:wrap; gap:10px;}
 
   /* ---------- reveal on scroll ---------- */
-  .reveal{opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s ease;}
-  .reveal.visible{opacity:1; transform:translateY(0);}
+  /* Default: fully visible. JS only opts elements INTO the hidden-then-reveal
+     animation once it confirms it's running — so if script.js fails to load
+     for any reason, all content stays visible instead of stuck at opacity:0. */
+  .reveal{opacity:1; transform:none;}
+  body.js-ready .reveal{opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s ease;}
+  body.js-ready .reveal.visible{opacity:1; transform:translateY(0);}
 
   @media (prefers-reduced-motion: reduce){
     .phone, .laptop-hint{animation:none;}

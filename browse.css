@@ -168,6 +168,7 @@ input[type="range"]{
 
 .card-photo{
   position:relative;
+  display:block;
   aspect-ratio:1/1;
   border-radius:12px 12px 0 0;
   overflow:hidden;
@@ -203,7 +204,7 @@ input[type="range"]{
 
 .btn-detail{
   margin-top:auto;
-  width:100%;
+  width:100%; display:block; text-align:center;
   background:var(--teal); color:var(--white);
   border:none; border-radius:9px; padding:11px;
   font-size:0.88rem; font-weight:700;

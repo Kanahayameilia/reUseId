@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jelajahi Barang — Re:Use.ID</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="browse.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="landing_page.html" class="logo">
+      <span class="mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C7 6 4 10.5 4 14.5C4 18.6 7.4 22 12 22C16.6 22 20 18.6 20 14.5C20 10.5 17 6 12 2Z" fill="white"/></svg>
+      </span>
+      Re:Use.ID
+    </a>
+
+    <div class="search-bar">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#9CA8A2" stroke-width="2"/><path d="M21 21L16.65 16.65" stroke="#9CA8A2" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" id="searchInput" placeholder="Cari barang, kategori, atau nama…">
+      <div class="location-chip">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 5 14.5 5 9.5C5 5.9 8.13 3 12 3C15.87 3 19 5.9 19 9.5C19 14.5 12 21 12 21Z" stroke="#3A9265" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.3" stroke="#3A9265" stroke-width="1.8"/></svg>
+        <span>Universitas Tidar, Magelang</span>
+      </div>
+    </div>
+
+    <button class="avatar-btn" aria-label="Profil pengguna">
+      <img src="https://i.pravatar.cc/80?img=47" alt="Avatar pengguna">
+    </button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <h2>Filter</h2>
+      <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="filter-group">
+      <h3>Kategori</h3>
+      <label class="checkbox-row">
+        <input type="checkbox" class="f-kategori" value="Pakaian" checked>
+        <span class="box"></span> Pakaian
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" class="f-kategori" value="Buku" checked>
+        <span class="box"></span> Buku
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" class="f-kategori" value="Elektronik" checked>
+        <span class="box"></span> Elektronik
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" class="f-kategori" value="Perabot" checked>
+        <span class="box"></span> Perabot
+      </label>
+    </div>
+
+    <div class="filter-group">
+      <h3>Jenis</h3>
+      <label class="radio-row">
+        <input type="radio" name="jenis" class="f-jenis" value="Semua" checked>
+        <span class="circle"></span> Semua
+      </label>
+      <label class="radio-row">
+        <input type="radio" name="jenis" class="f-jenis" value="Barter">
+        <span class="circle"></span> Barter
+      </label>
+      <label class="radio-row">
+        <input type="radio" name="jenis" class="f-jenis" value="Donasi">
+        <span class="circle"></span> Donasi
+      </label>
+    </div>
+
+    <div class="filter-group">
+      <h3>Jarak</h3>
+      <input type="range" id="jarakSlider" min="0" max="10" step="0.5" value="10">
+      <div class="range-label">
+        <span>0 km</span>
+        <span id="jarakValue">10 km</span>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h3>Kondisi</h3>
+      <label class="checkbox-row">
+        <input type="checkbox" class="f-kondisi" value="Layak" checked>
+        <span class="box"></span> Layak
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" class="f-kondisi" value="Baik" checked>
+        <span class="box"></span> Baik
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" class="f-kondisi" value="Sangat Baik" checked>
+        <span class="box"></span> Sangat Baik
+      </label>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="content-head">
+      <h1>Jelajahi Barang</h1>
+      <span class="result-count" id="resultCount">0 barang ditemukan</span>
+    </div>
+
+    <div class="grid" id="itemGrid"></div>
+
+    <p class="empty-state" id="emptyState" hidden>Nggak ada barang yang cocok dengan filter kamu. Coba longgarkan filternya.</p>
+  </main>
+
+</div>
+
+<script src="browse.js"></script>
+</body>
+</html>

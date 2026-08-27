@@ -29,9 +29,15 @@
       </div>
     </div>
 
-    <button class="avatar-btn" aria-label="Profil pengguna">
-      <img src="https://i.pravatar.cc/80?img=45" alt="Avatar pengguna">
-    </button>
+    <div class="topbar-actions">
+      <a href="upload.html" class="btn-upload" id="uploadBtn" hidden>+ Upload Barang</a>
+
+      <a href="login.html" class="btn-login" id="loginBtn">Masuk</a>
+
+      <button class="avatar-btn" id="avatarBtn" aria-label="Profil pengguna" hidden onclick="window.location.href='profile.html'">
+        <img src="https://i.pravatar.cc/80?img=47" alt="Avatar pengguna">
+      </button>
+    </div>
   </div>
 </header>
 
@@ -118,7 +124,8 @@
 
 </div>
 
+<script src="js/auth.js"></script>
 <script src="js/item_data.js"></script>
-<script src="js/browse.js"></script>
+<script src="browse.js"></script>
 </body>
 </html>

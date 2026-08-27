@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profil Saya — Re:Use.ID</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html" class="logo">
+      <span class="mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C7 6 4 10.5 4 14.5C4 18.6 7.4 22 12 22C16.6 22 20 18.6 20 14.5C20 10.5 17 6 12 2Z" fill="white"/></svg>
+      </span>
+      Re:Use.ID
+    </a>
+    <div class="topbar-right">
+      <a href="browse.html" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Kembali ke Jelajahi Barang
+      </a>
+      <button class="logout-link" id="logoutBtn">Keluar</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ---------- PROFILE HEADER CARD ---------- -->
+  <section class="profile-header">
+    <div class="ph-main">
+      <img class="ph-avatar" src="https://i.pravatar.cc/160?img=32" alt="Rani A.">
+      <div class="ph-info">
+        <div class="ph-name-row">
+          <h1>Rani A.</h1>
+          <span class="verified-badge">✓ Terverifikasi</span>
+        </div>
+        <span class="ph-tag">🎓 Mahasiswa — Universitas Tidar</span>
+        <div class="ph-meta">
+          <span>⭐ 4.8/5.0 <span class="meta-dim">(12 ulasan)</span></span>
+          <span class="meta-sep">·</span>
+          <span>Bergabung Maret 2025</span>
+        </div>
+      </div>
+      <button class="btn-edit-profile">Edit Profil</button>
+    </div>
+
+    <div class="ph-stats">
+      <div class="stat-item">
+        <div class="stat-num">8</div>
+        <div class="stat-label">Barang Didonasikan</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat-item">
+        <div class="stat-num">5</div>
+        <div class="stat-label">Barter Selesai</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat-item">
+        <div class="stat-num">340</div>
+        <div class="stat-label">Poin Reuse</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- TABS ---------- -->
+  <nav class="tab-nav" id="tabNav">
+    <button class="tab-btn active" data-tab="aktif">Barang Aktif</button>
+    <button class="tab-btn" data-tab="riwayat">Riwayat Transaksi</button>
+    <button class="tab-btn" data-tab="ulasan">Ulasan</button>
+    <button class="tab-btn" data-tab="pengaturan">Pengaturan</button>
+  </nav>
+
+  <!-- ---------- TAB: BARANG AKTIF ---------- -->
+  <section class="tab-panel active" id="panel-aktif">
+    <div class="grid" id="activeGrid"></div>
+  </section>
+
+  <!-- ---------- TAB: RIWAYAT TRANSAKSI ---------- -->
+  <section class="tab-panel" id="panel-riwayat">
+    <div class="timeline" id="historyTimeline"></div>
+  </section>
+
+  <!-- ---------- TAB: ULASAN ---------- -->
+  <section class="tab-panel" id="panel-ulasan">
+    <div class="review-list" id="reviewList"></div>
+  </section>
+
+  <!-- ---------- TAB: PENGATURAN ---------- -->
+  <section class="tab-panel" id="panel-pengaturan">
+    <div class="settings-card">
+      <h3>Informasi Akun</h3>
+      <div class="settings-row">
+        <label>Nama Lengkap</label>
+        <input type="text" value="Rani A.">
+      </div>
+      <div class="settings-row">
+        <label>Email Kampus</label>
+        <input type="email" value="rani.a@student.untidar.ac.id">
+      </div>
+      <div class="settings-row">
+        <label>Lokasi Kos</label>
+        <input type="text" value="Kos Tidar Utara, Magelang">
+      </div>
+      <button class="btn-save-settings">Simpan Perubahan</button>
+    </div>
+    <div class="settings-card danger-card">
+      <h3>Zona Berbahaya</h3>
+      <p>Menonaktifkan akun akan menyembunyikan semua barangmu dari pencarian.</p>
+      <button class="btn-danger">Nonaktifkan Akun</button>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/auth.js"></script>
+<script src="js/item_data.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

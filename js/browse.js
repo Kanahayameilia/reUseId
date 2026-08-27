@@ -1,4 +1,19 @@
-// Data barang ada di items-data.js (variabel global ITEMS), dimuat sebelum file ini.
+// ITEMS ada di items-data.js, isLoggedIn() ada di auth.js (keduanya dimuat sebelum file ini).
+
+// ---------- tampilkan UI sesuai status login ----------
+const uploadBtn = document.getElementById('uploadBtn');
+const loginBtn = document.getElementById('loginBtn');
+const avatarBtn = document.getElementById('avatarBtn');
+
+if(isLoggedIn()){
+  if(uploadBtn) uploadBtn.hidden = false;
+  if(loginBtn) loginBtn.hidden = true;
+  if(avatarBtn) avatarBtn.hidden = false;
+} else {
+  if(uploadBtn) uploadBtn.hidden = true;
+  if(loginBtn) loginBtn.hidden = false;
+  if(avatarBtn) avatarBtn.hidden = true;
+}
 
 const grid = document.getElementById('itemGrid');
 const resultCount = document.getElementById('resultCount');

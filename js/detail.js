@@ -82,3 +82,20 @@ similarScroll.innerHTML = similarItems.map(sim => {
     </article>
   `;
 }).join('');
+
+// ---------- CTA butuh login ----------
+// isLoggedIn() ada di auth.js (dimuat sebelum file ini).
+function requireLogin(action){
+  if(isLoggedIn()){
+    action();
+  } else {
+    window.location.href = `login.html?redirect=detail.html?id=${item.id}`;
+  }
+}
+
+document.getElementById('btnAjukanBarter').addEventListener('click', ()=>{
+  requireLogin(()=> alert('Fitur ajukan barter akan segera hadir.'));
+});
+document.getElementById('btnHubungiPemilik').addEventListener('click', ()=>{
+  requireLogin(()=> alert('Fitur chat pemilik akan segera hadir.'));
+});

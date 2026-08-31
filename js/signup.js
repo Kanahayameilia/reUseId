@@ -101,7 +101,7 @@ form.querySelectorAll('input').forEach(input=>{
   input.addEventListener('input', ()=> clearError(input.id));
 });
 
-form.addEventListener('submit', (e)=>{
+form.addEventListener('submit', async (e)=>{
   e.preventDefault();
   clearAllErrors();
 
@@ -141,14 +141,38 @@ form.addEventListener('submit', (e)=>{
 
   if(hasError) return;
 
-  // ---------- placeholder submit feedback ----------
+  // ---------- daftar beneran ke Supabase ----------
   const submitBtn = form.querySelector('.btn-submit');
   submitBtn.disabled = true;
   submitBtn.textContent = 'Mendaftarkan…';
 
-  setTimeout(()=>{
-    submitBtn.textContent = 'Berhasil ✓ Mengalihkan…';
-    setLoggedIn(fullName);
-    setTimeout(()=>{ window.location.href = 'browse.html'; }, 600);
-  }, 1000);
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: fullName, campus: campus }
+    }
+  });
+
+  if(error){
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Daftar';
+    showError('email', error.message.includes('already registered') || error.message.includes('exists')
+      ? 'Email ini sudah terdaftar.'
+      : 'Gagal mendaftar: ' + error.message);
+    return;
+  }
+
+  // Kalau project Supabase-nya mewajibkan konfirmasi email, signUp() TIDAK
+  // langsung bikin session — data.session bakal null sampai user klik link
+  // di emailnya. Kalau gitu, jangan langsung ke browse.html, kasih tau dulu.
+  if(!data.session){
+    submitBtn.textContent = 'Cek email kamu ✓';
+    showError('email', 'Akun dibuat. Cek email kamu untuk konfirmasi sebelum login.');
+    return;
+  }
+
+  submitBtn.textContent = 'Berhasil ✓ Mengalihkan…';
+  await setLoggedIn();
+  setTimeout(()=>{ window.location.href = 'browse.html'; }, 600);
 });

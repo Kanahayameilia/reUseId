@@ -22,7 +22,7 @@ form.querySelectorAll('input').forEach(input=>{
   input.addEventListener('input', ()=> clearError(input.id));
 });
 
-form.addEventListener('submit', (e)=>{
+form.addEventListener('submit', async (e)=>{
   e.preventDefault();
   clearError('email');
   clearError('password');
@@ -42,19 +42,25 @@ form.addEventListener('submit', (e)=>{
 
   if(hasError) return;
 
-  // ---------- demo login: langsung dianggap berhasil ----------
-  // Di app nyata, ini akan verifikasi ke server dulu.
+  // ---------- login beneran ke Supabase ----------
   const submitBtn = form.querySelector('.btn-submit');
   submitBtn.disabled = true;
   submitBtn.textContent = 'Masuk…';
 
-  setTimeout(()=>{
-    setLoggedIn(email.split('@')[0]);
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-    // kalau tadi diarahkan ke sini dari halaman lain (misal detail.html),
-    // balik ke halaman itu setelah login. Kalau nggak ada, ke browse.html.
-    const params = new URLSearchParams(window.location.search);
-    const redirect = params.get('redirect') || 'browse.html';
-    window.location.href = redirect;
-  }, 700);
+  if(error){
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Masuk';
+    showError('password', 'Email atau password salah.');
+    return;
+  }
+
+  await setLoggedIn();
+
+  // kalau tadi diarahkan ke sini dari halaman lain (misal detail.html),
+  // balik ke halaman itu setelah login. Kalau nggak ada, ke browse.html.
+  const params = new URLSearchParams(window.location.search);
+  const redirect = params.get('redirect') || 'browse.html';
+  window.location.href = redirect;
 });

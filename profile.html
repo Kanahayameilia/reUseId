@@ -31,7 +31,6 @@
 
 <main class="wrap">
 
-  <!-- ---------- PROFILE HEADER CARD ---------- -->
   <section class="profile-header">
     <div class="ph-main">
       <img class="ph-avatar" src="https://i.pravatar.cc/160?img=32" alt="Rani A.">
@@ -68,7 +67,6 @@
     </div>
   </section>
 
-  <!-- ---------- TABS ---------- -->
   <nav class="tab-nav" id="tabNav">
     <button class="tab-btn active" data-tab="aktif">Barang Aktif</button>
     <button class="tab-btn" data-tab="riwayat">Riwayat Transaksi</button>
@@ -76,22 +74,18 @@
     <button class="tab-btn" data-tab="pengaturan">Pengaturan</button>
   </nav>
 
-  <!-- ---------- TAB: BARANG AKTIF ---------- -->
   <section class="tab-panel active" id="panel-aktif">
     <div class="grid" id="activeGrid"></div>
   </section>
 
-  <!-- ---------- TAB: RIWAYAT TRANSAKSI ---------- -->
   <section class="tab-panel" id="panel-riwayat">
     <div class="timeline" id="historyTimeline"></div>
   </section>
 
-  <!-- ---------- TAB: ULASAN ---------- -->
   <section class="tab-panel" id="panel-ulasan">
     <div class="review-list" id="reviewList"></div>
   </section>
 
-  <!-- ---------- TAB: PENGATURAN ---------- -->
   <section class="tab-panel" id="panel-pengaturan">
     <div class="settings-card">
       <h3>Informasi Akun</h3>
@@ -118,6 +112,8 @@
 
 </main>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/item_data.js"></script>
 <script src="js/profile.js"></script>

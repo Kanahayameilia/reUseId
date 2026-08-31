@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Admin — Re:Use.ID</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<div class="admin-shell">
+
+  <!-- ---------- SIDEBAR ---------- -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C7 6 4 10.5 4 14.5C4 18.6 7.4 22 12 22C16.6 22 20 18.6 20 14.5C20 10.5 17 6 12 2Z" fill="white"/></svg>
+      </span>
+      Re:Use.ID
+      <span class="admin-tag">Admin</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="12" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="16" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item" data-page="pengguna">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3 20C3 16.5 5.5 14 9 14C12.5 14 15 16.5 15 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M15.5 8.5C16.9 8.9 18 10.1 18 11.5M16 14.2C18.3 14.7 20 16.7 20 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Pengguna
+      </a>
+      <a href="#" class="nav-item" data-page="listing">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 9H17M7 13H14M7 17H11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Listing Barang
+      </a>
+      <a href="#" class="nav-item" data-page="transaksi">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 8H21M7 8L10 5M7 8L10 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 16H3M17 16L14 13M17 16L14 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Transaksi
+      </a>
+      <a href="#" class="nav-item" data-page="laporan">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20V13M4 20H20M4 20V6M9 20V9M14 20V11M19 20V4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Laporan
+      </a>
+      <a href="#" class="nav-item" data-page="pengaturan">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.5"/></svg>
+        Pengaturan
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <img src="https://i.pravatar.cc/60?img=68" alt="Admin">
+      <div>
+        <div class="admin-name">Wulan H.</div>
+        <div class="admin-role">Super Admin</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ---------- MAIN CONTENT ---------- -->
+  <main class="main">
+    <header class="main-header">
+      <div>
+        <h1>Dashboard</h1>
+        <p>Ringkasan aktivitas platform Re:Use.ID</p>
+      </div>
+      <div class="header-right">
+        <span class="date-range">📅 1 – 31 Agustus 2026</span>
+      </div>
+    </header>
+
+    <!-- ROW 1: KPI CARDS -->
+    <section class="kpi-row">
+      <article class="kpi-card">
+        <div class="kpi-icon kpi-icon-blue">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="white" stroke-width="1.8"/><path d="M3 20C3 16.5 5.5 14 9 14C12.5 14 15 16.5 15 20" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M15.5 8.5C16.9 8.9 18 10.1 18 11.5M16 14.2C18.3 14.7 20 16.7 20 19" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="kpi-label">Total Pengguna Terdaftar</div>
+        <div class="kpi-number">2.847</div>
+        <div class="kpi-trend up">▲ +12% vs bulan lalu</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon kpi-icon-sage">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="white" stroke-width="1.8"/><path d="M7 9H17M7 13H14M7 17H11" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="kpi-label">Barang Aktif</div>
+        <div class="kpi-number">1.203</div>
+        <div class="kpi-trend up">▲ +8% vs bulan lalu</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon kpi-icon-gold">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 8H21M7 8L10 5M7 8L10 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 16H3M17 16L14 13M17 16L14 19" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="kpi-label">Transaksi Bulan Ini</div>
+        <div class="kpi-number">456</div>
+        <div class="kpi-trend down">▼ -3% vs bulan lalu</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-icon kpi-icon-teal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 5 14.5 5 9.5C5 5.9 8.13 3 12 3C15.87 3 19 5.9 19 9.5C19 14.5 12 21 12 21Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12L11 14L15 10" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="kpi-label">Barang Terdonasi</div>
+        <div class="kpi-number">618</div>
+        <div class="kpi-trend up">▲ +19% vs bulan lalu</div>
+      </article>
+    </section>
+
+    <!-- ROW 2: CHARTS -->
+    <section class="chart-row">
+      <div class="chart-card chart-card-line">
+        <div class="chart-head">
+          <h3>Pertumbuhan Pengguna Aktif (6 bulan)</h3>
+          <div class="legend">
+            <span class="legend-item"><span class="dot dot-sage"></span>Pengguna Baru</span>
+            <span class="legend-item"><span class="dot dot-blue"></span>Pengguna Aktif</span>
+          </div>
+        </div>
+        <canvas id="lineChart" height="220"></canvas>
+      </div>
+
+      <div class="chart-card chart-card-donut">
+        <div class="chart-head">
+          <h3>Distribusi Kategori Barang</h3>
+        </div>
+        <div class="donut-wrap">
+          <canvas id="donutChart" width="180" height="180"></canvas>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROW 3: TRANSACTIONS TABLE -->
+    <section class="table-card">
+      <div class="table-head">
+        <h3>Transaksi Terbaru</h3>
+        <div class="table-filters">
+          <select id="statusFilter">
+            <option value="Semua">Semua Status</option>
+            <option value="Selesai">Selesai</option>
+            <option value="Diproses">Diproses</option>
+            <option value="Dibatalkan">Dibatalkan</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Pengguna</th>
+              <th>Barang</th>
+              <th>Jenis</th>
+              <th>Tanggal</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="txTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span id="paginationInfo"></span>
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

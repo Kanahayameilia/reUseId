@@ -81,6 +81,16 @@ input{font-family:inherit;}
   object-fit:cover; border:3px solid rgba(255,255,255,0.6);
   flex-shrink:0;
 }
+.ph-avatar-wrap{position:relative; flex-shrink:0;}
+.ph-avatar-edit{
+  position:absolute; bottom:-2px; right:-2px;
+  width:28px; height:28px; border-radius:50%;
+  background:var(--white); border:2px solid var(--sage);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--sage-dark); transition:transform .2s ease, opacity .2s ease;
+}
+.ph-avatar-edit:hover{transform:scale(1.08);}
+.ph-avatar-edit:disabled{opacity:0.5; pointer-events:none;}
 .ph-info{flex:1; min-width:0;}
 .ph-name-row{
   display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap;

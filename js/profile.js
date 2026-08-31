@@ -4,7 +4,7 @@
 // PENTING: isLoggedIn() baru akurat setelah 'auth-ready' terpicu (lihat auth.js),
 // jadi semua kode di bawah dibungkus supaya nggak sempat baca status "belum login"
 // yang keliru sebelum sesi selesai dicek.
-document.addEventListener('auth-ready', async () => {
+onAuthReady(async () => {
 
   // Halaman ini butuh login — kalau belum, tendang ke login dulu.
   if(!isLoggedIn()){
@@ -14,16 +14,97 @@ document.addEventListener('auth-ready', async () => {
 
   document.getElementById('logoutBtn')?.addEventListener('click', logout);
 
-  // ---------- ISI DATA PROFIL DARI AKUN YANG LOGIN ----------
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  const userName = user?.user_metadata?.full_name || getUserName();
-  const userCampus = user?.user_metadata?.campus || '';
-  const userEmail = user?.email || '';
+  // ---------- PASANG SEMUA LISTENER TOMBOL DULUAN, SEBELUM AMBIL DATA ----------
+  // PENTING: bagian ini sengaja diletakkan SEBELUM proses ambil data dari Supabase
+  // (yang pakai 'await' dan bisa gagal karena masalah jaringan/token). Kalau listener
+  // tombol dipasang SESUDAH sebuah 'await' yang gagal, seluruh kode setelahnya nggak
+  // akan pernah jalan — tombol jadi kelihatan "nggak ngapa-ngapain" saat diklik.
+  // Dengan urutan begini, tombol tab/edit tetap berfungsi walau proses ambil data
+  // di bawah nanti gagal.
 
-  document.getElementById('phName').textContent = userName;
-  if(userCampus) document.getElementById('phCampus').textContent = `🎓 Mahasiswa — ${userCampus}`;
-  document.getElementById('settingsName').value = userName;
-  document.getElementById('settingsEmail').value = userEmail;
+  // Tombol "Edit Profil" di header -> lompat ke tab Pengaturan & fokus ke field nama
+  document.getElementById('btnEditProfile')?.addEventListener('click', () => {
+    document.querySelector('.tab-btn[data-tab="pengaturan"]')?.click();
+    document.getElementById('settingsName')?.focus();
+  });
+
+  // ---------- GANTI FOTO PROFIL (upload ke Supabase Storage, bucket "avatars") ----------
+  const avatarBtn = document.getElementById('btnChangeAvatar');
+  const avatarInput = document.getElementById('avatarInput');
+  const avatarImg = document.getElementById('phAvatar');
+
+  avatarBtn?.addEventListener('click', () => avatarInput?.click());
+
+  avatarInput?.addEventListener('change', async () => {
+    const file = avatarInput.files?.[0];
+    if(!file) return;
+
+    // validasi dasar di sisi client
+    const maxSizeMB = 3;
+    if(!['image/png','image/jpeg','image/webp'].includes(file.type)){
+      alert('Format foto harus PNG, JPG, atau WEBP.');
+      avatarInput.value = '';
+      return;
+    }
+    if(file.size > maxSizeMB * 1024 * 1024){
+      alert(`Ukuran foto maksimal ${maxSizeMB}MB.`);
+      avatarInput.value = '';
+      return;
+    }
+
+    const currentUser = getCurrentUser();
+    if(!currentUser){
+      alert('Sesi login bermasalah, coba muat ulang halaman.');
+      return;
+    }
+
+    avatarBtn.disabled = true;
+    const originalAvatarSrc = avatarImg.src;
+
+    // preview instan sebelum upload selesai
+    avatarImg.src = URL.createObjectURL(file);
+
+    const ext = file.name.split('.').pop();
+    // nama file disertai timestamp biar nggak ke-cache browser/CDN dengan foto lama
+    const filePath = `${currentUser.id}/avatar-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabaseClient
+      .storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
+
+    if(uploadError){
+      alert('Gagal upload foto: ' + uploadError.message);
+      avatarImg.src = originalAvatarSrc;
+      avatarBtn.disabled = false;
+      avatarInput.value = '';
+      return;
+    }
+
+    const { data: publicUrlData } = supabaseClient
+      .storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    const newAvatarUrl = publicUrlData.publicUrl;
+
+    const { error: updateError } = await supabaseClient.auth.updateUser({
+      data: { avatar_url: newAvatarUrl }
+    });
+
+    avatarBtn.disabled = false;
+    avatarInput.value = '';
+
+    if(updateError){
+      alert('Foto ke-upload, tapi gagal menyimpan ke profil: ' + updateError.message);
+      avatarImg.src = originalAvatarSrc;
+      return;
+    }
+
+    // refresh cache sesi biar getCurrentUser()/getUserName() ikut update
+    await setLoggedIn();
+    avatarImg.src = newAvatarUrl;
+  });
 
   // ---------- TAB SWITCHING ----------
   const tabBtns = document.querySelectorAll('.tab-btn');
@@ -38,19 +119,49 @@ document.addEventListener('auth-ready', async () => {
     });
   });
 
+  // ---------- ISI DATA PROFIL DARI AKUN YANG LOGIN ----------
+  // Pakai data sesi yang sudah di-cache (getCurrentUser(), lihat auth.js) —
+  // BUKAN supabaseClient.auth.getUser() — supaya nggak perlu request lagi ke
+  // server yang bisa gagal kalau token lagi bermasalah.
+  const user = getCurrentUser();
+  const userName = user?.user_metadata?.full_name || getUserName();
+  const userCampus = user?.user_metadata?.campus || '';
+  const userEmail = user?.email || '';
+  const userLocation = user?.user_metadata?.location || '';
+  const userAvatar = user?.user_metadata?.avatar_url || '';
+
+  document.getElementById('phName').textContent = userName;
+  if(userCampus) document.getElementById('phCampus').textContent = `🎓 Mahasiswa — ${userCampus}`;
+  document.getElementById('phLocation').textContent = userLocation ? `📍 ${userLocation}` : '';
+  if(userAvatar) document.getElementById('phAvatar').src = userAvatar;
+  document.getElementById('settingsName').value = userName;
+  document.getElementById('settingsEmail').value = userEmail;
+  document.getElementById('settingsLocation').value = userLocation;
+
   // ---------- BARANG AKTIF (dari tabel items di Supabase, milik akun ini) ----------
   const activeGrid = document.getElementById('activeGrid');
-  const { data: myItems, error: itemsError } = await supabaseClient
-    .from('items')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+  let myItems = null, itemsError = null;
+  try {
+    const res = await supabaseClient
+      .from('items')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    myItems = res.data;
+    itemsError = res.error;
+  } catch(err){
+    itemsError = err;
+  }
+
+  const statActiveEl = document.getElementById('statActive');
 
   if(itemsError){
     activeGrid.innerHTML = `<p>Gagal memuat barang: ${itemsError.message}</p>`;
   } else if(!myItems || myItems.length === 0){
     activeGrid.innerHTML = `<p>Kamu belum punya barang yang diunggah.</p>`;
+    if(statActiveEl) statActiveEl.textContent = '0';
   } else {
+    if(statActiveEl) statActiveEl.textContent = myItems.filter(i => i.status === 'Aktif').length;
     activeGrid.innerHTML = myItems.map(item => {
       const badgeClass = item.jenis === 'Barter' ? 'barter' : 'donasi';
       const cover = item.photos?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop';
@@ -97,6 +208,11 @@ document.addEventListener('auth-ready', async () => {
       status.style.background = isActive ? '#F2E9DC' : '';
       status.style.color = isActive ? '#8A6D3B' : '';
       btn.textContent = isActive ? 'Aktifkan' : 'Nonaktifkan';
+
+      const statEl = document.getElementById('statActive');
+      if(statEl) statEl.textContent = activeGrid.querySelectorAll('.ic-status').length
+        ? [...activeGrid.querySelectorAll('.ic-status')].filter(s => s.textContent === 'Aktif').length
+        : '0';
     });
   });
 
@@ -177,9 +293,10 @@ document.addEventListener('auth-ready', async () => {
       return;
     }
 
-    // refresh cache sesi biar getUserName() ikut update, terus perbarui tampilan nama
+    // refresh cache sesi biar getUserName() ikut update, terus perbarui tampilan nama & lokasi
     await setLoggedIn();
     document.getElementById('phName').textContent = getUserName();
+    document.getElementById('phLocation').textContent = newLocation ? `📍 ${newLocation}` : '';
 
     btn.textContent = 'Tersimpan ✓';
     setTimeout(()=>{ btn.textContent = original; }, 1800);

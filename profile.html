@@ -30,79 +30,28 @@
 </header>
 
 <main class="wrap">
-
   <section class="profile-header">
     <div class="ph-main">
-      <img class="ph-avatar" src="https://i.pravatar.cc/160?img=32" alt="Rani A.">
+      <img class="ph-avatar" id="phAvatar" src="https://i.pravatar.cc/160?img=32" alt="Foto profil">
       <div class="ph-info">
         <div class="ph-name-row">
-          <h1>Rani A.</h1>
+          <h1 id="phName">Pengguna</h1>
           <span class="verified-badge">✓ Terverifikasi</span>
         </div>
-        <span class="ph-tag">🎓 Mahasiswa — Universitas Tidar</span>
-        <div class="ph-meta">
-          <span>⭐ 4.8/5.0 <span class="meta-dim">(12 ulasan)</span></span>
-          <span class="meta-sep">·</span>
-          <span>Bergabung Maret 2025</span>
-        </div>
-      </div>
-      <button class="btn-edit-profile">Edit Profil</button>
-    </div>
-
-    <div class="ph-stats">
-      <div class="stat-item">
-        <div class="stat-num">8</div>
-        <div class="stat-label">Barang Didonasikan</div>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat-item">
-        <div class="stat-num">5</div>
-        <div class="stat-label">Barter Selesai</div>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat-item">
-        <div class="stat-num">340</div>
-        <div class="stat-label">Poin Reuse</div>
-      </div>
-    </div>
-  </section>
-
-  <nav class="tab-nav" id="tabNav">
-    <button class="tab-btn active" data-tab="aktif">Barang Aktif</button>
-    <button class="tab-btn" data-tab="riwayat">Riwayat Transaksi</button>
-    <button class="tab-btn" data-tab="ulasan">Ulasan</button>
-    <button class="tab-btn" data-tab="pengaturan">Pengaturan</button>
-  </nav>
-
-  <section class="tab-panel active" id="panel-aktif">
-    <div class="grid" id="activeGrid"></div>
-  </section>
-
-  <section class="tab-panel" id="panel-riwayat">
-    <div class="timeline" id="historyTimeline"></div>
-  </section>
-
-  <section class="tab-panel" id="panel-ulasan">
-    <div class="review-list" id="reviewList"></div>
-  </section>
-
-  <section class="tab-panel" id="panel-pengaturan">
-    <div class="settings-card">
-      <h3>Informasi Akun</h3>
-      <div class="settings-row">
+        <span class="ph-tag" id="phCampus">🎓 Mahasiswa</span>
+              <div class="settings-row">
         <label>Nama Lengkap</label>
-        <input type="text" value="Rani A.">
+        <input type="text" id="settingsName" value="">
       </div>
       <div class="settings-row">
         <label>Email Kampus</label>
-        <input type="email" value="rani.a@student.untidar.ac.id">
+        <input type="email" id="settingsEmail" value="" disabled>
       </div>
       <div class="settings-row">
         <label>Lokasi Kos</label>
-        <input type="text" value="Kos Tidar Utara, Magelang">
+        <input type="text" id="settingsLocation" value="">
       </div>
       <button class="btn-save-settings">Simpan Perubahan</button>
-    </div>
     <div class="settings-card danger-card">
       <h3>Zona Berbahaya</h3>
       <p>Menonaktifkan akun akan menyembunyikan semua barangmu dari pencarian.</p>

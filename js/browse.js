@@ -15,6 +15,29 @@ if(isLoggedIn()){
   if(avatarBtn) avatarBtn.hidden = true;
 }
 
+// ---------- gabungkan data barang dummy dengan barang asli dari Supabase ----------
+let ALL_ITEMS = ITEMS;
+
+async function loadSupabaseItems(){
+  try {
+    const { data, error } = await supabaseClient
+      .from('items')
+      .select('*')
+      .eq('status', 'Aktif')
+      .order('created_at', { ascending: false });
+
+    if(error){ console.error('Gagal memuat barang dari Supabase:', error.message); return []; }
+
+    return (data || []).map(row => ({
+      ...row,
+      photo: row.photo || row.photos?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop',
+    }));
+  } catch(err){
+    console.error('Gagal memuat barang dari Supabase:', err);
+    return [];
+  }
+}
+
 const grid = document.getElementById('itemGrid');
 const resultCount = document.getElementById('resultCount');
 const emptyState = document.getElementById('emptyState');
@@ -57,7 +80,7 @@ function getFilters(){
 function applyFilters(){
   const { kategori, jenis, kondisi, jarakMax, query } = getFilters();
 
-  const filtered = ITEMS.filter(item => {
+  const filtered = ALL_ITEMS.filter(item => {
     if(!kategori.includes(item.kategori)) return false;
     if(jenis !== 'Semua' && item.jenis !== jenis) return false;
     if(!kondisi.includes(item.kondisi)) return false;
@@ -91,5 +114,9 @@ resetBtn.addEventListener('click', ()=>{
   applyFilters();
 });
 
-// initial render
+// initial render (data dummy dulu biar instan), lalu gabung barang asli setelah kefetch
 applyFilters();
+loadSupabaseItems().then(dbItems => {
+  ALL_ITEMS = [...dbItems, ...ITEMS];
+  applyFilters();
+});

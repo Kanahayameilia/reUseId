@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Barang | Re:Use.ID</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/browse.css">
+<link rel="stylesheet" href="css/upload.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html" class="logo">
+      <span class="mark">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C7 6 4 10.5 4 14.5C4 18.6 7.4 22 12 22C16.6 22 20 18.6 20 14.5C20 10.5 17 6 12 2Z" fill="white"/></svg>
+      </span>
+      Re:Use.ID
+    </a>
+
+    <div class="topbar-actions" style="margin-left:auto;">
+      <a href="browse.html" class="btn-login">Batal</a>
+      <button class="avatar-btn" id="avatarBtn" aria-label="Profil pengguna" onclick="window.location.href='profile.html'">
+        <img src="https://i.pravatar.cc/80?img=47" alt="Avatar pengguna">
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="upload-main">
+  <div class="upload-card">
+    <h1>Upload Barang</h1>
+    <p class="upload-sub">Isi detail barang yang mau kamu barter atau donasikan. Barang langsung tersimpan ke akunmu.</p>
+
+    <form id="uploadForm" novalidate>
+
+      <div class="field">
+        <label for="itemName">Nama Barang</label>
+        <input type="text" id="itemName" name="itemName" placeholder="Contoh: Jaket Denim Oversize" required>
+        <span class="field-error" id="err-itemName"></span>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="itemKategori">Kategori</label>
+          <select id="itemKategori" required>
+            <option value="" disabled selected>Pilih kategori</option>
+            <option value="Pakaian">Pakaian</option>
+            <option value="Buku">Buku</option>
+            <option value="Elektronik">Elektronik</option>
+            <option value="Perabot">Perabot</option>
+          </select>
+          <span class="field-error" id="err-itemKategori"></span>
+        </div>
+
+        <div class="field">
+          <label for="itemKondisi">Kondisi</label>
+          <select id="itemKondisi" required>
+            <option value="" disabled selected>Pilih kondisi</option>
+            <option value="Layak">Layak</option>
+            <option value="Baik">Baik</option>
+            <option value="Sangat Baik">Sangat Baik</option>
+          </select>
+          <span class="field-error" id="err-itemKondisi"></span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Jenis</label>
+        <div class="jenis-toggle">
+          <label class="radio-row">
+            <input type="radio" name="jenis" class="f-jenis" value="Barter" checked>
+            <span class="circle"></span> Barter
+          </label>
+          <label class="radio-row">
+            <input type="radio" name="jenis" class="f-jenis" value="Donasi">
+            <span class="circle"></span> Donasi
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="itemLokasi">Lokasi</label>
+        <input type="text" id="itemLokasi" name="itemLokasi" placeholder="Contoh: Kos Tidar Utara, Magelang" required>
+        <span class="field-error" id="err-itemLokasi"></span>
+      </div>
+
+      <div class="field">
+        <label for="itemDeskripsi">Deskripsi</label>
+        <textarea id="itemDeskripsi" name="itemDeskripsi" rows="4" placeholder="Ceritain kondisi, alasan dilepas, dan hal penting lainnya…" required></textarea>
+        <span class="field-error" id="err-itemDeskripsi"></span>
+      </div>
+
+      <div class="field">
+        <label for="itemTags">Tag (pisahkan dengan koma)</label>
+        <input type="text" id="itemTags" name="itemTags" placeholder="Contoh: Jaket, Denim, Unisex">
+      </div>
+
+      <div class="field">
+        <label>Foto Barang (maks. 5, @5MB)</label>
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="photoInput" accept="image/png, image/jpeg, image/webp" multiple hidden>
+          <p><strong>Klik untuk pilih foto</strong> atau seret ke sini</p>
+          <span class="dropzone-hint">PNG, JPG, atau WEBP</span>
+        </div>
+        <div class="photo-preview" id="photoPreview"></div>
+        <span class="field-error" id="err-photos"></span>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">Upload Barang</button>
+      <p class="form-msg" id="formMsg"></p>
+
+    </form>
+  </div>
+</main>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/upload.js"></script>
+</body>
+</html>

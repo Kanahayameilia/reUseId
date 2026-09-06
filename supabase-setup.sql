@@ -29,6 +29,27 @@ create table if not exists public.items (
 
 alter table public.items enable row level security;
 
+-- ---------- migrasi kolom (aman dijalankan ulang) ----------
+-- Kalau tabel "items" kamu sudah ada dari sebelumnya dengan kolom yang lebih
+-- sedikit, "create table if not exists" di atas TIDAK menambah kolom baru.
+-- Baris-baris di bawah ini memastikan semua kolom yang dipakai fitur upload
+-- beneran ada, tanpa mengubah data yang sudah tersimpan.
+alter table public.items add column if not exists kategori text;
+alter table public.items add column if not exists jenis text;
+alter table public.items add column if not exists kondisi text;
+alter table public.items add column if not exists lokasi text;
+alter table public.items add column if not exists jarak numeric default 0;
+alter table public.items add column if not exists description text;
+alter table public.items add column if not exists tags text[] default '{}';
+alter table public.items add column if not exists photos text[] default '{}';
+alter table public.items add column if not exists photo text;
+alter table public.items add column if not exists owner text;
+alter table public.items add column if not exists avatar text;
+alter table public.items add column if not exists rating numeric default 5;
+alter table public.items add column if not exists member_since text;
+alter table public.items add column if not exists status text default 'Aktif';
+alter table public.items add column if not exists created_at timestamptz default now();
+
 drop policy if exists "Item aktif bisa dilihat siapa saja" on public.items;
 create policy "Item aktif bisa dilihat siapa saja"
   on public.items for select

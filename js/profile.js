@@ -184,6 +184,15 @@ onAuthReady(async () => {
     }).join('');
   }
 
+  // navigasi ke halaman edit — item ID diambil dari data-item-id di kartu barang
+  activeGrid.querySelectorAll('.ic-action-btn.edit').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const itemId = btn.closest('.item-card').dataset.itemId;
+      window.location.href = `edit.html?id=${itemId}`;
+    });
+  });
+
   // toggle Aktif/Nonaktif — update beneran ke Supabase, bukan cuma tampilan
   activeGrid.querySelectorAll('.ic-action-btn.deactivate').forEach(btn=>{
     btn.addEventListener('click', async (e)=>{

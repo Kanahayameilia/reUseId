@@ -50,9 +50,15 @@ create policy "User bisa hapus barang miliknya sendiri"
   using ( auth.uid() = user_id );
 
 -- ---------- storage bucket buat foto barang ----------
-insert into storage.buckets (id, name, public)
-values ('items', 'items', true)
-on conflict (id) do nothing;
+-- "on conflict ... do update" dipakai (bukan "do nothing") supaya kalau bucket
+-- "items" udah kebuat manual lewat Dashboard tapi belum public/belum ada limit,
+-- baris ini otomatis membetulkannya juga saat di-run ulang.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('items', 'items', true, 5242880, array['image/png','image/jpeg','image/webp'])
+on conflict (id) do update
+  set public = true,
+      file_size_limit = 5242880,
+      allowed_mime_types = array['image/png','image/jpeg','image/webp'];
 
 drop policy if exists "Foto barang bisa dilihat siapa saja" on storage.objects;
 create policy "Foto barang bisa dilihat siapa saja"
@@ -68,3 +74,12 @@ drop policy if exists "User bisa hapus foto miliknya sendiri" on storage.objects
 create policy "User bisa hapus foto miliknya sendiri"
   on storage.objects for delete
   using ( bucket_id = 'items' and auth.uid()::text = (storage.foldername(name))[1] );
+
+-- ---------- verifikasi ----------
+-- Setelah "Run", cek hasil query ini di tab "Results" paling bawah.
+-- Harus muncul 1 baris: items | items | true | 5242880
+-- Kalau hasilnya kosong, berarti bucket GAGAL kebuat (lihat pesan error di atas
+-- tab Results) — biasanya karena role yang jalanin query nggak punya akses ke
+-- schema storage; kalau itu terjadi, bikin bucket-nya manual lewat menu
+-- Storage -> New bucket -> nama "items" -> aktifkan "Public bucket".
+select id, name, public, file_size_limit from storage.buckets where id = 'items';

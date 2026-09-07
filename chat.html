@@ -1,67 +1,275 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pesan | Re:Use.ID</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/chat.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Pesan | Re:Use.ID</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- Chat CSS -->
+  <link rel="stylesheet" href="css/chat.css">
 </head>
+
 <body>
 
-<header class="topbar">
-  <div class="topbar-inner">
-    <a href="index.html" class="logo">
-      <span class="mark">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C7 6 4 10.5 4 14.5C4 18.6 7.4 22 12 22C16.6 22 20 18.6 20 14.5C20 10.5 17 6 12 2Z" fill="white"/></svg>
-      </span>
-      Re:Use.ID
-    </a>
-    <a href="browse.html" class="back-link">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Kembali ke Jelajahi Barang
-    </a>
-  </div>
-</header>
+  <!-- =====================================================
+       TOPBAR
+  ====================================================== -->
 
-<div class="chat-shell" id="chatShell">
+  <header class="topbar">
 
-  <aside class="chat-list" id="chatList">
-    <div class="chat-list-header">Pesan</div>
-    <div id="chatListBody">
-      <div class="chat-list-empty">Memuat percakapan…</div>
+    <div class="topbar-inner">
+
+      <!-- Logo -->
+      <a href="index.html" class="logo">
+
+        <span class="mark">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M12 2C7 6 4 10.5 4 14.5C4 18.6 7.4 22 12 22C16.6 22 20 18.6 20 14.5C20 10.5 17 6 12 2Z"
+              fill="white"
+            />
+          </svg>
+        </span>
+
+        Re:Use.ID
+
+      </a>
+
+      <!-- Kembali -->
+      <a href="browse.html" class="back-link">
+
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M19 12H5M5 12L12 19M5 12L12 5"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+
+        Kembali ke Jelajahi Barang
+
+      </a>
+
     </div>
-  </aside>
 
-  <section class="chat-thread" id="chatThread">
-    <div class="thread-empty" id="threadEmpty">Pilih percakapan di sebelah kiri buat mulai chat.</div>
+  </header>
 
-    <div class="thread-active" id="threadActive" hidden>
-      <div class="thread-header">
-        <a class="thread-back" href="chat.html">←</a>
-        <img class="thread-header-avatar" id="threadAvatar" src="" alt="">
-        <div>
-          <div class="thread-header-name" id="threadName"></div>
-          <div class="thread-header-item" id="threadItemName"></div>
-        </div>
+
+  <!-- =====================================================
+       CHAT SHELL
+  ====================================================== -->
+
+  <div class="chat-shell" id="chatShell">
+
+
+    <!-- ===================================================
+         DAFTAR PERCAKAPAN
+    ==================================================== -->
+
+    <aside class="chat-list" id="chatList">
+
+      <div class="chat-list-header">
+        Pesan
       </div>
 
-      <div class="thread-messages" id="threadMessages"></div>
+      <div id="chatListBody">
 
-      <form class="thread-composer" id="composerForm">
-        <input type="text" id="composerInput" placeholder="Tulis pesan…" autocomplete="off" maxlength="1000">
-        <button type="submit" id="composerSend">Kirim</button>
-      </form>
-    </div>
-  </section>
+        <div class="chat-list-empty">
+          Memuat percakapan…
+        </div>
 
-</div>
+      </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="js/supabase-client.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/chat.js"></script>
+    </aside>
+
+
+    <!-- ===================================================
+         THREAD CHAT
+    ==================================================== -->
+
+    <section class="chat-thread" id="chatThread">
+
+
+      <!-- Belum memilih percakapan -->
+
+      <div
+        class="thread-empty"
+        id="threadEmpty"
+      >
+        Pilih percakapan di sebelah kiri buat mulai chat.
+      </div>
+
+
+      <!-- Percakapan aktif -->
+
+      <div
+        class="thread-active"
+        id="threadActive"
+        hidden
+      >
+
+
+        <!-- ===============================================
+             HEADER CHAT
+        ================================================ -->
+
+        <div class="thread-header">
+
+          <!-- Tombol kembali di mobile -->
+
+          <a
+            class="thread-back"
+            href="chat.html"
+            aria-label="Kembali ke daftar pesan"
+          >
+            ←
+          </a>
+
+
+          <!-- Avatar -->
+
+          <img
+            class="thread-header-avatar"
+            id="threadAvatar"
+            src=""
+            alt="Foto profil pengguna"
+          >
+
+
+          <!-- Nama + barang -->
+
+          <div>
+
+            <div
+              class="thread-header-name"
+              id="threadName"
+            ></div>
+
+            <div
+              class="thread-header-item"
+              id="threadItemName"
+            ></div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ===============================================
+             PANEL TRANSAKSI
+             
+             Akan diisi otomatis oleh chat.js.
+             
+             Contoh:
+             - Menunggu penjual
+             - Diterima
+             - Serah terima
+             - Konfirmasi pembeli
+             - Selesai
+        ================================================ -->
+
+        <div
+          id="transactionPanel"
+          hidden
+        ></div>
+
+
+        <!-- ===============================================
+             DAFTAR PESAN
+        ================================================ -->
+
+        <div
+          class="thread-messages"
+          id="threadMessages"
+        ></div>
+
+
+        <!-- ===============================================
+             INPUT FOTO BUKTI COD / SERAH TERIMA
+             
+             Input ini disembunyikan dan dipanggil
+             melalui tombol dari transactionPanel.
+        ================================================ -->
+
+        <input
+          type="file"
+          id="proofInput"
+          accept="image/png,image/jpeg,image/webp"
+          hidden
+        >
+
+
+        <!-- ===============================================
+             COMPOSER
+        ================================================ -->
+
+        <form
+          class="thread-composer"
+          id="composerForm"
+        >
+
+          <input
+            type="text"
+            id="composerInput"
+            placeholder="Tulis pesan…"
+            autocomplete="off"
+            maxlength="1000"
+            aria-label="Tulis pesan"
+          >
+
+          <button
+            type="submit"
+            id="composerSend"
+          >
+            Kirim
+          </button>
+
+        </form>
+
+
+      </div>
+
+    </section>
+
+  </div>
+
+
+  <!-- =====================================================
+       SUPABASE
+  ====================================================== -->
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <script src="js/supabase-client.js"></script>
+
+  <script src="js/auth.js"></script>
+
+  <script src="js/chat.js"></script>
+
+
 </body>
 </html>

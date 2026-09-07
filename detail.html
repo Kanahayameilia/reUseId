@@ -3,81 +3,432 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jaket Denim Oversize | Re:Use.ID</title>
+
+<title>Detail Barang | Re:Use.ID</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <link rel="stylesheet" href="css/detail.css">
 </head>
+
 <body id="detailBody">
 
 <header class="topbar">
   <div class="topbar-inner">
+
     <a href="index.html" class="logo">
       <span class="mark">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C7 6 4 10.5 4 14.5C4 18.6 7.4 22 12 22C16.6 22 20 18.6 20 14.5C20 10.5 17 6 12 2Z" fill="white"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M12 2C7 6 4 10.5 4 14.5C4 18.6 7.4 22 12 22C16.6 22 20 18.6 20 14.5C20 10.5 17 6 12 2Z"
+            fill="white"
+          />
+        </svg>
       </span>
       Re:Use.ID
     </a>
+
     <a href="browse.html" class="back-link">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M19 12H5M5 12L12 19M5 12L12 5"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
       Kembali ke Jelajahi Barang
     </a>
+
   </div>
 </header>
 
+
 <main class="wrap">
+
+  <!-- =========================
+       DETAIL BARANG
+       ========================= -->
 
   <div class="detail-grid">
 
+    <!-- LEFT : GALLERY -->
     <section class="gallery">
+
       <div class="main-photo">
-        <img id="mainPhoto" src="" alt="">
+        <img id="mainPhoto" src="" alt="Foto barang">
       </div>
+
       <div class="thumb-row" id="thumbRow"></div>
+
     </section>
 
-    <!-- RIGHT: info (filled by detail.js) -->
+
+    <!-- RIGHT : INFO -->
     <section class="info">
+
       <span class="badge" id="itemBadge"></span>
+
       <h1 class="item-name" id="itemName"></h1>
+
       <div class="condition-tag" id="itemCondition"></div>
 
       <p class="description" id="itemDescription"></p>
 
       <div class="tags" id="itemTags"></div>
 
+
+      <!-- OWNER -->
       <div class="owner-card">
-        <img class="owner-avatar" id="ownerAvatar" src="" alt="">
+
+        <img
+          class="owner-avatar"
+          id="ownerAvatar"
+          src=""
+          alt="Foto pemilik"
+        >
+
         <div class="owner-info">
-          <div class="owner-name" id="ownerName"></div>
-          <div class="owner-rating" id="ownerRating"></div>
+
+          <div
+            class="owner-name"
+            id="ownerName"
+          ></div>
+
+          <div
+            class="owner-rating"
+            id="ownerRating"
+          ></div>
+
         </div>
-        <a href="#" class="profile-link">Lihat Profil</a>
+
+        <a
+          href="#"
+          class="profile-link"
+        >
+          Lihat Profil
+        </a>
+
       </div>
 
-      <div class="location-row" id="itemLocation"></div>
 
+      <!-- LOCATION -->
+      <div
+        class="location-row"
+        id="itemLocation"
+      ></div>
+
+
+      <!-- ACTION BUTTON -->
       <div class="cta-row">
-        <button class="btn-filled" id="btnAjukanBarter">Ajukan Barter</button>
-        <button class="btn-outline" id="btnHubungiPemilik">Hubungi Pemilik</button>
+
+        <button
+          class="btn-filled"
+          id="btnAjukanBarter"
+          type="button"
+        >
+          Ajukan Barter
+        </button>
+
+        <button
+          class="btn-outline"
+          id="btnHubungiPemilik"
+          type="button"
+        >
+          Hubungi Pemilik
+        </button>
+
       </div>
+
     </section>
 
   </div>
 
+
+  <!-- =========================
+       BARANG SERUPA
+       ========================= -->
+
   <section class="similar-section">
+
     <h2>Barang Serupa di Dekatmu</h2>
-    <div class="similar-scroll" id="similarScroll"></div>
+
+    <div
+      class="similar-scroll"
+      id="similarScroll"
+    ></div>
+
   </section>
 
 </main>
 
+
+<!-- =====================================================
+     MODAL AJUKAN BARTER
+     ===================================================== -->
+
+<div
+  class="barter-modal"
+  id="barterModal"
+  hidden
+>
+
+  <!-- Overlay -->
+  <div
+    class="barter-modal-overlay"
+    id="barterModalOverlay"
+  ></div>
+
+
+  <!-- Modal Content -->
+  <div
+    class="barter-modal-content"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="barterModalTitle"
+  >
+
+    <!-- Header -->
+    <div class="barter-modal-header">
+
+      <div>
+        <h2 id="barterModalTitle">
+          Ajukan Barter
+        </h2>
+
+        <p>
+          Pilih barang yang ingin kamu tawarkan.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="barter-modal-close"
+        id="btnCloseBarterModal"
+        aria-label="Tutup"
+      >
+        &times;
+      </button>
+
+    </div>
+
+
+    <!-- =================================================
+         PILIH BARANG YANG SUDAH DIUPLOAD
+         ================================================= -->
+
+    <section
+      class="barter-section"
+      id="myItemsSection"
+    >
+
+      <div class="barter-section-title">
+
+        <div>
+          <h3>
+            Pilih dari barangmu
+          </h3>
+
+          <p>
+            Gunakan barang yang sudah kamu upload di Re:Use.ID.
+          </p>
+        </div>
+
+      </div>
+
+
+      <!-- Loading -->
+      <div
+        class="barter-loading"
+        id="myItemsLoading"
+        hidden
+      >
+        Memuat barangmu...
+      </div>
+
+
+      <!-- Empty -->
+      <div
+        class="barter-empty"
+        id="myItemsEmpty"
+        hidden
+      >
+        Kamu belum memiliki barang yang bisa ditawarkan.
+      </div>
+
+
+      <!-- List Barang -->
+      <div
+        class="my-items-list"
+        id="myItemsList"
+      ></div>
+
+    </section>
+
+
+    <!-- Divider -->
+    <div class="barter-divider">
+
+      <span>atau</span>
+
+    </div>
+
+
+    <!-- =================================================
+         TAWARKAN BARANG LAIN
+         ================================================= -->
+
+    <section
+      class="barter-section"
+      id="otherItemSection"
+    >
+
+      <div class="barter-section-title">
+
+        <div>
+
+          <h3>
+            Tawarkan barang lain
+          </h3>
+
+          <p>
+            Kalau barang yang ingin kamu tukarkan belum diupload,
+            kamu bisa mengirim foto dan keterangannya.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- Foto Barang -->
+      <div class="barter-form-group">
+
+        <label for="barterPhoto">
+          Foto barang
+        </label>
+
+        <label
+          for="barterPhoto"
+          class="barter-photo-upload"
+        >
+
+          <span
+            class="barter-upload-icon"
+          >
+            +
+          </span>
+
+          <span>
+            Pilih foto barang
+          </span>
+
+          <small>
+            JPG, PNG, atau WEBP
+          </small>
+
+        </label>
+
+        <input
+          type="file"
+          id="barterPhoto"
+          accept="image/png,image/jpeg,image/webp"
+          hidden
+        >
+
+      </div>
+
+
+      <!-- Preview Foto -->
+      <div
+        class="barter-photo-preview"
+        id="barterPreview"
+        hidden
+      >
+
+        <img
+          id="barterPreviewImage"
+          src=""
+          alt="Preview barang barter"
+        >
+
+        <button
+          type="button"
+          id="btnRemoveBarterPhoto"
+          class="barter-remove-photo"
+        >
+          Hapus foto
+        </button>
+
+      </div>
+
+
+      <!-- Nama Barang -->
+      <div class="barter-form-group">
+
+        <label for="barterName">
+          Nama barang
+        </label>
+
+        <input
+          type="text"
+          id="barterName"
+          class="barter-input"
+          placeholder="Contoh: Sepatu sneakers putih"
+          maxlength="100"
+        >
+
+      </div>
+
+
+      <!-- Deskripsi -->
+      <div class="barter-form-group">
+
+        <label for="barterDescription">
+          Deskripsi barang
+        </label>
+
+        <textarea
+          id="barterDescription"
+          class="barter-textarea"
+          placeholder="Jelaskan kondisi, ukuran, warna, atau informasi lainnya..."
+          maxlength="500"
+          rows="4"
+        ></textarea>
+
+      </div>
+
+
+      <!-- Send -->
+      <button
+        type="button"
+        class="btn-filled barter-send-btn"
+        id="btnSendOtherOffer"
+      >
+        Kirim Penawaran Barter
+      </button>
+
+    </section>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     SUPABASE & JAVASCRIPT
+     ===================================================== -->
+
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <script src="js/supabase-client.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/item_data.js"></script>
 <script src="js/geo.js"></script>
 <script src="js/detail.js"></script>
+
 </body>
 </html>

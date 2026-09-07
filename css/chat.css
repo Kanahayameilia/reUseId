@@ -1,4 +1,5 @@
 :root{
+
   --sage:#4CAF7D;
   --sage-dark:#3A9265;
   --sage-tint:#EAF6EF;
@@ -7,199 +8,968 @@
   --ink-soft:#66756F;
   --border:#E6E9E7;
   --white:#FFFFFF;
-  --shadow: 0 6px 20px -8px rgba(26,60,52,0.12);
+
+  --shadow:0 6px 20px -8px rgba(26,60,52,0.12);
+
+  /* Security */
+  --warning-bg:#FFF8E8;
+  --warning-border:#F0C36D;
+  --warning-text:#5F4500;
+
 }
-*{box-sizing:border-box; margin:0; padding:0;}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+
+/*
+  PENTING:
+  Memastikan elemen dengan atribut hidden
+  benar-benar tidak ditampilkan.
+
+  Ini memperbaiki masalah threadEmpty +
+  threadActive muncul bersamaan.
+*/
+
+[hidden]{
+  display:none !important;
+}
+
+
 body{
+
   font-family:'DM Sans', sans-serif;
+
   background:var(--white);
   color:var(--ink);
+
   height:100vh;
+
   display:flex;
   flex-direction:column;
+
   overflow:hidden;
-}
-img{display:block; max-width:100%;}
-button{font-family:inherit; cursor:pointer;}
-a{text-decoration:none; color:inherit;}
 
-/* ---------- TOPBAR ---------- */
-.topbar{
-  flex:none;
-  background:var(--white);
-  border-bottom:1px solid var(--border);
-}
-.topbar-inner{
-  max-width:1280px; margin:0 auto;
-  height:64px; padding:0 24px;
-  display:flex; align-items:center; gap:20px;
-}
-.logo{
-  display:flex; align-items:center; gap:9px;
-  font-weight:800; font-size:1.1rem; color:var(--teal);
-}
-.logo .mark{
-  width:28px; height:28px; border-radius:9px;
-  background:var(--sage);
-  display:flex; align-items:center; justify-content:center;
-  flex:none;
-}
-.back-link{
-  display:flex; align-items:center; gap:6px;
-  font-weight:600; font-size:0.9rem; color:var(--ink-soft);
-}
-.back-link:hover{color:var(--teal);}
-
-/* ---------- SHELL ---------- */
-.chat-shell{
-  flex:1;
-  display:grid;
-  grid-template-columns:320px 1fr;
-  min-height:0;
-  max-width:1280px;
-  width:100%;
-  margin:0 auto;
-  border-left:1px solid var(--border);
-  border-right:1px solid var(--border);
 }
 
-/* ---------- LIST ---------- */
-.chat-list{
-  border-right:1px solid var(--border);
-  overflow-y:auto;
-  min-height:0;
+
+img{
+  display:block;
+  max-width:100%;
 }
-.chat-list-header{
-  padding:20px 20px 12px;
-  font-weight:800; font-size:1.2rem; color:var(--teal);
-}
-.chat-list-empty{
-  padding:32px 20px;
-  color:var(--ink-soft);
-  font-size:0.9rem;
-  text-align:center;
-}
-.conv-item{
-  display:flex; gap:12px; align-items:center;
-  padding:12px 20px;
+
+
+button{
+  font-family:inherit;
   cursor:pointer;
-  border-bottom:1px solid var(--border);
-  transition:background 0.15s;
 }
-.conv-item:hover{background:var(--sage-tint);}
-.conv-item.active{background:var(--sage-tint);}
-.conv-avatar{
-  width:46px; height:46px; border-radius:50%; object-fit:cover; flex:none;
-  border:1px solid var(--border);
-}
-.conv-info{min-width:0; flex:1;}
-.conv-name{font-weight:700; font-size:0.92rem; color:var(--ink);}
-.conv-item-name{font-size:0.78rem; color:var(--sage-dark); font-weight:600; margin-top:1px;}
-.conv-last{
-  font-size:0.82rem; color:var(--ink-soft);
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  margin-top:2px;
-}
-.conv-time{font-size:0.72rem; color:var(--ink-soft); flex:none;}
 
-/* ---------- THREAD ---------- */
-.chat-thread{
-  display:flex; flex-direction:column;
-  min-height:0;
+
+a{
+  text-decoration:none;
+  color:inherit;
 }
-.thread-empty{
-  flex:1;
-  display:flex; align-items:center; justify-content:center;
-  color:var(--ink-soft); font-size:0.95rem;
-  text-align:center; padding:40px;
-}
-.thread-active{
-  flex:1; display:flex; flex-direction:column; min-height:0;
-}
-.thread-header{
+
+
+/* =========================================================
+   TOPBAR
+========================================================= */
+
+.topbar{
+
   flex:none;
-  display:flex; align-items:center; gap:12px;
-  padding:14px 20px;
+
+  background:var(--white);
+
   border-bottom:1px solid var(--border);
+
 }
-.thread-back{
-  display:none;
-  font-weight:700; font-size:1.2rem; color:var(--ink-soft);
+
+
+.topbar-inner{
+
+  max-width:1280px;
+
+  margin:0 auto;
+
+  height:64px;
+
+  padding:0 24px;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:20px;
+
 }
-.thread-header-avatar{
-  width:40px; height:40px; border-radius:50%; object-fit:cover;
+
+
+.logo{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:9px;
+
+  font-weight:800;
+
+  font-size:1.1rem;
+
+  color:var(--teal);
+
+}
+
+
+.logo .mark{
+
+  width:28px;
+  height:28px;
+
+  border-radius:9px;
+
+  background:var(--sage);
+
+  display:flex;
+
+  align-items:center;
+  justify-content:center;
+
+  flex:none;
+
+}
+
+
+.back-link{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:6px;
+
+  font-weight:600;
+
+  font-size:0.9rem;
+
+  color:var(--ink-soft);
+
+}
+
+
+.back-link:hover{
+  color:var(--teal);
+}
+
+
+/* =========================================================
+   CHAT SHELL
+========================================================= */
+
+.chat-shell{
+
+  flex:1;
+
+  display:grid;
+
+  grid-template-columns:320px minmax(0,1fr);
+
+  min-height:0;
+
+  max-width:1280px;
+
+  width:100%;
+
+  margin:0 auto;
+
+  border-left:1px solid var(--border);
+
+  border-right:1px solid var(--border);
+
+}
+
+
+/* =========================================================
+   CHAT LIST
+========================================================= */
+
+.chat-list{
+
+  border-right:1px solid var(--border);
+
+  overflow-y:auto;
+
+  min-height:0;
+
+}
+
+
+.chat-list-header{
+
+  padding:20px 20px 12px;
+
+  font-weight:800;
+
+  font-size:1.2rem;
+
+  color:var(--teal);
+
+}
+
+
+.chat-list-empty{
+
+  padding:32px 20px;
+
+  color:var(--ink-soft);
+
+  font-size:0.9rem;
+
+  text-align:center;
+
+}
+
+
+.conv-item{
+
+  display:flex;
+
+  gap:12px;
+
+  align-items:center;
+
+  padding:12px 20px;
+
+  cursor:pointer;
+
+  border-bottom:1px solid var(--border);
+
+  transition:background 0.15s;
+
+}
+
+
+.conv-item:hover{
+  background:var(--sage-tint);
+}
+
+
+.conv-item.active{
+  background:var(--sage-tint);
+}
+
+
+.conv-avatar{
+
+  width:46px;
+  height:46px;
+
+  border-radius:50%;
+
+  object-fit:cover;
+
+  flex:none;
+
   border:1px solid var(--border);
+
 }
-.thread-header-name{font-weight:700; font-size:0.95rem;}
+
+
+.conv-info{
+
+  min-width:0;
+
+  flex:1;
+
+}
+
+
+.conv-name{
+
+  font-weight:700;
+
+  font-size:0.92rem;
+
+  color:var(--ink);
+
+}
+
+
+.conv-item-name{
+
+  font-size:0.78rem;
+
+  color:var(--sage-dark);
+
+  font-weight:600;
+
+  margin-top:1px;
+
+}
+
+
+.conv-last{
+
+  font-size:0.82rem;
+
+  color:var(--ink-soft);
+
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+
+  margin-top:2px;
+
+}
+
+
+.conv-time{
+
+  font-size:0.72rem;
+
+  color:var(--ink-soft);
+
+  flex:none;
+
+}
+
+
+/* =========================================================
+   THREAD
+========================================================= */
+
+.chat-thread{
+
+  display:flex;
+
+  flex-direction:column;
+
+  min-height:0;
+
+  min-width:0;
+
+}
+
+
+.thread-empty{
+
+  flex:1;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  color:var(--ink-soft);
+
+  font-size:0.95rem;
+
+  text-align:center;
+
+  padding:40px;
+
+}
+
+
+/*
+  Percakapan aktif.
+
+  Jangan biarkan mengambil tinggi lebih
+  dari area chat.
+*/
+
+.thread-active{
+
+  flex:1 1 auto;
+
+  display:flex;
+
+  flex-direction:column;
+
+  min-height:0;
+
+  min-width:0;
+
+  height:100%;
+
+  overflow:hidden;
+
+}
+
+
+/* =========================================================
+   THREAD HEADER
+========================================================= */
+
+.thread-header{
+
+  flex:0 0 auto;
+
+  height:68px;
+
+  min-height:68px;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  padding:14px 20px;
+
+  border-bottom:1px solid var(--border);
+
+  background:var(--white);
+
+}
+
+
+.thread-back{
+
+  display:none;
+
+  font-weight:700;
+
+  font-size:1.2rem;
+
+  color:var(--ink-soft);
+
+}
+
+
+.thread-back:hover{
+  color:var(--teal);
+}
+
+
+.thread-header-avatar{
+
+  width:40px;
+  height:40px;
+
+  border-radius:50%;
+
+  object-fit:cover;
+
+  border:1px solid var(--border);
+
+  flex:none;
+
+}
+
+
+.thread-header-name{
+
+  font-weight:700;
+
+  font-size:0.95rem;
+
+}
+
+
 .thread-header-item{
-  font-size:0.78rem; color:var(--sage-dark); font-weight:600;
+
+  font-size:0.78rem;
+
+  color:var(--sage-dark);
+
+  font-weight:600;
+
 }
-.thread-header-item a{text-decoration:underline;}
+
+
+.thread-header-item a{
+  text-decoration:underline;
+}
+
+
+/* =========================================================
+   TRANSACTION PANEL
+========================================================= */
+
+#transactionPanel{
+
+  flex:0 0 auto;
+
+  background:var(--white);
+
+}
+
+
+/* =========================================================
+   MESSAGES
+========================================================= */
 
 .thread-messages{
-  flex:1; overflow-y:auto;
-  padding:20px; display:flex; flex-direction:column; gap:10px;
+
+  flex:1 1 auto;
+
+  min-height:0;
+
+  overflow-y:auto;
+
+  padding:20px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:10px;
+
   background:#FAFBFA;
+
 }
+
+
 .msg-bubble{
+
   max-width:60%;
+
   padding:10px 14px;
+
   border-radius:16px;
+
   font-size:0.9rem;
+
   line-height:1.4;
+
   word-wrap:break-word;
+
+  overflow-wrap:anywhere;
+
+  white-space:pre-wrap;
+
 }
+
+
 .msg-bubble.theirs{
+
   align-self:flex-start;
+
   background:var(--white);
+
   border:1px solid var(--border);
+
   border-bottom-left-radius:4px;
+
 }
+
+
 .msg-bubble.mine{
+
   align-self:flex-end;
+
   background:var(--sage);
+
   color:var(--white);
+
   border-bottom-right-radius:4px;
+
 }
+
+
 .msg-time{
+
   font-size:0.68rem;
+
   margin-top:4px;
+
   opacity:0.7;
+
 }
+
+
+/* =========================================================
+   SECURITY WARNING
+========================================================= */
+
+.chat-security-warning{
+
+  flex:0 0 auto;
+
+  margin:10px 16px 0;
+
+  padding:12px 14px;
+
+  border:1px solid var(--warning-border);
+
+  border-radius:12px;
+
+  background:var(--warning-bg);
+
+  color:var(--warning-text);
+
+  font-size:13px;
+
+  line-height:1.5;
+
+  box-shadow:0 2px 8px rgba(95,69,0,0.04);
+
+}
+
+
+.chat-security-title{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:6px;
+
+  font-weight:700;
+
+  margin-bottom:6px;
+
+}
+
+
+.chat-security-text{
+  margin-bottom:6px;
+}
+
+
+.chat-security-note{
+
+  font-size:12px;
+
+  opacity:0.85;
+
+}
+
+
+/* =========================================================
+   COMPOSER
+========================================================= */
 
 .thread-composer{
-  flex:none;
-  display:flex; gap:10px;
-  padding:14px 20px;
-  border-top:1px solid var(--border);
-}
-.thread-composer input{
-  flex:1;
-  padding:11px 16px;
-  border-radius:24px;
-  border:1px solid var(--border);
-  font-size:0.9rem;
-  font-family:inherit;
-  outline:none;
-}
-.thread-composer input:focus{border-color:var(--sage);}
-.thread-composer button{
-  padding:0 22px;
-  border:none;
-  border-radius:24px;
-  background:var(--sage);
-  color:var(--white);
-  font-weight:700;
-  font-size:0.88rem;
-}
-.thread-composer button:hover{background:var(--sage-dark);}
-.thread-composer button:disabled{opacity:0.5; cursor:not-allowed;}
 
-/* ---------- RESPONSIVE (mobile: 1 panel at a time) ---------- */
+  flex:0 0 auto;
+
+  display:flex;
+
+  gap:10px;
+
+  padding:14px 20px;
+
+  border-top:1px solid var(--border);
+
+  background:var(--white);
+
+}
+
+
+.thread-composer input{
+
+  flex:1;
+
+  min-width:0;
+
+  padding:11px 16px;
+
+  border-radius:24px;
+
+  border:1px solid var(--border);
+
+  font-size:0.9rem;
+
+  font-family:inherit;
+
+  outline:none;
+
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+
+}
+
+
+.thread-composer input:focus{
+
+  border-color:var(--sage);
+
+  box-shadow:
+    0 0 0 3px rgba(76,175,125,0.10);
+
+}
+
+
+.thread-composer input::placeholder{
+  color:#9AA6A1;
+}
+
+
+.thread-composer button{
+
+  padding:0 22px;
+
+  border:none;
+
+  border-radius:24px;
+
+  background:var(--sage);
+
+  color:var(--white);
+
+  font-weight:700;
+
+  font-size:0.88rem;
+
+  transition:
+    background 0.15s,
+    transform 0.1s;
+
+}
+
+
+.thread-composer button:hover{
+  background:var(--sage-dark);
+}
+
+
+.thread-composer button:active{
+  transform:scale(0.97);
+}
+
+
+.thread-composer button:disabled{
+
+  opacity:0.5;
+
+  cursor:not-allowed;
+
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.chat-list::-webkit-scrollbar,
+.thread-messages::-webkit-scrollbar{
+
+  width:7px;
+
+}
+
+
+.chat-list::-webkit-scrollbar-track,
+.thread-messages::-webkit-scrollbar-track{
+
+  background:transparent;
+
+}
+
+
+.chat-list::-webkit-scrollbar-thumb,
+.thread-messages::-webkit-scrollbar-thumb{
+
+  background:#D5DDD9;
+
+  border-radius:10px;
+
+}
+
+
+.chat-list::-webkit-scrollbar-thumb:hover,
+.thread-messages::-webkit-scrollbar-thumb:hover{
+
+  background:#B9C5C0;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
 @media (max-width:760px){
-  .chat-shell{grid-template-columns:1fr;}
-  .chat-shell.has-active .chat-list{display:none;}
-  .chat-shell:not(.has-active) .chat-thread{display:none;}
-  .thread-back{display:block;}
-  .msg-bubble{max-width:80%;}
+
+  .chat-shell{
+
+    grid-template-columns:1fr;
+
+  }
+
+
+  .chat-shell.has-active .chat-list{
+
+    display:none;
+
+  }
+
+
+  .chat-shell:not(.has-active) .chat-thread{
+
+    display:none;
+
+  }
+
+
+  .thread-back{
+
+    display:block;
+
+  }
+
+
+  .msg-bubble{
+
+    max-width:80%;
+
+  }
+
+
+  .thread-messages{
+
+    padding:14px;
+
+  }
+
+
+  .thread-composer{
+
+    padding:10px 12px;
+
+  }
+
+
+  .thread-composer button{
+
+    padding:0 17px;
+
+  }
+
+
+  .chat-security-warning{
+
+    margin:8px 10px 0;
+
+    padding:10px 12px;
+
+    font-size:12px;
+
+  }
+
+
+  .chat-security-note{
+
+    font-size:11px;
+
+  }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width:480px){
+
+  .topbar-inner{
+
+    height:58px;
+
+    padding:0 14px;
+
+    gap:12px;
+
+  }
+
+
+  .logo{
+
+    font-size:1rem;
+
+  }
+
+
+  .logo .mark{
+
+    width:26px;
+    height:26px;
+
+  }
+
+
+  .back-link{
+
+    font-size:0.82rem;
+
+  }
+
+
+  .thread-header{
+
+    height:60px;
+
+    min-height:60px;
+
+    padding:11px 14px;
+
+  }
+
+
+  .thread-header-avatar{
+
+    width:36px;
+    height:36px;
+
+  }
+
+
+  .thread-header-name{
+
+    font-size:0.9rem;
+
+  }
+
+
+  .thread-header-item{
+
+    font-size:0.72rem;
+
+  }
+
+
+  .msg-bubble{
+
+    max-width:86%;
+
+    font-size:0.86rem;
+
+    padding:9px 12px;
+
+  }
+
+
+  .thread-composer input{
+
+    padding:10px 13px;
+
+    font-size:0.84rem;
+
+  }
+
+
+  .thread-composer button{
+
+    padding:0 15px;
+
+    font-size:0.82rem;
+
+  }
+
 }

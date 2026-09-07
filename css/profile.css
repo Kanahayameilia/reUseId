@@ -198,8 +198,10 @@ input{font-family:inherit;}
   transition:background .2s;
 }
 .ic-action-btn.deactivate{background:var(--red-tint); color:var(--red);}
+.ic-action-btn.delete{background:var(--red); color:var(--white);}
 .ic-action-btn:hover{background:var(--sage-tint);}
 .ic-action-btn.deactivate:hover{background:#F8D6D6;}
+.ic-action-btn.delete:hover{background:#B33A3A;}
 
 .ic-body{padding:14px;}
 .ic-title{font-size:0.94rem; font-weight:700; margin-bottom:6px;}

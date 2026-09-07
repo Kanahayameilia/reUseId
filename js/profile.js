@@ -173,6 +173,7 @@ onAuthReady(async () => {
             <div class="ic-hover-actions">
               <button class="ic-action-btn edit">Edit</button>
               <button class="ic-action-btn deactivate">${item.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}</button>
+              <button class="ic-action-btn delete">Hapus</button>
             </div>
           </div>
           <div class="ic-body">
@@ -222,6 +223,59 @@ onAuthReady(async () => {
       if(statEl) statEl.textContent = activeGrid.querySelectorAll('.ic-status').length
         ? [...activeGrid.querySelectorAll('.ic-status')].filter(s => s.textContent === 'Aktif').length
         : '0';
+    });
+  });
+
+  // hapus barang permanen — konfirmasi dulu, hapus foto di Storage, baru hapus baris di tabel
+  activeGrid.querySelectorAll('.ic-action-btn.delete').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const card = btn.closest('.item-card');
+      const itemId = card.dataset.itemId;
+      const itemName = card.querySelector('.ic-title')?.textContent || 'barang ini';
+
+      const confirmed = confirm(`Hapus "${itemName}" secara permanen? Tindakan ini tidak bisa dibatalkan.`);
+      if(!confirmed) return;
+
+      btn.disabled = true;
+      btn.textContent = 'Menghapus…';
+
+      // hapus dulu foto-fotonya dari Storage (kalau ada)
+      const itemData = myItems?.find(i => String(i.id) === String(itemId));
+      const photoPaths = (itemData?.photos || [])
+        .map(url => {
+          const marker = '/items/';
+          const idx = url.indexOf(marker);
+          return idx === -1 ? null : url.slice(idx + marker.length);
+        })
+        .filter(Boolean);
+
+      if(photoPaths.length){
+        await supabaseClient.storage.from('items').remove(photoPaths);
+      }
+
+      const { error } = await supabaseClient
+        .from('items')
+        .delete()
+        .eq('id', itemId);
+
+      if(error){
+        alert('Gagal menghapus barang: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = 'Hapus';
+        return;
+      }
+
+      card.remove();
+
+      const statEl = document.getElementById('statActive');
+      if(statEl) statEl.textContent = activeGrid.querySelectorAll('.ic-status').length
+        ? [...activeGrid.querySelectorAll('.ic-status')].filter(s => s.textContent === 'Aktif').length
+        : '0';
+
+      if(!activeGrid.querySelector('.item-card')){
+        activeGrid.innerHTML = `<p>Kamu belum punya barang yang diunggah.</p>`;
+      }
     });
   });
 

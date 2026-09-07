@@ -85,6 +85,11 @@ const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6b
   document.getElementById('itemLocation').textContent =
     `📍 ${jarak * 1000 < 1000 ? Math.round(jarak * 1000) + 'm' : jarak + 'km'} dari lokasi Anda — ${item.lokasi}`;
 
+  // tombol utama nyesuain jenis barang — jangan tawarin "barter" buat barang donasi
+  const btnPrimary = document.getElementById('btnAjukanBarter');
+  const isDonasi = item.jenis === 'Donasi';
+  btnPrimary.textContent = isDonasi ? 'Ajukan Donasi' : 'Ajukan Barter';
+
   // ---------- gallery ----------
   const mainPhoto = document.getElementById('mainPhoto');
   const thumbRow = document.getElementById('thumbRow');
@@ -156,7 +161,7 @@ const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6b
   }
 
   document.getElementById('btnAjukanBarter').addEventListener('click', () => {
-    requireLogin(() => alert('Fitur ajukan barter akan segera hadir.'));
+    requireLogin(() => alert(isDonasi ? 'Fitur ajukan donasi akan segera hadir.' : 'Fitur ajukan barter akan segera hadir.'));
   });
   document.getElementById('btnHubungiPemilik').addEventListener('click', () => {
     requireLogin(() => alert('Fitur chat pemilik akan segera hadir.'));

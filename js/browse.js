@@ -5,15 +5,22 @@ const uploadBtn = document.getElementById('uploadBtn');
 const loginBtn = document.getElementById('loginBtn');
 const avatarBtn = document.getElementById('avatarBtn');
 
-if(isLoggedIn()){
-  if(uploadBtn) uploadBtn.hidden = false;
-  if(loginBtn) loginBtn.hidden = true;
-  if(avatarBtn) avatarBtn.hidden = false;
-} else {
-  if(uploadBtn) uploadBtn.hidden = true;
-  if(loginBtn) loginBtn.hidden = false;
-  if(avatarBtn) avatarBtn.hidden = true;
-}
+onAuthReady(() => {
+  if(isLoggedIn()){
+    if(uploadBtn) uploadBtn.hidden = false;
+    if(loginBtn) loginBtn.hidden = true;
+    if(avatarBtn) avatarBtn.hidden = false;
+
+    // isi foto avatar sesuai profil user yang lagi login (bukan avatar random bawaan HTML)
+    const user = getCurrentUser();
+    const userAvatar = user?.user_metadata?.avatar_url;
+    if (avatarBtn && userAvatar) avatarBtn.querySelector('img').src = userAvatar;
+  } else {
+    if(uploadBtn) uploadBtn.hidden = true;
+    if(loginBtn) loginBtn.hidden = false;
+    if(avatarBtn) avatarBtn.hidden = true;
+  }
+});
 
 // ---------- gabungkan data barang dummy dengan barang asli dari Supabase ----------
 let ALL_ITEMS = ITEMS;

@@ -1,4 +1,4 @@
-// ITEMS ada di items-data.js, isLoggedIn() ada di auth.js (keduanya dimuat sebelum file ini).
+// isLoggedIn() ada di auth.js, ITEMS (kosong) ada di item_data.js, keduanya dimuat sebelum file ini.
 
 // ---------- tampilkan UI sesuai status login ----------
 const uploadBtn = document.getElementById('uploadBtn');
@@ -114,9 +114,9 @@ resetBtn.addEventListener('click', ()=>{
   applyFilters();
 });
 
-// initial render (data dummy dulu biar instan), lalu gabung barang asli setelah kefetch
+// initial render (langsung applyFilters, ALL_ITEMS masih kosong sampai fetch selesai)
 applyFilters();
 loadSupabaseItems().then(dbItems => {
-  ALL_ITEMS = [...dbItems, ...ITEMS];
+  ALL_ITEMS = dbItems;
   applyFilters();
 });

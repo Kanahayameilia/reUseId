@@ -1,41 +1,61 @@
-// ITEMS ada di item_data.js, supabaseClient ada di supabase-client.js, isLoggedIn() ada di auth.js
-// (semua dimuat sebelum file ini).
+// supabaseClient ada di supabase-client.js, isLoggedIn() ada di auth.js (dimuat sebelum file ini).
+// item_data.js masih dimuat buat kompatibilitas lama, tapi ITEMS sudah dikosongkan —
+// halaman ini sekarang murni ambil data dari tabel "items" di Supabase.
+
+const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&h=900&fit=crop';
 
 (async function () {
 
-  // ---------- ambil barang berdasarkan ?id= di URL ----------
-  // ID barang dummy berupa angka (1, 2, 3, ...), ID barang asli dari Supabase berupa uuid (teks).
-  // Makanya dicocokkan sebagai string biar dua-duanya kebaca benar.
   const params = new URLSearchParams(window.location.search);
   const requestedId = params.get('id');
 
-  let item = ITEMS.find(i => String(i.id) === requestedId);
+  const mainEl = document.querySelector('main.wrap');
 
-  if (!item) {
-    try {
-      const { data, error } = await supabaseClient
-        .from('items')
-        .select('*')
-        .eq('id', requestedId)
-        .single();
-
-      if (!error && data) {
-        item = {
-          ...data,
-          photos: data.photos?.length ? data.photos : [data.photo || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&h=900&fit=crop'],
-          tags: data.tags || [],
-          owner: data.owner || 'Pengguna Re:Use.ID',
-          avatar: data.avatar || 'https://i.pravatar.cc/80?img=47',
-          rating: data.rating || 5,
-          memberSince: data.member_since || new Date(data.created_at).getFullYear().toString(),
-        };
-      }
-    } catch (err) {
-      console.error('Gagal memuat barang dari Supabase:', err);
+  function showNotFound(message) {
+    if (mainEl) {
+      mainEl.innerHTML = `
+        <div style="max-width:480px; margin:80px auto; text-align:center; font-family:'DM Sans',sans-serif;">
+          <h2 style="margin-bottom:10px;">${message}</h2>
+          <a href="browse.html" style="color:var(--sage, #4E8C6B); font-weight:700;">← Kembali ke Jelajahi Barang</a>
+        </div>
+      `;
     }
   }
 
-  if (!item) item = ITEMS[0]; // fallback terakhir: barang pertama
+  if (!requestedId) {
+    showNotFound('Barang tidak ditemukan.');
+    return;
+  }
+
+  // ---------- ambil barang dari Supabase ----------
+  let item = null;
+  try {
+    const { data, error } = await supabaseClient
+      .from('items')
+      .select('*')
+      .eq('id', requestedId)
+      .single();
+
+    if (!error && data) {
+      item = {
+        ...data,
+        photos: data.photos?.length ? data.photos : [data.photo || FALLBACK_PHOTO],
+        tags: data.tags || [],
+        owner: data.owner || 'Pengguna Re:Use.ID',
+        avatar: data.avatar || 'https://i.pravatar.cc/80?img=47',
+        rating: data.rating || 5,
+        memberSince: data.member_since || (data.created_at ? new Date(data.created_at).getFullYear().toString() : '-'),
+        jarak: data.jarak || 0,
+      };
+    }
+  } catch (err) {
+    console.error('Gagal memuat barang dari Supabase:', err);
+  }
+
+  if (!item) {
+    showNotFound('Barang tidak ditemukan atau sudah dihapus.');
+    return;
+  }
 
   // ---------- render info utama ----------
   document.title = `${item.name} | Re:Use.ID`;
@@ -86,35 +106,44 @@
     });
   });
 
-  // ---------- barang serupa: kategori sama, exclude barang ini sendiri (dari data dummy) ----------
-  const similarItems = ITEMS
-    .filter(i => String(i.id) !== String(item.id) && i.kategori === item.kategori)
-    .slice(0, 4);
-
-  // kalau kurang dari 4, tambahin barang lain (selain item ini) sampai 4
-  if (similarItems.length < 4) {
-    const fillers = ITEMS.filter(i => String(i.id) !== String(item.id) && !similarItems.includes(i));
-    similarItems.push(...fillers.slice(0, 4 - similarItems.length));
-  }
-
+  // ---------- barang serupa: kategori sama, dari Supabase, kecualikan barang ini sendiri ----------
   const similarScroll = document.getElementById('similarScroll');
 
-  similarScroll.innerHTML = similarItems.map(sim => {
-    const badgeClass = sim.jenis === 'Barter' ? 'barter' : 'donasi';
-    return `
-      <article class="sim-card">
-        <a href="detail.html?id=${sim.id}" class="sim-photo">
-          <span class="sim-badge ${badgeClass}">${sim.jenis.toUpperCase()}</span>
-          <img src="${sim.photo}" alt="${sim.name}" loading="lazy">
-        </a>
-        <div class="sim-body">
-          <div class="sim-title">${sim.name}</div>
-          <div class="sim-distance">📍 ${sim.jarak} km — ${sim.lokasi}</div>
-          <a href="detail.html?id=${sim.id}" class="sim-btn">Lihat Detail</a>
-        </div>
-      </article>
-    `;
-  }).join('');
+  try {
+    const { data: similarData, error: similarError } = await supabaseClient
+      .from('items')
+      .select('*')
+      .eq('kategori', item.kategori)
+      .eq('status', 'Aktif')
+      .neq('id', item.id)
+      .order('created_at', { ascending: false })
+      .limit(4);
+
+    if (similarError || !similarData || similarData.length === 0) {
+      similarScroll.innerHTML = `<p style="color:var(--ink-soft,#7A8B85);">Belum ada barang serupa lainnya.</p>`;
+    } else {
+      similarScroll.innerHTML = similarData.map(sim => {
+        const badgeClass = sim.jenis === 'Barter' ? 'barter' : 'donasi';
+        const cover = sim.photo || sim.photos?.[0] || FALLBACK_PHOTO;
+        return `
+          <article class="sim-card">
+            <a href="detail.html?id=${sim.id}" class="sim-photo">
+              <span class="sim-badge ${badgeClass}">${sim.jenis.toUpperCase()}</span>
+              <img src="${cover}" alt="${sim.name}" loading="lazy">
+            </a>
+            <div class="sim-body">
+              <div class="sim-title">${sim.name}</div>
+              <div class="sim-distance">📍 ${sim.jarak || 0} km — ${sim.lokasi || '-'}</div>
+              <a href="detail.html?id=${sim.id}" class="sim-btn">Lihat Detail</a>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+  } catch (err) {
+    console.error('Gagal memuat barang serupa:', err);
+    similarScroll.innerHTML = `<p style="color:var(--ink-soft,#7A8B85);">Belum ada barang serupa lainnya.</p>`;
+  }
 
   // ---------- CTA butuh login ----------
   // isLoggedIn() ada di auth.js (dimuat sebelum file ini).

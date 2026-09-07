@@ -15,6 +15,8 @@ create table if not exists public.items (
   kondisi text not null check (kondisi in ('Layak','Baik','Sangat Baik')),
   lokasi text,
   jarak numeric default 0,
+  latitude numeric,
+  longitude numeric,
   description text,
   tags text[] default '{}',
   photos text[] default '{}',
@@ -39,6 +41,8 @@ alter table public.items add column if not exists jenis text;
 alter table public.items add column if not exists kondisi text;
 alter table public.items add column if not exists lokasi text;
 alter table public.items add column if not exists jarak numeric default 0;
+alter table public.items add column if not exists latitude numeric;
+alter table public.items add column if not exists longitude numeric;
 alter table public.items add column if not exists description text;
 alter table public.items add column if not exists tags text[] default '{}';
 alter table public.items add column if not exists photos text[] default '{}';

@@ -7,6 +7,7 @@ const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 let existingPhotoUrls = []; // foto lama yang masih dipertahankan
 let newFiles = [];          // foto baru yang mau ditambahkan
 let itemId = null;
+let itemCoords = null;      // { lat, lng } koordinat barang — null berarti belum/nggak diset
 
 onAuthReady(async () => {
  try {
@@ -95,8 +96,40 @@ onAuthReady(async () => {
     existingPhotoUrls = [...(item.photos || [])];
     renderExistingPhotos();
 
+    // koordinat lama barang (kalau ada) dipertahankan, kecuali user ambil ulang lewat tombol
+    if (item.latitude != null && item.longitude != null) {
+      itemCoords = { lat: item.latitude, lng: item.longitude };
+    }
+
     pageSub.textContent = 'Ubah detail barangmu. Perubahan langsung tersimpan ke Re:Use.ID.';
     form.hidden = false;
+
+    // ---------- geolokasi barang: ambil ulang koordinat via tombol "Lokasi Saya" ----------
+    const btnUseMyLocation = document.getElementById('btnUseMyLocation');
+    const geoStatus = document.getElementById('geoStatus');
+    const itemLokasiInput = document.getElementById('itemLokasi');
+
+    btnUseMyLocation?.addEventListener('click', async () => {
+      btnUseMyLocation.disabled = true;
+      btnUseMyLocation.textContent = 'Mencari lokasi…';
+      geoStatus.textContent = '';
+
+      clearUserLocationCache();
+      const loc = await getUserLocation();
+
+      if (!loc) {
+        geoStatus.textContent = 'Gagal ambil lokasi. Pastikan izin lokasi browser diaktifkan, atau isi lokasi manual.';
+        geoStatus.style.color = '#C0392B';
+      } else {
+        itemCoords = { lat: loc.lat, lng: loc.lng };
+        if (loc.label) itemLokasiInput.value = loc.label;
+        geoStatus.textContent = '✓ Lokasi berhasil diperbarui.';
+        geoStatus.style.color = 'var(--sage, #4E8C6B)';
+      }
+
+      btnUseMyLocation.disabled = false;
+      btnUseMyLocation.textContent = '📍 Lokasi Saya';
+    });
   } catch (err) {
     pageSub.textContent = 'Gagal menampilkan form edit: ' + (err.message || err);
     return;
@@ -237,6 +270,8 @@ onAuthReady(async () => {
           jenis: document.querySelector('.f-jenis:checked').value,
           kondisi: document.getElementById('itemKondisi').value,
           lokasi: document.getElementById('itemLokasi').value.trim(),
+          latitude: itemCoords?.lat ?? null,
+          longitude: itemCoords?.lng ?? null,
           description: document.getElementById('itemDeskripsi').value.trim(),
           tags,
           photos: finalPhotos,

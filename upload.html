@@ -84,8 +84,12 @@
 
       <div class="field">
         <label for="itemLokasi">Lokasi</label>
-        <input type="text" id="itemLokasi" name="itemLokasi" placeholder="Contoh: Kos Tidar Utara, Magelang" required>
+        <div class="lokasi-row" style="display:flex; gap:8px;">
+          <input type="text" id="itemLokasi" name="itemLokasi" placeholder="Contoh: Kos Tidar Utara, Magelang" required style="flex:1;">
+          <button type="button" id="btnUseMyLocation" class="btn-outline" style="white-space:nowrap;">📍 Lokasi Saya</button>
+        </div>
         <span class="field-error" id="err-itemLokasi"></span>
+        <span class="field-hint" id="geoStatus" style="font-size:12.5px; color:var(--ink-soft,#7A8B85);"></span>
       </div>
 
       <div class="field">
@@ -120,6 +124,7 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="js/supabase-client.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/geo.js"></script>
 <script src="js/upload.js"></script>
 </body>
 </html>

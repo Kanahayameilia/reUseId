@@ -57,6 +57,9 @@ const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6b
     return;
   }
 
+  // ---------- geolokasi user: dipakai buat hitung jarak asli ke barang ini & barang serupa ----------
+  const userLoc = await getUserLocation();
+
   // ---------- render info utama ----------
   document.title = `${item.name} | Re:Use.ID`;
 
@@ -81,7 +84,7 @@ const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6b
   document.getElementById('ownerRating').innerHTML =
     `⭐ ${item.rating}/5 &nbsp;·&nbsp; Member sejak ${item.memberSince}`;
 
-  const jarak = item.jarak || 0;
+  const jarak = computeItemDistance(item, userLoc);
   document.getElementById('itemLocation').textContent =
     `📍 ${jarak * 1000 < 1000 ? Math.round(jarak * 1000) + 'm' : jarak + 'km'} dari lokasi Anda — ${item.lokasi}`;
 
@@ -140,6 +143,7 @@ const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6b
       similarScroll.innerHTML = similarData.map(sim => {
         const badgeClass = sim.jenis === 'Barter' ? 'barter' : 'donasi';
         const cover = sim.photo || sim.photos?.[0] || FALLBACK_PHOTO;
+        const simJarak = computeItemDistance(sim, userLoc);
         return `
           <article class="sim-card">
             <a href="detail.html?id=${sim.id}" class="sim-photo">
@@ -148,7 +152,7 @@ const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6b
             </a>
             <div class="sim-body">
               <div class="sim-title">${sim.name}</div>
-              <div class="sim-distance">📍 ${sim.jarak || 0} km — ${sim.lokasi || '-'}</div>
+              <div class="sim-distance">📍 ${simJarak} km — ${sim.lokasi || '-'}</div>
               <a href="detail.html?id=${sim.id}" class="sim-btn">Lihat Detail</a>
             </div>
           </article>

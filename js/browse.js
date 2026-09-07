@@ -22,6 +22,19 @@ onAuthReady(() => {
   }
 });
 
+// ---------- geolokasi user: ambil lokasi asli, dipakai buat hitung jarak & label chip ----------
+let userLoc = null; // { lat, lng, label } — null berarti izin lokasi ditolak/gagal, jarak fallback ke data statis
+
+const locationChipLabel = document.querySelector('.location-chip span');
+
+getUserLocation().then(loc => {
+  userLoc = loc;
+  if (locationChipLabel) {
+    locationChipLabel.textContent = loc?.label || 'Lokasi tidak diketahui';
+  }
+  applyFilters(); // render ulang pakai jarak asli begitu lokasi didapat
+});
+
 // ---------- gabungkan data barang dummy dengan barang asli dari Supabase ----------
 let ALL_ITEMS = ITEMS;
 
@@ -55,6 +68,8 @@ const resetBtn = document.getElementById('resetBtn');
 
 function renderCard(item){
   const badgeClass = item.jenis === 'Barter' ? 'barter' : 'donasi';
+  const jarak = computeItemDistance(item, userLoc);
+  const jarakLabel = jarak * 1000 < 1000 ? `${Math.round(jarak * 1000)} m` : `${jarak} km`;
   return `
     <article class="card">
       <a href="detail.html?id=${item.id}" class="card-photo">
@@ -64,7 +79,7 @@ function renderCard(item){
       <div class="card-body">
         <h3 class="card-title">${item.name}</h3>
         <span class="condition-tag">Kondisi: ${item.kondisi}</span>
-        <span class="card-distance">📍 ${item.jarak} km — ${item.lokasi}</span>
+        <span class="card-distance">📍 ${jarakLabel} — ${item.lokasi}</span>
         <div class="card-owner">
           <img src="${item.avatar}" alt="${item.owner}">
           <span>${item.owner}</span>
@@ -91,10 +106,13 @@ function applyFilters(){
     if(!kategori.includes(item.kategori)) return false;
     if(jenis !== 'Semua' && item.jenis !== jenis) return false;
     if(!kondisi.includes(item.kondisi)) return false;
-    if(item.jarak > jarakMax) return false;
+    if(computeItemDistance(item, userLoc) > jarakMax) return false;
     if(query && !item.name.toLowerCase().includes(query)) return false;
     return true;
   });
+
+  // barang terdekat (jarak asli) ditampilkan duluan
+  filtered.sort((a, b) => computeItemDistance(a, userLoc) - computeItemDistance(b, userLoc));
 
   grid.innerHTML = filtered.map(renderCard).join('');
   resultCount.textContent = `${filtered.length} barang ditemukan`;

@@ -279,60 +279,18 @@ onAuthReady(async () => {
     });
   });
 
-  // ---------- RIWAYAT TRANSAKSI (data contoh) ----------
-  const history = [
-    { itemName:"Kemeja Flanel Kotak", photo:"https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=200&h=200&fit=crop", jenis:"Barter", partner:"Bagas T.", date:"12 Agu 2026", status:"Selesai" },
-    { itemName:"Novel Fiksi Bekas (5 buku)", photo:"https://images.unsplash.com/photo-1512820790803-83ca734da794?w=200&h=200&fit=crop", jenis:"Donasi", partner:"Intan R.", date:"3 Agu 2026", status:"Selesai" },
-    { itemName:"Lampu Meja LED", photo:"https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=200&h=200&fit=crop", jenis:"Barter", partner:"Sari W.", date:"28 Jul 2026", status:"Dibatalkan" },
-    { itemName:"Tas Ransel Kampus", photo:"https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop", jenis:"Donasi", partner:"Reza M.", date:"15 Jul 2026", status:"Selesai" },
-    { itemName:"Rak Buku Kayu Kecil", photo:"https://images.unsplash.com/photo-1594620302200-9a762244a156?w=200&h=200&fit=crop", jenis:"Barter", partner:"Citra D.", date:"2 Jul 2026", status:"Selesai" },
-  ];
-
+  // ---------- RIWAYAT TRANSAKSI ----------
+  // Fitur transaksi (ajukan barter/donasi sampai selesai) belum dibikin, jadi
+  // belum ada data transaksi asli buat ditampilin — daripada nampilin data contoh
+  // yang menyesatkan, tampilkan pesan kosong aja.
   const historyTimeline = document.getElementById('historyTimeline');
+  historyTimeline.innerHTML = `<p>Belum ada riwayat transaksi.</p>`;
 
-  historyTimeline.innerHTML = history.map(h => {
-    const badgeClass = h.jenis === 'Barter' ? 'barter' : 'donasi';
-    const statusClass = h.status === 'Selesai' ? 'selesai' : 'dibatalkan';
-    return `
-      <article class="timeline-item">
-        <img class="ti-thumb" src="${h.photo}" alt="${h.itemName}">
-        <div class="ti-main">
-          <div class="ti-top">
-            <span class="ti-badge ${badgeClass}">${h.jenis.toUpperCase()}</span>
-            <span class="ti-item-name">${h.itemName}</span>
-          </div>
-          <div class="ti-sub">dengan ${h.partner}</div>
-        </div>
-        <div class="ti-right">
-          <div class="ti-date">${h.date}</div>
-          <span class="ti-status ${statusClass}">${h.status}</span>
-        </div>
-      </article>
-    `;
-  }).join('');
-
-  // ---------- ULASAN (data contoh) ----------
-  const reviews = [
-    { name:"Dimas P.", avatar:"https://i.pravatar.cc/60?img=12", stars:5, date:"5 Agu 2026", text:"Barangnya sesuai deskripsi, komunikasinya juga cepat dan ramah. Recommended!" },
-    { name:"Bagas T.", avatar:"https://i.pravatar.cc/60?img=15", stars:5, date:"14 Jul 2026", text:"Proses barter lancar, ketemuan tepat waktu. Terima kasih ya!" },
-    { name:"Intan R.", avatar:"https://i.pravatar.cc/60?img=25", stars:4, date:"20 Jun 2026", text:"Bukunya bagus, cuma agak lama balesnya. Overall oke kok." },
-  ];
-
+  // ---------- ULASAN ----------
+  // Sama kayak riwayat transaksi — fitur ulasan antar pengguna belum dibikin,
+  // jadi belum ada data ulasan asli.
   const reviewList = document.getElementById('reviewList');
-
-  reviewList.innerHTML = reviews.map(r => `
-    <article class="review-card">
-      <div class="review-top">
-        <img class="review-avatar" src="${r.avatar}" alt="${r.name}">
-        <div>
-          <div class="review-name">${r.name}</div>
-          <div class="review-stars">${'⭐'.repeat(r.stars)}</div>
-        </div>
-        <span class="review-date">${r.date}</span>
-      </div>
-      <p class="review-text">${r.text}</p>
-    </article>
-  `).join('');
+  reviewList.innerHTML = `<p>Belum ada ulasan.</p>`;
 
   // ---------- PENGATURAN: simpan nama & lokasi beneran ke Supabase ----------
   document.querySelector('.btn-save-settings')?.addEventListener('click', async ()=>{

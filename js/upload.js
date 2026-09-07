@@ -27,34 +27,6 @@ onAuthReady(() => {
   const userAvatar = user?.user_metadata?.avatar_url;
   if (avatarBtn && userAvatar) avatarBtn.querySelector('img').src = userAvatar;
 
-  // ---------- geolokasi barang: ambil koordinat asli lewat tombol "Lokasi Saya" ----------
-  let itemCoords = null; // { lat, lng } — null berarti barang disimpan tanpa koordinat (jarak fallback ke 0)
-  const btnUseMyLocation = document.getElementById('btnUseMyLocation');
-  const geoStatus = document.getElementById('geoStatus');
-  const itemLokasiInput = document.getElementById('itemLokasi');
-
-  btnUseMyLocation?.addEventListener('click', async () => {
-    btnUseMyLocation.disabled = true;
-    btnUseMyLocation.textContent = 'Mencari lokasi…';
-    geoStatus.textContent = '';
-
-    clearUserLocationCache(); // barang ini butuh lokasi barang saat ini, bukan cache lama
-    const loc = await getUserLocation();
-
-    if (!loc) {
-      geoStatus.textContent = 'Gagal ambil lokasi. Pastikan izin lokasi browser diaktifkan, atau isi lokasi manual.';
-      geoStatus.style.color = '#C0392B';
-    } else {
-      itemCoords = { lat: loc.lat, lng: loc.lng };
-      if (loc.label) itemLokasiInput.value = loc.label;
-      geoStatus.textContent = '✓ Lokasi berhasil diambil.';
-      geoStatus.style.color = 'var(--sage, #4E8C6B)';
-    }
-
-    btnUseMyLocation.disabled = false;
-    btnUseMyLocation.textContent = '📍 Lokasi Saya';
-  });
-
   // ---------- pilih foto (klik dropzone atau drag & drop) ----------
   dropzone.addEventListener('click', () => photoInput.click());
 
@@ -205,8 +177,6 @@ onAuthReady(() => {
         kondisi: document.getElementById('itemKondisi').value,
         lokasi: document.getElementById('itemLokasi').value.trim(),
         jarak: 0,
-        latitude: itemCoords?.lat ?? null,
-        longitude: itemCoords?.lng ?? null,
         description: document.getElementById('itemDeskripsi').value.trim(),
         tags,
         photos: photoUrls,

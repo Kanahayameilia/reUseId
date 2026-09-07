@@ -33,39 +33,7 @@ onAuthReady(async () => {
   const userAvatar = currentUser?.user_metadata?.avatar_url;
   if (avatarBtn && userAvatar) avatarBtn.querySelector('img').src = userAvatar;
 
-  // ---------- ambil data barang, pastikan miliknya sendiri ----------
-  const { data: item, error } = await supabaseClient
-    .from('items')
-    .select('*')
-    .eq('id', itemId)
-    .single();
-
-  if (error || !item) {
-    pageSub.textContent = 'Barang tidak ditemukan atau sudah dihapus.';
-    return;
-  }
-
-  if (item.user_id !== currentUser.id) {
-    pageSub.textContent = 'Kamu tidak punya akses buat mengedit barang ini.';
-    return;
-  }
-
-  // ---------- isi form dengan data lama ----------
-  document.getElementById('itemName').value = item.name || '';
-  document.getElementById('itemKategori').value = item.kategori || '';
-  document.getElementById('itemKondisi').value = item.kondisi || '';
-  document.getElementById('itemLokasi').value = item.lokasi || '';
-  document.getElementById('itemDeskripsi').value = item.description || '';
-  document.getElementById('itemTags').value = (item.tags || []).join(', ');
-  document.querySelector(`.f-jenis[value="${item.jenis}"]`).checked = true;
-
-  existingPhotoUrls = [...(item.photos || [])];
-  renderExistingPhotos();
-
-  pageSub.textContent = 'Ubah detail barangmu. Perubahan langsung tersimpan ke Re:Use.ID.';
-  form.hidden = false;
-
-  // ---------- render foto lama (bisa dihapus) ----------
+  // ---------- render foto lama (bisa dihapus) — didefinisikan duluan karena dipakai sebelum data barang selesai diambil ----------
   const existingPhotosEl = document.getElementById('existingPhotos');
 
   function renderExistingPhotos() {
@@ -86,6 +54,52 @@ onAuthReady(async () => {
         renderExistingPhotos();
       });
     });
+  }
+
+  // ---------- ambil data barang, pastikan miliknya sendiri ----------
+  let item;
+  try {
+    const res = await supabaseClient
+      .from('items')
+      .select('*')
+      .eq('id', itemId)
+      .single();
+
+    if (res.error || !res.data) {
+      pageSub.textContent = 'Barang tidak ditemukan atau sudah dihapus.';
+      return;
+    }
+    item = res.data;
+  } catch (err) {
+    pageSub.textContent = 'Gagal memuat barang: ' + (err.message || err);
+    return;
+  }
+
+  if (item.user_id !== currentUser.id) {
+    pageSub.textContent = 'Kamu tidak punya akses buat mengedit barang ini.';
+    return;
+  }
+
+  try {
+    // ---------- isi form dengan data lama ----------
+    document.getElementById('itemName').value = item.name || '';
+    document.getElementById('itemKategori').value = item.kategori || '';
+    document.getElementById('itemKondisi').value = item.kondisi || '';
+    document.getElementById('itemLokasi').value = item.lokasi || '';
+    document.getElementById('itemDeskripsi').value = item.description || '';
+    document.getElementById('itemTags').value = (item.tags || []).join(', ');
+
+    const jenisRadio = document.querySelector(`.f-jenis[value="${item.jenis}"]`);
+    if (jenisRadio) jenisRadio.checked = true;
+
+    existingPhotoUrls = [...(item.photos || [])];
+    renderExistingPhotos();
+
+    pageSub.textContent = 'Ubah detail barangmu. Perubahan langsung tersimpan ke Re:Use.ID.';
+    form.hidden = false;
+  } catch (err) {
+    pageSub.textContent = 'Gagal menampilkan form edit: ' + (err.message || err);
+    return;
   }
 
   // ---------- pilih foto baru (klik dropzone atau drag & drop) ----------

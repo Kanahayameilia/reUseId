@@ -28,12 +28,17 @@
     document.getElementById('why')?.scrollIntoView({behavior:'smooth'});
   });
 
-  // Ubah nav "Mulai Sekarang" jadi "Profil Saya" kalau user sudah login.
+  // Ubah semua tombol "Mulai Sekarang" / "Gabung Sekarang" (navbar, hero, CTA band)
+  // jadi "Profil Saya" kalau user sudah login — biar konsisten, nggak cuma navbar.
   // isLoggedIn() datang dari auth.js (dimuat sebelum file ini).
   if(typeof isLoggedIn === 'function' && isLoggedIn()){
-    const navAuthCta = document.getElementById('navAuthCta');
-    if(navAuthCta){
-      navAuthCta.textContent = 'Profil Saya';
-      navAuthCta.href = 'profile.html';
-    }
+    const authCtas = [
+      document.getElementById('navAuthCta'),
+      ...document.querySelectorAll('.hero-auth-cta')
+    ].filter(Boolean);
+
+    authCtas.forEach(cta => {
+      cta.textContent = 'Profil Saya';
+      cta.href = 'profile.html';
+    });
   }

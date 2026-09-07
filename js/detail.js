@@ -174,13 +174,77 @@ const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6b
     }
   }
 
+  // ---------- buka (atau bikin baru) percakapan chat soal barang ini ----------
+  // autoMessage diisi kalau tombolnya "Ajukan Barter/Donasi" (kirim pesan pembuka otomatis);
+  // null kalau cuma "Hubungi Pemilik" (buka chat kosong, user yang mulai ngetik).
+  async function openConversation(autoMessage) {
+    const currentUser = getCurrentUser();
+
+    if (item.user_id === currentUser.id) {
+      alert('Ini barang kamu sendiri, nggak bisa chat sama diri sendiri 🙂');
+      return;
+    }
+
+    try {
+      let conversationId;
+
+      const { data: existing, error: findError } = await supabaseClient
+        .from('conversations')
+        .select('id')
+        .eq('item_id', item.id)
+        .eq('buyer_id', currentUser.id)
+        .maybeSingle();
+
+      if (findError) throw new Error(findError.message);
+
+      if (existing) {
+        conversationId = existing.id;
+      } else {
+        const { data: created, error: createError } = await supabaseClient
+          .from('conversations')
+          .insert({
+            item_id: item.id,
+            item_name: item.name,
+            item_photo: item.photos?.[0] || null,
+            buyer_id: currentUser.id,
+            buyer_name: currentUser.user_metadata?.full_name || getUserName(),
+            buyer_avatar: currentUser.user_metadata?.avatar_url || 'https://i.pravatar.cc/80?img=47',
+            seller_id: item.user_id,
+            seller_name: item.owner,
+            seller_avatar: item.avatar,
+          })
+          .select('id')
+          .single();
+
+        if (createError) throw new Error(createError.message);
+        conversationId = created.id;
+      }
+
+      if (autoMessage) {
+        const { error: msgError } = await supabaseClient
+          .from('messages')
+          .insert({ conversation_id: conversationId, sender_id: currentUser.id, content: autoMessage });
+        if (msgError) throw new Error(msgError.message);
+
+        await supabaseClient
+          .from('conversations')
+          .update({ last_message: autoMessage, last_message_at: new Date().toISOString() })
+          .eq('id', conversationId);
+      }
+
+      window.location.href = `chat.html?id=${conversationId}`;
+    } catch (err) {
+      alert('Gagal membuka chat: ' + (err.message || err));
+    }
+  }
+
   if (!isDonasi) {
     btnPrimary.addEventListener('click', () => {
-      requireLogin(() => alert('Fitur ajukan barter akan segera hadir.'));
+      requireLogin(() => openConversation(`Halo! Saya tertarik untuk barter barang "${item.name}" ini.`));
     });
   }
   btnHubungi.addEventListener('click', () => {
-    requireLogin(() => alert('Fitur chat pemilik akan segera hadir.'));
+    requireLogin(() => openConversation(null));
   });
 
 })();

@@ -2,12 +2,14 @@
 
 // ---------- tampilkan UI sesuai status login ----------
 const uploadBtn = document.getElementById('uploadBtn');
+const chatBtn = document.getElementById('chatBtn');
 const loginBtn = document.getElementById('loginBtn');
 const avatarBtn = document.getElementById('avatarBtn');
 
 onAuthReady(() => {
   if(isLoggedIn()){
     if(uploadBtn) uploadBtn.hidden = false;
+    if(chatBtn) chatBtn.hidden = false;
     if(loginBtn) loginBtn.hidden = true;
     if(avatarBtn) avatarBtn.hidden = false;
 
@@ -17,6 +19,7 @@ onAuthReady(() => {
     if (avatarBtn && userAvatar) avatarBtn.querySelector('img').src = userAvatar;
   } else {
     if(uploadBtn) uploadBtn.hidden = true;
+    if(chatBtn) chatBtn.hidden = true;
     if(loginBtn) loginBtn.hidden = false;
     if(avatarBtn) avatarBtn.hidden = true;
   }

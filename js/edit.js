@@ -9,7 +9,7 @@ let newFiles = [];          // foto baru yang mau ditambahkan
 let itemId = null;
 
 onAuthReady(async () => {
-
+ try {
   // Halaman ini butuh login — kalau belum, tendang ke login dulu.
   if (!isLoggedIn()) {
     window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
@@ -261,4 +261,11 @@ onAuthReady(async () => {
     }
   });
 
+ } catch (fatalErr) {
+  // pengaman terakhir: kalau ada error apapun yang lolos dari try/catch di atas,
+  // ini memastikan pesannya tetap kelihatan di layar, nggak diam-diam gagal.
+  console.error('edit.js error:', fatalErr);
+  const pageSub = document.getElementById('pageSub');
+  if (pageSub) pageSub.textContent = 'Terjadi kesalahan tak terduga: ' + (fatalErr.message || fatalErr);
+ }
 });

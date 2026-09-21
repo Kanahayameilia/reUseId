@@ -307,6 +307,9 @@ async function loadConversations() {
     return;
   }
 
+    const unread = window.ReuseNotif
+    ? await ReuseNotif.getUnreadByConv(data.map(c => c.id))
+    : {};
 
   chatListBody.innerHTML = data.map(conv => {
 
@@ -333,9 +336,12 @@ async function loadConversations() {
       conv.last_message ||
       'Belum ada pesan';
 
+      const unreadCount =
+        conv.id === activeConversationId ? 0 : (unread[conv.id] || 0);
+
     return `
       <div
-        class="conv-item ${active}"
+        class="conv-item ${active} ${unreadCount ? 'unread' : ''}"
         data-id="${escapeHtml(conv.id)}"
       >
 
@@ -363,6 +369,7 @@ async function loadConversations() {
 
         <div class="conv-time">
           ${formatTime(conv.last_message_at)}
+          ${unreadCount ? `<span class="conv-unread">${unreadCount > 9 ? '9+' : unreadCount}</span>` : ''}
         </div>
 
       </div>
@@ -471,6 +478,8 @@ async function openConversation(id) {
 
 
   await loadMessages(id);
+
+  window.ReuseNotif?.markSeen(id);
 
   subscribeRealtime(id);
 
@@ -910,6 +919,10 @@ composerInput.addEventListener(
 // =========================================================
 // INIT
 // =========================================================
+
+document.addEventListener('reuse-unread-changed', () => {
+  if (currentUser) loadConversations();
+});
 
 onAuthReady(async () => {
 

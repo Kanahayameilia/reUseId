@@ -1,19 +1,39 @@
-// isLoggedIn() ada di auth.js, ITEMS (kosong) ada di item_data.js, keduanya dimuat sebelum file ini.
+// isLoggedIn()/onAuthReady()/getCurrentUser() ada di auth.js, ITEMS (kosong) ada di item_data.js,
+// getUserLocation()/computeItemDistance() ada di geo.js — semuanya dimuat sebelum file ini.
 
 // ---------- tampilkan UI sesuai status login ----------
 const uploadBtn = document.getElementById('uploadBtn');
 const loginBtn = document.getElementById('loginBtn');
 const avatarBtn = document.getElementById('avatarBtn');
 
-if(isLoggedIn()){
-  if(uploadBtn) uploadBtn.hidden = false;
-  if(loginBtn) loginBtn.hidden = true;
-  if(avatarBtn) avatarBtn.hidden = false;
-} else {
-  if(uploadBtn) uploadBtn.hidden = true;
-  if(loginBtn) loginBtn.hidden = false;
-  if(avatarBtn) avatarBtn.hidden = true;
-}
+onAuthReady(() => {
+  if(isLoggedIn()){
+    if(uploadBtn) uploadBtn.hidden = false;
+    if(loginBtn) loginBtn.hidden = true;
+    if(avatarBtn) avatarBtn.hidden = false;
+
+    const user = getCurrentUser();
+    const userAvatar = user?.user_metadata?.avatar_url;
+    if (avatarBtn && userAvatar) avatarBtn.querySelector('img').src = userAvatar;
+  } else {
+    if(uploadBtn) uploadBtn.hidden = true;
+    if(loginBtn) loginBtn.hidden = false;
+    if(avatarBtn) avatarBtn.hidden = true;
+  }
+});
+
+// ---------- geolokasi user: ambil lokasi asli, dipakai buat hitung jarak & label chip ----------
+let userLoc = null; // { lat, lng, label } — null berarti izin lokasi ditolak/gagal, jarak fallback ke data statis
+
+const locationChipLabel = document.querySelector('.location-chip span');
+
+getUserLocation().then(loc => {
+  userLoc = loc;
+  if (locationChipLabel) {
+    locationChipLabel.textContent = loc?.label || 'Lokasi tidak diketahui';
+  }
+  applyFilters(); // render ulang pakai jarak asli begitu lokasi didapat
+});
 
 // ---------- gabungkan data barang dummy dengan barang asli dari Supabase ----------
 let ALL_ITEMS = ITEMS;
@@ -48,6 +68,8 @@ const resetBtn = document.getElementById('resetBtn');
 
 function renderCard(item){
   const badgeClass = item.jenis === 'Barter' ? 'barter' : 'donasi';
+  const jarak = computeItemDistance(item, userLoc);
+  const jarakLabel = jarak * 1000 < 1000 ? `${Math.round(jarak * 1000)} m` : `${jarak} km`;
   return `
     <article class="card">
       <a href="detail.html?id=${item.id}" class="card-photo">
@@ -57,7 +79,7 @@ function renderCard(item){
       <div class="card-body">
         <h3 class="card-title">${item.name}</h3>
         <span class="condition-tag">Kondisi: ${item.kondisi}</span>
-        <span class="card-distance">📍 ${item.jarak} km — ${item.lokasi}</span>
+        <span class="card-distance">📍 ${jarakLabel} — ${item.lokasi}</span>
         <div class="card-owner">
           <img src="${item.avatar}" alt="${item.owner}">
           <span>${item.owner}</span>
@@ -84,10 +106,13 @@ function applyFilters(){
     if(!kategori.includes(item.kategori)) return false;
     if(jenis !== 'Semua' && item.jenis !== jenis) return false;
     if(!kondisi.includes(item.kondisi)) return false;
-    if(item.jarak > jarakMax) return false;
+    if(computeItemDistance(item, userLoc) > jarakMax) return false;
     if(query && !item.name.toLowerCase().includes(query)) return false;
     return true;
   });
+
+  // barang terdekat (jarak asli) ditampilkan duluan
+  filtered.sort((a, b) => computeItemDistance(a, userLoc) - computeItemDistance(b, userLoc));
 
   grid.innerHTML = filtered.map(renderCard).join('');
   resultCount.textContent = `${filtered.length} barang ditemukan`;

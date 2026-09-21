@@ -1,8 +1,10 @@
-// supabaseClient ada di supabase-client.js, isLoggedIn() ada di auth.js (dimuat sebelum file ini).
+// supabaseClient ada di supabase-client.js, isLoggedIn() ada di auth.js,
+// getUserLocation()/computeItemDistance() ada di geo.js (semuanya dimuat sebelum file ini).
 // item_data.js masih dimuat buat kompatibilitas lama, tapi ITEMS sudah dikosongkan —
 // halaman ini sekarang murni ambil data dari tabel "items" di Supabase.
 
 const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&h=900&fit=crop';
+const FALLBACK_AVATAR = 'https://i.pravatar.cc/80?img=47';
 
 (async function () {
 
@@ -42,7 +44,7 @@ const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6b
         photos: data.photos?.length ? data.photos : [data.photo || FALLBACK_PHOTO],
         tags: data.tags || [],
         owner: data.owner || 'Pengguna Re:Use.ID',
-        avatar: data.avatar || 'https://i.pravatar.cc/80?img=47',
+        avatar: data.avatar || FALLBACK_AVATAR,
         rating: data.rating || 5,
         memberSince: data.member_since || (data.created_at ? new Date(data.created_at).getFullYear().toString() : '-'),
         jarak: data.jarak || 0,
@@ -81,9 +83,17 @@ const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6b
   document.getElementById('ownerRating').innerHTML =
     `⭐ ${item.rating}/5 &nbsp;·&nbsp; Member sejak ${item.memberSince}`;
 
-  const jarak = item.jarak || 0;
-  document.getElementById('itemLocation').textContent =
-    `📍 ${jarak * 1000 < 1000 ? Math.round(jarak * 1000) + 'm' : jarak + 'km'} dari lokasi Anda — ${item.lokasi}`;
+  // ---------- jarak asli: pakai lokasi GPS user kalau ada, fallback ke field "jarak" statis ----------
+  const itemLocationEl = document.getElementById('itemLocation');
+
+  function renderDistance(userLoc) {
+    const jarak = computeItemDistance(item, userLoc);
+    itemLocationEl.textContent =
+      `📍 ${jarak * 1000 < 1000 ? Math.round(jarak * 1000) + 'm' : jarak + 'km'} dari lokasi Anda — ${item.lokasi}`;
+  }
+
+  renderDistance(null); // tampil dulu pakai fallback, biar nggak kosong sambil nunggu izin lokasi
+  getUserLocation().then(renderDistance);
 
   // tombol utama nyesuain jenis barang:
   // - Barter: "Ajukan Barter" + "Hubungi Pemilik" (dua-duanya tampil)
@@ -168,11 +178,82 @@ const FALLBACK_PHOTO = 'https://images.unsplash.com/photo-1523275335684-37898b6b
     }
   }
 
+  // ---------- buka / buat conversation, lalu pindah ke chat.html ----------
+  // Tabel "conversations" & "messages" dipakai bareng sama chat.js.
+  async function openConversation(autoMessage = null) {
+    const currentUser = getCurrentUser();
+
+    if (item.user_id === currentUser.id) {
+      alert('Ini barang sendiri kocak, ga bisa chat sama diri sendiri 🙂');
+      return;
+    }
+
+    try {
+      let conversationId = null;
+
+      // cari conversation yang sudah ada buat kombinasi barang+pembeli+penjual ini
+      const { data: existing, error: findError } = await supabaseClient
+        .from('conversations')
+        .select('id')
+        .eq('item_id', item.id)
+        .eq('buyer_id', currentUser.id)
+        .eq('seller_id', item.user_id)
+        .maybeSingle();
+
+      if (findError) throw new Error(findError.message);
+
+      if (existing) {
+        conversationId = existing.id;
+      } else {
+        const { data: created, error: createError } = await supabaseClient
+          .from('conversations')
+          .insert({
+            item_id: item.id,
+            item_name: item.name,
+            item_photo: item.photos?.[0] || null,
+            buyer_id: currentUser.id,
+            buyer_name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || getUserName(),
+            buyer_avatar: currentUser.user_metadata?.avatar_url || FALLBACK_AVATAR,
+            seller_id: item.user_id,
+            seller_name: item.owner,
+            seller_avatar: item.avatar,
+          })
+          .select('id')
+          .single();
+
+        if (createError) throw new Error(createError.message);
+        conversationId = created.id;
+      }
+
+      if (autoMessage) {
+        const { error: msgError } = await supabaseClient
+          .from('messages')
+          .insert({
+            conversation_id: conversationId,
+            sender_id: currentUser.id,
+            content: autoMessage,
+          });
+
+        if (msgError) throw new Error(msgError.message);
+
+        await supabaseClient
+          .from('conversations')
+          .update({ last_message: autoMessage, last_message_at: new Date().toISOString() })
+          .eq('id', conversationId);
+      }
+
+      window.location.href = `chat.html?id=${encodeURIComponent(conversationId)}`;
+    } catch (err) {
+      console.error('Gagal membuka chat:', err);
+      alert('Gagal membuka chat: ' + (err.message || err));
+    }
+  }
+
   document.getElementById('btnAjukanBarter').addEventListener('click', () => {
-    requireLogin(() => alert('Fitur ajukan barter akan segera hadir.'));
+    requireLogin(() => openConversation(`Halo, saya tertarik untuk barter barang "${item.name}".`));
   });
   document.getElementById('btnHubungiPemilik').addEventListener('click', () => {
-    requireLogin(() => alert('Fitur chat pemilik akan segera hadir.'));
+    requireLogin(() => openConversation());
   });
 
 })();

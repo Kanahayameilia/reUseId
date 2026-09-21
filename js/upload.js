@@ -1,4 +1,5 @@
-// isLoggedIn()/onAuthReady()/getCurrentUser()/getUserName() ada di auth.js (dimuat sebelum file ini).
+// isLoggedIn()/onAuthReady()/getCurrentUser()/getUserName() ada di auth.js,
+// getUserLocation() ada di geo.js (keduanya dimuat sebelum file ini).
 
 const MAX_PHOTOS = 5;
 const MAX_SIZE_MB = 5;
@@ -169,6 +170,10 @@ onAuthReady(() => {
         ? new Date(currentUser.created_at).getFullYear().toString()
         : new Date().getFullYear().toString();
 
+      // ambil koordinat GPS user (kalau diizinkan) buat disimpan di barang,
+      // dipakai browse.html/detail.html buat hitung jarak asli ke barang ini
+      const userLoc = await getUserLocation();
+
       const newItem = {
         user_id: currentUser.id,
         name: document.getElementById('itemName').value.trim(),
@@ -177,6 +182,8 @@ onAuthReady(() => {
         kondisi: document.getElementById('itemKondisi').value,
         lokasi: document.getElementById('itemLokasi').value.trim(),
         jarak: 0,
+        latitude: userLoc?.lat ?? null,
+        longitude: userLoc?.lng ?? null,
         description: document.getElementById('itemDeskripsi').value.trim(),
         tags,
         photos: photoUrls,

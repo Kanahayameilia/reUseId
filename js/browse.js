@@ -2,35 +2,36 @@
 // getUserLocation()/computeItemDistance() ada di geo.js — semuanya dimuat sebelum file ini.
 
 // ---------- tampilkan UI sesuai status login ----------
-const uploadBtn = document.getElementById('uploadBtn');
-const loginBtn = document.getElementById('loginBtn');
-const avatarBtn = document.getElementById('avatarBtn');
+const uploadBtn = document.getElementById("uploadBtn");
+const loginBtn = document.getElementById("loginBtn");
+const avatarBtn = document.getElementById("avatarBtn");
 
 onAuthReady(() => {
-  if(isLoggedIn()){
-    if(uploadBtn) uploadBtn.hidden = false;
-    if(loginBtn) loginBtn.hidden = true;
-    if(avatarBtn) avatarBtn.hidden = false;
+  if (isLoggedIn()) {
+    if (uploadBtn) uploadBtn.hidden = false;
+    if (loginBtn) loginBtn.hidden = true;
+    if (avatarBtn) avatarBtn.hidden = false;
 
     const user = getCurrentUser();
     const userAvatar = user?.user_metadata?.avatar_url;
-    if (avatarBtn && userAvatar) avatarBtn.querySelector('img').src = userAvatar;
+    if (avatarBtn && userAvatar)
+      avatarBtn.querySelector("img").src = userAvatar;
   } else {
-    if(uploadBtn) uploadBtn.hidden = true;
-    if(loginBtn) loginBtn.hidden = false;
-    if(avatarBtn) avatarBtn.hidden = true;
+    if (uploadBtn) uploadBtn.hidden = true;
+    if (loginBtn) loginBtn.hidden = false;
+    if (avatarBtn) avatarBtn.hidden = true;
   }
 });
 
 // ---------- geolokasi user: ambil lokasi asli, dipakai buat hitung jarak & label chip ----------
 let userLoc = null; // { lat, lng, label } — null berarti izin lokasi ditolak/gagal, jarak fallback ke data statis
 
-const locationChipLabel = document.querySelector('.location-chip span');
+const locationChipLabel = document.querySelector(".location-chip span");
 
-getUserLocation().then(loc => {
+getUserLocation().then((loc) => {
   userLoc = loc;
   if (locationChipLabel) {
-    locationChipLabel.textContent = loc?.label || 'Lokasi tidak diketahui';
+    locationChipLabel.textContent = loc?.label || "Lokasi tidak diketahui";
   }
   applyFilters(); // render ulang pakai jarak asli begitu lokasi didapat
 });
@@ -38,38 +39,45 @@ getUserLocation().then(loc => {
 // ---------- gabungkan data barang dummy dengan barang asli dari Supabase ----------
 let ALL_ITEMS = ITEMS;
 
-async function loadSupabaseItems(){
+async function loadSupabaseItems() {
   try {
     const { data, error } = await supabaseClient
-      .from('items')
-      .select('*')
-      .eq('status', 'Aktif')
-      .order('created_at', { ascending: false });
+      .from("items")
+      .select("*")
+      .eq("status", "Aktif")
+      .order("created_at", { ascending: false });
 
-    if(error){ console.error('Gagal memuat barang dari Supabase:', error.message); return []; }
+    if (error) {
+      console.error("Gagal memuat barang dari Supabase:", error.message);
+      return [];
+    }
 
-    return (data || []).map(row => ({
+    return (data || []).map((row) => ({
       ...row,
-      photo: row.photo || row.photos?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop',
+      photo:
+        row.photo ||
+        row.photos?.[0] ||
+        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop",
     }));
-  } catch(err){
-    console.error('Gagal memuat barang dari Supabase:', err);
+  } catch (err) {
+    console.error("Gagal memuat barang dari Supabase:", err);
     return [];
   }
 }
 
-const grid = document.getElementById('itemGrid');
-const resultCount = document.getElementById('resultCount');
-const emptyState = document.getElementById('emptyState');
-const searchInput = document.getElementById('searchInput');
-const jarakSlider = document.getElementById('jarakSlider');
-const jarakValue = document.getElementById('jarakValue');
-const resetBtn = document.getElementById('resetBtn');
+const grid = document.getElementById("itemGrid");
+const resultCount = document.getElementById("resultCount");
+const emptyState = document.getElementById("emptyState");
+const searchInput = document.getElementById("searchInput");
+const jarakSlider = document.getElementById("jarakSlider");
+const jarakValue = document.getElementById("jarakValue");
+const resetBtn = document.getElementById("resetBtn");
 
-function renderCard(item){
-  const badgeClass = item.jenis === 'Barter' ? 'barter' : 'donasi';
+function renderCard(item) {
+  const badgeClass = item.jenis === "Barter" ? "barter" : "donasi";
   const jarak = computeItemDistance(item, userLoc);
-  const jarakLabel = jarak * 1000 < 1000 ? `${Math.round(jarak * 1000)} m` : `${jarak} km`;
+  const jarakLabel =
+    jarak * 1000 < 1000 ? `${Math.round(jarak * 1000)} m` : `${jarak} km`;
   return `
     <article class="card">
       <a href="detail.html?id=${item.id}" class="card-photo">
@@ -90,58 +98,66 @@ function renderCard(item){
   `;
 }
 
-function getFilters(){
-  const kategori = Array.from(document.querySelectorAll('.f-kategori:checked')).map(el => el.value);
-  const jenis = document.querySelector('.f-jenis:checked')?.value || 'Semua';
-  const kondisi = Array.from(document.querySelectorAll('.f-kondisi:checked')).map(el => el.value);
+function getFilters() {
+  const kategori = Array.from(
+    document.querySelectorAll(".f-kategori:checked"),
+  ).map((el) => el.value);
+  const jenis = document.querySelector(".f-jenis:checked")?.value || "Semua";
+  const kondisi = Array.from(
+    document.querySelectorAll(".f-kondisi:checked"),
+  ).map((el) => el.value);
   const jarakMax = parseFloat(jarakSlider.value);
   const query = searchInput.value.trim().toLowerCase();
   return { kategori, jenis, kondisi, jarakMax, query };
 }
 
-function applyFilters(){
+function applyFilters() {
   const { kategori, jenis, kondisi, jarakMax, query } = getFilters();
 
-  const filtered = ALL_ITEMS.filter(item => {
-    if(!kategori.includes(item.kategori)) return false;
-    if(jenis !== 'Semua' && item.jenis !== jenis) return false;
-    if(!kondisi.includes(item.kondisi)) return false;
-    if(computeItemDistance(item, userLoc) > jarakMax) return false;
-    if(query && !item.name.toLowerCase().includes(query)) return false;
+  const filtered = ALL_ITEMS.filter((item) => {
+    if (!kategori.includes(item.kategori)) return false;
+    if (jenis !== "Semua" && item.jenis !== jenis) return false;
+    if (!kondisi.includes(item.kondisi)) return false;
+    if (computeItemDistance(item, userLoc) > jarakMax) return false;
+    if (query && !item.name.toLowerCase().includes(query)) return false;
     return true;
   });
 
   // barang terdekat (jarak asli) ditampilkan duluan
-  filtered.sort((a, b) => computeItemDistance(a, userLoc) - computeItemDistance(b, userLoc));
+  filtered.sort(
+    (a, b) => computeItemDistance(a, userLoc) - computeItemDistance(b, userLoc),
+  );
 
-  grid.innerHTML = filtered.map(renderCard).join('');
+  grid.innerHTML = filtered.map(renderCard).join("");
   resultCount.textContent = `${filtered.length} barang ditemukan`;
   emptyState.hidden = filtered.length !== 0;
-  grid.style.display = filtered.length === 0 ? 'none' : 'grid';
+  grid.style.display = filtered.length === 0 ? "none" : "grid";
 }
 
 // ---------- event bindings ----------
-document.querySelectorAll('.f-kategori, .f-jenis, .f-kondisi').forEach(el=>{
-  el.addEventListener('change', applyFilters);
+document.querySelectorAll(".f-kategori, .f-jenis, .f-kondisi").forEach((el) => {
+  el.addEventListener("change", applyFilters);
 });
-jarakSlider.addEventListener('input', ()=>{
+jarakSlider.addEventListener("input", () => {
   jarakValue.textContent = `${jarakSlider.value} km`;
   applyFilters();
 });
-searchInput.addEventListener('input', applyFilters);
+searchInput.addEventListener("input", applyFilters);
 
-resetBtn.addEventListener('click', ()=>{
-  document.querySelectorAll('.f-kategori, .f-kondisi').forEach(el => el.checked = true);
+resetBtn.addEventListener("click", () => {
+  document
+    .querySelectorAll(".f-kategori, .f-kondisi")
+    .forEach((el) => (el.checked = true));
   document.querySelector('.f-jenis[value="Semua"]').checked = true;
   jarakSlider.value = 10;
-  jarakValue.textContent = '10 km';
-  searchInput.value = '';
+  jarakValue.textContent = "10 km";
+  searchInput.value = "";
   applyFilters();
 });
 
 // initial render (langsung applyFilters, ALL_ITEMS masih kosong sampai fetch selesai)
 applyFilters();
-loadSupabaseItems().then(dbItems => {
+loadSupabaseItems().then((dbItems) => {
   ALL_ITEMS = dbItems;
   applyFilters();
 });

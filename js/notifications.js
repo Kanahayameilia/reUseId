@@ -11,13 +11,13 @@
 // Kalau ada perubahan, event 'reuse-unread-changed' dipicu di document.
 // =========================================================
 (function () {
-  const bell  = document.getElementById('notifBell');
-  const badge = document.getElementById('notifBadge');
+  const bell = document.getElementById("notifBell");
+  const badge = document.getElementById("notifBadge");
   const onChatPage = /chat\.html$/i.test(location.pathname);
-  const EPOCH = '1970-01-01T00:00:00.000Z';
+  const EPOCH = "1970-01-01T00:00:00.000Z";
 
   // ---------- style ----------
-  const style = document.createElement('style');
+  const style = document.createElement("style");
   style.textContent = `
     .notif-bell{position:relative;background:none;border:0;cursor:pointer;
       font-size:1.25rem;line-height:1;padding:8px;border-radius:50%;}
@@ -41,19 +41,22 @@
   // ---------- penyimpanan status dibaca ----------
   let myId = null;
   const uid = () => myId || (myId = getUserId());
-  const mapKey    = () => `reuse_notif_seen_v2_${uid()}`;
-  const legacyKey = () => `reuse_notif_seen_${uid()}`;   // versi lama (1 timestamp global)
+  const mapKey = () => `reuse_notif_seen_v2_${uid()}`;
+  const legacyKey = () => `reuse_notif_seen_${uid()}`; // versi lama (1 timestamp global)
 
   function loadSeen() {
-    try { return JSON.parse(localStorage.getItem(mapKey())) || {}; }
-    catch { return {}; }
+    try {
+      return JSON.parse(localStorage.getItem(mapKey())) || {};
+    } catch {
+      return {};
+    }
   }
   const seenFor = (map, convId) =>
     map[convId] || localStorage.getItem(legacyKey()) || EPOCH;
   const ts = (v) => new Date(v).getTime();
 
   function changed() {
-    document.dispatchEvent(new CustomEvent('reuse-unread-changed'));
+    document.dispatchEvent(new CustomEvent("reuse-unread-changed"));
   }
 
   // ---------- API ----------
@@ -62,18 +65,23 @@
     if (!uid() || !convIds.length) return result;
 
     const map = loadSeen();
-    const oldest = convIds.map(id => seenFor(map, id)).sort((a, b) => ts(a) - ts(b))[0];
+    const oldest = convIds
+      .map((id) => seenFor(map, id))
+      .sort((a, b) => ts(a) - ts(b))[0];
 
     const { data, error } = await supabaseClient
-      .from('messages')
-      .select('conversation_id, created_at')
-      .in('conversation_id', convIds)
-      .neq('sender_id', uid())
-      .gt('created_at', oldest)
+      .from("messages")
+      .select("conversation_id, created_at")
+      .in("conversation_id", convIds)
+      .neq("sender_id", uid())
+      .gt("created_at", oldest)
       .limit(1000);
-    if (error) { console.error('[notif] gagal hitung unread:', error.message); return result; }
+    if (error) {
+      console.error("[notif] gagal hitung unread:", error.message);
+      return result;
+    }
 
-    (data || []).forEach(m => {
+    (data || []).forEach((m) => {
       if (ts(m.created_at) > ts(seenFor(map, m.conversation_id))) {
         result[m.conversation_id] = (result[m.conversation_id] || 0) + 1;
       }
@@ -85,10 +93,10 @@
     if (!uid() || !convId) return;
     // pakai waktu pesan terakhir dari server (bukan jam browser) biar nggak meleset
     const { data } = await supabaseClient
-      .from('messages')
-      .select('created_at')
-      .eq('conversation_id', convId)
-      .order('created_at', { ascending: false })
+      .from("messages")
+      .select("created_at")
+      .eq("conversation_id", convId)
+      .order("created_at", { ascending: false })
       .limit(1);
     const latest = data?.[0]?.created_at || new Date().toISOString();
 
@@ -106,7 +114,7 @@
   const baseTitle = document.title;
   function render(count) {
     if (badge) {
-      badge.textContent = count > 9 ? '9+' : String(count);
+      badge.textContent = count > 9 ? "9+" : String(count);
       badge.hidden = count === 0;
     }
     document.title = count > 0 ? `(${count}) ${baseTitle}` : baseTitle;
@@ -115,24 +123,28 @@
   async function refresh() {
     if (!uid()) return;
     const { data: convs, error } = await supabaseClient
-      .from('conversations')
-      .select('id')
+      .from("conversations")
+      .select("id")
       .or(`buyer_id.eq.${uid()},seller_id.eq.${uid()}`);
-    if (error) { console.error('[notif] gagal ambil conversations:', error.message); return; }
+    if (error) {
+      console.error("[notif] gagal ambil conversations:", error.message);
+      return;
+    }
 
-    const unread = await getUnreadByConv((convs || []).map(c => c.id));
+    const unread = await getUnreadByConv((convs || []).map((c) => c.id));
     render(Object.values(unread).reduce((a, b) => a + b, 0));
   }
 
   // percakapan yang sedang dibuka di chat.html (chat.js menaruh ?id= di URL)
   const activeConvId = () =>
-    onChatPage ? new URLSearchParams(location.search).get('id') : null;
+    onChatPage ? new URLSearchParams(location.search).get("id") : null;
 
   function listenRealtime() {
     supabaseClient
-      .channel('notif-messages')
-      .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
+      .channel("notif-messages")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
         async (payload) => {
           const m = payload.new;
           if (m.sender_id === uid()) return;
@@ -142,16 +154,18 @@
           } else {
             changed();
           }
-        })
-      .subscribe((status) => console.log('[notif] realtime:', status));
+        },
+      )
+      .subscribe((status) => console.log("[notif] realtime:", status));
 
     // cadangan kalau realtime putus
     setInterval(changed, 30000);
 
-    document.addEventListener('visibilitychange', () => {
+    document.addEventListener("visibilitychange", () => {
       if (document.hidden) return;
       const id = activeConvId();
-      if (id) markSeen(id); else changed();
+      if (id) markSeen(id);
+      else changed();
     });
   }
 
@@ -162,10 +176,12 @@
 
     if (bell) {
       bell.hidden = false;
-      bell.addEventListener('click', () => { window.location.href = 'chat.html'; });
+      bell.addEventListener("click", () => {
+        window.location.href = "chat.html";
+      });
     }
 
-    document.addEventListener('reuse-unread-changed', refresh);
+    document.addEventListener("reuse-unread-changed", refresh);
     refresh();
     listenRealtime();
   });

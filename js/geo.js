@@ -5,16 +5,17 @@
 // - getUserLocation()    : minta izin lokasi browser, di-cache di sessionStorage biar nggak nanya berulang
 // - computeItemDistance(): jarak asli user -> barang, fallback ke field "jarak" lama kalau barang belum punya koordinat
 
-const GEO_CACHE_KEY = 'reuseid_user_geo';
+const GEO_CACHE_KEY = "reuseid_user_geo";
 
 function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // radius bumi, km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) ** 2;
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -23,15 +24,22 @@ async function reverseGeocode(lat, lng) {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=16`,
-      { headers: { 'Accept-Language': 'id' } }
+      { headers: { "Accept-Language": "id" } },
     );
     if (!res.ok) return null;
     const data = await res.json();
     const addr = data.address || {};
-    return addr.suburb || addr.village || addr.city_district || addr.town || addr.city
-      || data.display_name?.split(',')[0] || null;
+    return (
+      addr.suburb ||
+      addr.village ||
+      addr.city_district ||
+      addr.town ||
+      addr.city ||
+      data.display_name?.split(",")[0] ||
+      null
+    );
   } catch (err) {
-    console.error('Gagal reverse geocode:', err);
+    console.error("Gagal reverse geocode:", err);
     return null;
   }
 }
@@ -42,7 +50,11 @@ function getUserLocation() {
   return new Promise((resolve) => {
     const cached = sessionStorage.getItem(GEO_CACHE_KEY);
     if (cached) {
-      try { return resolve(JSON.parse(cached)); } catch (e) { /* cache rusak, lanjut minta ulang */ }
+      try {
+        return resolve(JSON.parse(cached));
+      } catch (e) {
+        /* cache rusak, lanjut minta ulang */
+      }
     }
 
     if (!navigator.geolocation) {
@@ -58,10 +70,10 @@ function getUserLocation() {
         resolve(loc);
       },
       (err) => {
-        console.warn('Izin lokasi ditolak/gagal:', err.message);
+        console.warn("Izin lokasi ditolak/gagal:", err.message);
         resolve(null);
       },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 300000 }
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 300000 },
     );
   });
 }
@@ -78,6 +90,11 @@ function computeItemDistance(item, userLoc) {
   if (!userLoc || item.latitude == null || item.longitude == null) {
     return item.jarak ?? 0;
   }
-  const km = haversineDistance(userLoc.lat, userLoc.lng, item.latitude, item.longitude);
+  const km = haversineDistance(
+    userLoc.lat,
+    userLoc.lng,
+    item.latitude,
+    item.longitude,
+  );
   return Math.round(km * 10) / 10;
 }

@@ -13,7 +13,7 @@
 let _cachedSession = null;
 let _authReady = false;
 
-async function initAuth(){
+async function initAuth() {
   const { data } = await supabaseClient.auth.getSession();
   _cachedSession = data.session;
   _authReady = true;
@@ -22,7 +22,7 @@ async function initAuth(){
     _cachedSession = session;
   });
 
-  document.dispatchEvent(new CustomEvent('auth-ready'));
+  document.dispatchEvent(new CustomEvent("auth-ready"));
 }
 
 // Dipakai di halaman-halaman (browse.js, profile.js, dst) sebagai pengganti
@@ -32,23 +32,23 @@ async function initAuth(){
 // addEventListener biasa nggak akan pernah manggil cb() — halaman jadi diem
 // dan tombol-tombol yang listenernya didaftarkan di dalam cb() nggak berfungsi.
 // onAuthReady() cek dulu apakah auth udah siap; kalau udah, langsung jalanin cb().
-function onAuthReady(cb){
-  if(_authReady){
+function onAuthReady(cb) {
+  if (_authReady) {
     cb();
   } else {
-    document.addEventListener('auth-ready', cb, { once: true });
+    document.addEventListener("auth-ready", cb, { once: true });
   }
 }
 
-function isLoggedIn(){
+function isLoggedIn() {
   return _cachedSession !== null;
 }
 
-function getUserName(){
-  return _cachedSession?.user?.user_metadata?.full_name || 'Pengguna';
+function getUserName() {
+  return _cachedSession?.user?.user_metadata?.full_name || "Pengguna";
 }
 
-function getUserId(){
+function getUserId() {
   return _cachedSession?.user?.id || null;
 }
 
@@ -58,50 +58,50 @@ function getUserId(){
 // karena getUser() manggil server buat validasi ulang dan BISA GAGAL kalau
 // token lagi bermasalah — kalau itu terjadi (dan nggak ditangkap try/catch),
 // semua kode setelahnya (termasuk pasang listener tombol) ikut nggak jalan.
-function getCurrentUser(){
+function getCurrentUser() {
   return _cachedSession?.user || null;
 }
 
 // Dulu dipanggil manual setelah signup/login buat "nyimpen" status login (localStorage).
 // Sekarang Supabase Auth otomatis ngurus sesi setelah signUp()/signInWithPassword()
 // berhasil — fungsi ini tinggal nge-refresh cache session-nya.
-async function setLoggedIn(){
+async function setLoggedIn() {
   const { data } = await supabaseClient.auth.getSession();
   _cachedSession = data.session;
 }
 
-async function logout(){
+async function logout() {
   await supabaseClient.auth.signOut();
   _cachedSession = null;
-  window.location.href = 'index.html';
+  window.location.href = "index.html";
 }
 
 // ---------- login / daftar pakai Google ----------
 // Dipakai login.html & signup.html (auth.js dimuat di keduanya).
 // Kalau datang dari halaman lain (?redirect=...), balik ke sana setelah login.
-async function signInWithGoogle(btn){
-  let target = new URL('browse.html', window.location.href);
-  const redirect = new URLSearchParams(window.location.search).get('redirect');
-  if(redirect){
-    try{
+async function signInWithGoogle(btn) {
+  let target = new URL("browse.html", window.location.href);
+  const redirect = new URLSearchParams(window.location.search).get("redirect");
+  if (redirect) {
+    try {
       const u = new URL(redirect, window.location.href);
-      if(u.origin === window.location.origin) target = u;   // cuma boleh balik ke situs sendiri
-    }catch{}
+      if (u.origin === window.location.origin) target = u; // cuma boleh balik ke situs sendiri
+    } catch {}
   }
 
-  if(btn) btn.disabled = true;
+  if (btn) btn.disabled = true;
 
   const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google',
+    provider: "google",
     options: {
       redirectTo: target.href,
-      queryParams: { prompt: 'select_account' }   // biar bisa pilih akun kalau punya banyak
-    }
+      queryParams: { prompt: "select_account" }, // biar bisa pilih akun kalau punya banyak
+    },
   });
 
-  if(error){
-    if(btn) btn.disabled = false;
-    alert('Gagal masuk dengan Google: ' + error.message);
+  if (error) {
+    if (btn) btn.disabled = false;
+    alert("Gagal masuk dengan Google: " + error.message);
   }
 }
 

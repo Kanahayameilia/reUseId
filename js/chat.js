@@ -15,29 +15,26 @@
 // - Preview pesan terakhir
 // =========================================================
 
-
 let currentUser = null;
 let activeConversationId = null;
 let activeConversation = null;
 let messagesChannel = null;
 
-
 // =========================================================
 // ELEMENT CHAT
 // =========================================================
 
-const chatShell = document.getElementById('chatShell');
-const chatListBody = document.getElementById('chatListBody');
-const threadEmpty = document.getElementById('threadEmpty');
-const threadActive = document.getElementById('threadActive');
-const threadAvatar = document.getElementById('threadAvatar');
-const threadName = document.getElementById('threadName');
-const threadItemName = document.getElementById('threadItemName');
-const threadMessages = document.getElementById('threadMessages');
-const composerForm = document.getElementById('composerForm');
-const composerInput = document.getElementById('composerInput');
-const composerSend = document.getElementById('composerSend');
-
+const chatShell = document.getElementById("chatShell");
+const chatListBody = document.getElementById("chatListBody");
+const threadEmpty = document.getElementById("threadEmpty");
+const threadActive = document.getElementById("threadActive");
+const threadAvatar = document.getElementById("threadAvatar");
+const threadName = document.getElementById("threadName");
+const threadItemName = document.getElementById("threadItemName");
+const threadMessages = document.getElementById("threadMessages");
+const composerForm = document.getElementById("composerForm");
+const composerInput = document.getElementById("composerInput");
+const composerSend = document.getElementById("composerSend");
 
 // =========================================================
 // KEAMANAN CHAT
@@ -65,7 +62,6 @@ function containsSensitiveData(message) {
   const text = String(message).toLowerCase().trim();
 
   const sensitivePatterns = [
-
     // -------------------------
     // NIK / KTP
     // -------------------------
@@ -132,28 +128,25 @@ function containsSensitiveData(message) {
     /\btelegram\b/,
     /\bnomor[\s-]+telepon\b/,
     /\bno[\s.-]*telepon\b/,
-
   ];
 
-  return sensitivePatterns.some(pattern => pattern.test(text));
+  return sensitivePatterns.some((pattern) => pattern.test(text));
 }
-
 
 // =========================================================
 // PERINGATAN KEAMANAN
 // =========================================================
 
 function showSecurityWarning() {
-
   // Jangan membuat warning lebih dari satu
-  if (document.getElementById('chatSecurityWarning')) {
+  if (document.getElementById("chatSecurityWarning")) {
     return;
   }
 
-  const warning = document.createElement('div');
+  const warning = document.createElement("div");
 
-  warning.id = 'chatSecurityWarning';
-  warning.className = 'chat-security-warning';
+  warning.id = "chatSecurityWarning";
+  warning.className = "chat-security-warning";
 
   warning.innerHTML = `
     <div class="chat-security-title">
@@ -179,34 +172,30 @@ function showSecurityWarning() {
   }
 }
 
-
 // =========================================================
 // ALERT KEAMANAN
 // =========================================================
 
 function showSensitiveDataWarning() {
-
   alert(
-    '⚠️ Pesan tidak dapat dikirim.\\n\\n' +
-    'Demi keamanan pengguna reUseId, jangan membagikan:\\n\\n' +
-    '• NIK / KTP\\n' +
-    '• Nomor rekening\\n' +
-    '• OTP / PIN / password\\n' +
-    '• Nomor kartu / CVV\\n' +
-    '• Nomor telepon\\n' +
-    '• Email pribadi\\n' +
-    '• Data pribadi atau identitas lainnya\\n\\n' +
-    'Silakan hapus informasi tersebut lalu kirim kembali pesan.'
+    "⚠️ Pesan tidak dapat dikirim.\\n\\n" +
+      "Demi keamanan pengguna reUseId, jangan membagikan:\\n\\n" +
+      "• NIK / KTP\\n" +
+      "• Nomor rekening\\n" +
+      "• OTP / PIN / password\\n" +
+      "• Nomor kartu / CVV\\n" +
+      "• Nomor telepon\\n" +
+      "• Email pribadi\\n" +
+      "• Data pribadi atau identitas lainnya\\n\\n" +
+      "Silakan hapus informasi tersebut lalu kirim kembali pesan.",
   );
 }
-
 
 // =========================================================
 // PIHAK LAIN DALAM CONVERSATION
 // =========================================================
 
 function otherParty(conv) {
-
   const isBuyer = conv.buyer_id === currentUser.id;
 
   return {
@@ -216,73 +205,63 @@ function otherParty(conv) {
   };
 }
 
-
 // =========================================================
 // FORMAT WAKTU
 // =========================================================
 
 function formatTime(iso) {
-
-  if (!iso) return '';
+  if (!iso) return "";
 
   const d = new Date(iso);
 
   if (Number.isNaN(d.getTime())) {
-    return '';
+    return "";
   }
 
   const now = new Date();
 
-  const sameDay =
-    d.toDateString() === now.toDateString();
+  const sameDay = d.toDateString() === now.toDateString();
 
   return sameDay
-    ? d.toLocaleTimeString('id-ID', {
-        hour: '2-digit',
-        minute: '2-digit'
+    ? d.toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
       })
-    : d.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short'
+    : d.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
       });
 }
-
 
 // =========================================================
 // ESCAPE HTML
 // =========================================================
 
 function escapeHtml(str) {
+  const div = document.createElement("div");
 
-  const div = document.createElement('div');
-
-  div.textContent = str ?? '';
+  div.textContent = str ?? "";
 
   return div.innerHTML;
 }
-
 
 // =========================================================
 // DAFTAR PERCAKAPAN
 // =========================================================
 
 async function loadConversations() {
-
   if (!currentUser) return;
 
   const { data, error } = await supabaseClient
-    .from('conversations')
-    .select('*')
-    .or(
-      `buyer_id.eq.${currentUser.id},seller_id.eq.${currentUser.id}`
-    )
-    .order('last_message_at', {
+    .from("conversations")
+    .select("*")
+    .or(`buyer_id.eq.${currentUser.id},seller_id.eq.${currentUser.id}`)
+    .order("last_message_at", {
       ascending: false,
-      nullsFirst: false
+      nullsFirst: false,
     });
 
   if (error) {
-
     chatListBody.innerHTML = `
       <div class="chat-list-empty">
         Gagal memuat pesan: ${escapeHtml(error.message)}
@@ -292,9 +271,7 @@ async function loadConversations() {
     return;
   }
 
-
   if (!data || data.length === 0) {
-
     chatListBody.innerHTML = `
       <div class="chat-list-empty">
         Belum ada percakapan.
@@ -307,41 +284,30 @@ async function loadConversations() {
     return;
   }
 
-    const unread = window.ReuseNotif
-    ? await ReuseNotif.getUnreadByConv(data.map(c => c.id))
+  const unread = window.ReuseNotif
+    ? await ReuseNotif.getUnreadByConv(data.map((c) => c.id))
     : {};
 
-  chatListBody.innerHTML = data.map(conv => {
+  chatListBody.innerHTML = data
+    .map((conv) => {
+      const other = otherParty(conv);
 
-    const other = otherParty(conv);
+      const active = conv.id === activeConversationId ? "active" : "";
 
-    const active =
-      conv.id === activeConversationId
-        ? 'active'
-        : '';
+      const avatar = other.avatar || "https://i.pravatar.cc/80?img=47";
 
-    const avatar =
-      other.avatar ||
-      'https://i.pravatar.cc/80?img=47';
+      const name = other.name || "Pengguna Re:Use.ID";
 
-    const name =
-      other.name ||
-      'Pengguna Re:Use.ID';
+      const itemName = conv.item_name || "";
 
-    const itemName =
-      conv.item_name ||
-      '';
-
-    const lastMessage =
-      conv.last_message ||
-      'Belum ada pesan';
+      const lastMessage = conv.last_message || "Belum ada pesan";
 
       const unreadCount =
-        conv.id === activeConversationId ? 0 : (unread[conv.id] || 0);
+        conv.id === activeConversationId ? 0 : unread[conv.id] || 0;
 
-    return `
+      return `
       <div
-        class="conv-item ${active} ${unreadCount ? 'unread' : ''}"
+        class="conv-item ${active} ${unreadCount ? "unread" : ""}"
         data-id="${escapeHtml(conv.id)}"
       >
 
@@ -369,113 +335,78 @@ async function loadConversations() {
 
         <div class="conv-time">
           ${formatTime(conv.last_message_at)}
-          ${unreadCount ? `<span class="conv-unread">${unreadCount > 9 ? '9+' : unreadCount}</span>` : ''}
+          ${unreadCount ? `<span class="conv-unread">${unreadCount > 9 ? "9+" : unreadCount}</span>` : ""}
         </div>
 
       </div>
     `;
+    })
+    .join("");
 
-  }).join('');
-
-
-  chatListBody
-    .querySelectorAll('.conv-item')
-    .forEach(el => {
-
-      el.addEventListener('click', () => {
-
-        openConversation(el.dataset.id);
-
-      });
-
+  chatListBody.querySelectorAll(".conv-item").forEach((el) => {
+    el.addEventListener("click", () => {
+      openConversation(el.dataset.id);
     });
+  });
 }
-
 
 // =========================================================
 // BUKA SATU PERCAKAPAN
 // =========================================================
 
 async function openConversation(id) {
-
   activeConversationId = id;
 
-  history.replaceState(
-    null,
-    '',
-    `chat.html?id=${encodeURIComponent(id)}`
-  );
+  history.replaceState(null, "", `chat.html?id=${encodeURIComponent(id)}`);
 
-  chatShell.classList.add('has-active');
-
+  chatShell.classList.add("has-active");
 
   const { data: conv, error } = await supabaseClient
-    .from('conversations')
-    .select('*')
-    .eq('id', id)
+    .from("conversations")
+    .select("*")
+    .eq("id", id)
     .single();
 
-
   if (error || !conv) {
-
-    threadEmpty.textContent =
-      'Percakapan tidak ditemukan.';
+    threadEmpty.textContent = "Percakapan tidak ditemukan.";
 
     threadEmpty.hidden = false;
     threadActive.hidden = true;
 
     return;
   }
-
 
   // Pastikan user memang buyer atau seller
-  if (
-    conv.buyer_id !== currentUser.id &&
-    conv.seller_id !== currentUser.id
-  ) {
-
-    threadEmpty.textContent =
-      'Kamu tidak memiliki akses ke percakapan ini.';
+  if (conv.buyer_id !== currentUser.id && conv.seller_id !== currentUser.id) {
+    threadEmpty.textContent = "Kamu tidak memiliki akses ke percakapan ini.";
 
     threadEmpty.hidden = false;
     threadActive.hidden = true;
 
     return;
   }
-
 
   activeConversation = conv;
 
   const other = otherParty(conv);
 
-
   threadEmpty.hidden = true;
   threadActive.hidden = false;
 
+  threadAvatar.src = other.avatar || "https://i.pravatar.cc/80?img=47";
 
-  threadAvatar.src =
-    other.avatar ||
-    'https://i.pravatar.cc/80?img=47';
-
-  threadName.textContent =
-    other.name ||
-    'Pengguna Re:Use.ID';
-
+  threadName.textContent = other.name || "Pengguna Re:Use.ID";
 
   threadItemName.innerHTML = conv.item_id
-
     ? `
       <a href="detail.html?id=${encodeURIComponent(conv.item_id)}">
-        ${escapeHtml(conv.item_name || 'Lihat barang')}
+        ${escapeHtml(conv.item_name || "Lihat barang")}
       </a>
     `
-
-    : escapeHtml(conv.item_name || '');
-
+    : escapeHtml(conv.item_name || "");
 
   // Warning keamanan
   showSecurityWarning();
-
 
   await loadMessages(id);
 
@@ -483,38 +414,24 @@ async function openConversation(id) {
 
   subscribeRealtime(id);
 
-
   // Tandai aktif di list kiri
-  chatListBody
-    .querySelectorAll('.conv-item')
-    .forEach(el => {
-
-      el.classList.toggle(
-        'active',
-        el.dataset.id === id
-      );
-
-    });
+  chatListBody.querySelectorAll(".conv-item").forEach((el) => {
+    el.classList.toggle("active", el.dataset.id === id);
+  });
 }
-
 
 // =========================================================
 // RENDER MESSAGE
 // =========================================================
 
 function renderMessage(msg) {
+  const mine = msg.sender_id === currentUser.id;
 
-  const mine =
-    msg.sender_id === currentUser.id;
+  const div = document.createElement("div");
 
-  const div =
-    document.createElement('div');
-
-  div.className =
-    `msg-bubble ${mine ? 'mine' : 'theirs'}`;
+  div.className = `msg-bubble ${mine ? "mine" : "theirs"}`;
 
   div.dataset.id = msg.id;
-
 
   div.innerHTML = `
     ${escapeHtml(msg.content)}
@@ -524,35 +441,29 @@ function renderMessage(msg) {
     </div>
   `;
 
-
   return div;
 }
-
 
 // =========================================================
 // LOAD MESSAGES
 // =========================================================
 
 async function loadMessages(conversationId) {
-
   threadMessages.innerHTML = `
     <div class="chat-list-empty">
       Memuat pesan…
     </div>
   `;
 
-
   const { data, error } = await supabaseClient
-    .from('messages')
-    .select('*')
-    .eq('conversation_id', conversationId)
-    .order('created_at', {
-      ascending: true
+    .from("messages")
+    .select("*")
+    .eq("conversation_id", conversationId)
+    .order("created_at", {
+      ascending: true,
     });
 
-
   if (error) {
-
     threadMessages.innerHTML = `
       <div class="chat-list-empty">
         Gagal memuat pesan:
@@ -563,413 +474,264 @@ async function loadMessages(conversationId) {
     return;
   }
 
-
-  threadMessages.innerHTML = '';
-
+  threadMessages.innerHTML = "";
 
   if (!data || data.length === 0) {
-
     threadMessages.innerHTML = `
       <div class="chat-list-empty">
         Belum ada pesan.
         Mulai obrolan di bawah ini 👋
       </div>
     `;
-
   } else {
-
-    data.forEach(msg => {
-
-      threadMessages.appendChild(
-        renderMessage(msg)
-      );
-
+    data.forEach((msg) => {
+      threadMessages.appendChild(renderMessage(msg));
     });
-
   }
 
-
-  threadMessages.scrollTop =
-    threadMessages.scrollHeight;
+  threadMessages.scrollTop = threadMessages.scrollHeight;
 }
-
 
 // =========================================================
 // REALTIME
 // =========================================================
 
 function subscribeRealtime(conversationId) {
-
   if (messagesChannel) {
-
-    supabaseClient.removeChannel(
-      messagesChannel
-    );
+    supabaseClient.removeChannel(messagesChannel);
 
     messagesChannel = null;
   }
-
 
   messagesChannel = supabaseClient
 
     .channel(`messages-${conversationId}`)
 
     .on(
-      'postgres_changes',
+      "postgres_changes",
       {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter:
-          `conversation_id=eq.${conversationId}`,
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `conversation_id=eq.${conversationId}`,
       },
 
       (payload) => {
-
         const msg = payload.new;
 
-
         // Hindari pesan dobel
-        if (
-          threadMessages.querySelector(
-            `[data-id="${msg.id}"]`
-          )
-        ) {
-
+        if (threadMessages.querySelector(`[data-id="${msg.id}"]`)) {
           return;
         }
 
-
-        const wasEmpty =
-          threadMessages.querySelector(
-            '.chat-list-empty'
-          );
-
+        const wasEmpty = threadMessages.querySelector(".chat-list-empty");
 
         if (wasEmpty) {
-          threadMessages.innerHTML = '';
+          threadMessages.innerHTML = "";
         }
 
+        threadMessages.appendChild(renderMessage(msg));
 
-        threadMessages.appendChild(
-          renderMessage(msg)
-        );
-
-
-        threadMessages.scrollTop =
-          threadMessages.scrollHeight;
-
+        threadMessages.scrollTop = threadMessages.scrollHeight;
 
         loadConversations();
-      }
+      },
     )
 
     .subscribe();
 }
 
-
 // =========================================================
 // KIRIM PESAN
 // =========================================================
 
-composerForm.addEventListener(
-  'submit',
-  async (e) => {
+composerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    e.preventDefault();
+  const content = composerInput.value.trim();
 
+  // Tidak ada isi
+  if (!content || !activeConversationId) {
+    return;
+  }
 
-    const content =
-      composerInput.value.trim();
+  // =====================================================
+  // CEK DATA SENSITIF
+  // =====================================================
 
+  if (containsSensitiveData(content)) {
+    showSensitiveDataWarning();
 
-    // Tidak ada isi
-    if (
-      !content ||
-      !activeConversationId
-    ) {
+    // Kembalikan teks agar user bisa mengedit
+    composerInput.focus();
 
-      return;
-    }
+    return;
+  }
 
+  // =====================================================
+  // CEK PANJANG PESAN
+  // =====================================================
 
-    // =====================================================
-    // CEK DATA SENSITIF
-    // =====================================================
+  if (content.length > 2000) {
+    alert("Pesan terlalu panjang. Maksimal 2000 karakter.");
 
-    if (containsSensitiveData(content)) {
+    composerInput.focus();
 
-      showSensitiveDataWarning();
+    return;
+  }
 
-      // Kembalikan teks agar user bisa mengedit
-      composerInput.focus();
+  composerSend.disabled = true;
 
-      return;
-    }
+  composerInput.value = "";
 
+  const wasEmpty = threadMessages.querySelector(".chat-list-empty");
 
-    // =====================================================
-    // CEK PANJANG PESAN
-    // =====================================================
+  if (wasEmpty) {
+    threadMessages.innerHTML = "";
+  }
 
-    if (content.length > 2000) {
+  // =====================================================
+  // OPTIMISTIC RENDER
+  // =====================================================
 
-      alert(
-        'Pesan terlalu panjang. Maksimal 2000 karakter.'
-      );
+  const tempId = `temp-${Date.now()}`;
 
-      composerInput.focus();
+  const optimisticMsg = {
+    id: tempId,
 
-      return;
-    }
+    sender_id: currentUser.id,
 
+    content,
 
-    composerSend.disabled = true;
+    created_at: new Date().toISOString(),
+  };
 
-    composerInput.value = '';
+  threadMessages.appendChild(renderMessage(optimisticMsg));
 
+  threadMessages.scrollTop = threadMessages.scrollHeight;
 
-    const wasEmpty =
-      threadMessages.querySelector(
-        '.chat-list-empty'
-      );
+  // =====================================================
+  // INSERT MESSAGE
+  // =====================================================
 
+  const { data: inserted, error } = await supabaseClient
 
-    if (wasEmpty) {
-      threadMessages.innerHTML = '';
-    }
+    .from("messages")
 
+    .insert({
+      conversation_id: activeConversationId,
 
-    // =====================================================
-    // OPTIMISTIC RENDER
-    // =====================================================
-
-    const tempId =
-      `temp-${Date.now()}`;
-
-
-    const optimisticMsg = {
-
-      id: tempId,
-
-      sender_id:
-        currentUser.id,
+      sender_id: currentUser.id,
 
       content,
+    })
 
-      created_at:
-        new Date().toISOString()
+    .select()
 
-    };
+    .single();
 
+  composerSend.disabled = false;
 
-    threadMessages.appendChild(
-      renderMessage(optimisticMsg)
-    );
+  // =====================================================
+  // ERROR
+  // =====================================================
 
+  if (error) {
+    const el = threadMessages.querySelector(`[data-id="${tempId}"]`);
 
-    threadMessages.scrollTop =
-      threadMessages.scrollHeight;
-
-
-    // =====================================================
-    // INSERT MESSAGE
-    // =====================================================
-
-    const {
-      data: inserted,
-      error
-    } = await supabaseClient
-
-      .from('messages')
-
-      .insert({
-        conversation_id:
-          activeConversationId,
-
-        sender_id:
-          currentUser.id,
-
-        content
-      })
-
-      .select()
-
-      .single();
-
-
-    composerSend.disabled = false;
-
-
-    // =====================================================
-    // ERROR
-    // =====================================================
-
-    if (error) {
-
-      const el =
-        threadMessages.querySelector(
-          `[data-id="${tempId}"]`
-        );
-
-
-      if (el) {
-        el.remove();
-      }
-
-
-      alert(
-        'Gagal mengirim pesan: ' +
-        error.message
-      );
-
-
-      composerInput.value =
-        content;
-
-      return;
+    if (el) {
+      el.remove();
     }
 
+    alert("Gagal mengirim pesan: " + error.message);
 
-    // =====================================================
-    // GANTI ID SEMENTARA
-    // =====================================================
+    composerInput.value = content;
 
-    const tempEl =
-      threadMessages.querySelector(
-        `[data-id="${tempId}"]`
-      );
-
-
-    if (tempEl) {
-
-      tempEl.dataset.id =
-        inserted.id;
-
-    }
-
-
-    // =====================================================
-    // UPDATE PREVIEW CONVERSATION
-    // =====================================================
-
-    const {
-      error: updateError
-    } = await supabaseClient
-
-      .from('conversations')
-
-      .update({
-
-        last_message:
-          content,
-
-        last_message_at:
-          new Date().toISOString()
-
-      })
-
-      .eq(
-        'id',
-        activeConversationId
-      );
-
-
-    if (updateError) {
-
-      console.warn(
-        'Gagal memperbarui preview conversation:',
-        updateError.message
-      );
-
-    }
-
-
-    // Refresh daftar conversation
-    await loadConversations();
-
+    return;
   }
-);
 
+  // =====================================================
+  // GANTI ID SEMENTARA
+  // =====================================================
+
+  const tempEl = threadMessages.querySelector(`[data-id="${tempId}"]`);
+
+  if (tempEl) {
+    tempEl.dataset.id = inserted.id;
+  }
+
+  // =====================================================
+  // UPDATE PREVIEW CONVERSATION
+  // =====================================================
+
+  const { error: updateError } = await supabaseClient
+
+    .from("conversations")
+
+    .update({
+      last_message: content,
+
+      last_message_at: new Date().toISOString(),
+    })
+
+    .eq("id", activeConversationId);
+
+  if (updateError) {
+    console.warn(
+      "Gagal memperbarui preview conversation:",
+      updateError.message,
+    );
+  }
+
+  // Refresh daftar conversation
+  await loadConversations();
+});
 
 // =========================================================
 // ENTER = KIRIM
 // SHIFT + ENTER = BARIS BARU
 // =========================================================
 
-composerInput.addEventListener(
-  'keydown',
-  (e) => {
+composerInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
 
-    if (
-      e.key === 'Enter' &&
-      !e.shiftKey
-    ) {
-
-      e.preventDefault();
-
-      composerForm.requestSubmit();
-
-    }
-
+    composerForm.requestSubmit();
   }
-);
-
+});
 
 // =========================================================
 // INIT
 // =========================================================
 
-document.addEventListener('reuse-unread-changed', () => {
+document.addEventListener("reuse-unread-changed", () => {
   if (currentUser) loadConversations();
 });
 
 onAuthReady(async () => {
-
   if (!isLoggedIn()) {
-
-    window.location.href =
-      `login.html?redirect=${encodeURIComponent(
-        window.location.pathname +
-        window.location.search
-      )}`;
+    window.location.href = `login.html?redirect=${encodeURIComponent(
+      window.location.pathname + window.location.search,
+    )}`;
 
     return;
   }
 
-
-  currentUser =
-    getCurrentUser();
-
+  currentUser = getCurrentUser();
 
   if (!currentUser) {
-
-    window.location.href =
-      'login.html';
+    window.location.href = "login.html";
 
     return;
   }
-
 
   await loadConversations();
 
+  const params = new URLSearchParams(window.location.search);
 
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
-
-
-  const requestedId =
-    params.get('id');
-
+  const requestedId = params.get("id");
 
   if (requestedId) {
-
-    await openConversation(
-      requestedId
-    );
-
+    await openConversation(requestedId);
   }
-
 });

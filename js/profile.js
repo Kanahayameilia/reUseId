@@ -5,14 +5,13 @@
 // jadi semua kode di bawah dibungkus supaya nggak sempat baca status "belum login"
 // yang keliru sebelum sesi selesai dicek.
 onAuthReady(async () => {
-
   // Halaman ini butuh login — kalau belum, tendang ke login dulu.
-  if(!isLoggedIn()){
-    window.location.href = 'login.html?redirect=profile.html';
+  if (!isLoggedIn()) {
+    window.location.href = "login.html?redirect=profile.html";
     return;
   }
 
-  document.getElementById('logoutBtn')?.addEventListener('click', logout);
+  document.getElementById("logoutBtn")?.addEventListener("click", logout);
 
   // ---------- PASANG SEMUA LISTENER TOMBOL DULUAN, SEBELUM AMBIL DATA ----------
   // PENTING: bagian ini sengaja diletakkan SEBELUM proses ambil data dari Supabase
@@ -23,38 +22,38 @@ onAuthReady(async () => {
   // di bawah nanti gagal.
 
   // Tombol "Edit Profil" di header -> lompat ke tab Pengaturan & fokus ke field nama
-  document.getElementById('btnEditProfile')?.addEventListener('click', () => {
+  document.getElementById("btnEditProfile")?.addEventListener("click", () => {
     document.querySelector('.tab-btn[data-tab="pengaturan"]')?.click();
-    document.getElementById('settingsName')?.focus();
+    document.getElementById("settingsName")?.focus();
   });
 
   // ---------- GANTI FOTO PROFIL (upload ke Supabase Storage, bucket "avatars") ----------
-  const avatarBtn = document.getElementById('btnChangeAvatar');
-  const avatarInput = document.getElementById('avatarInput');
-  const avatarImg = document.getElementById('phAvatar');
+  const avatarBtn = document.getElementById("btnChangeAvatar");
+  const avatarInput = document.getElementById("avatarInput");
+  const avatarImg = document.getElementById("phAvatar");
 
-  avatarBtn?.addEventListener('click', () => avatarInput?.click());
+  avatarBtn?.addEventListener("click", () => avatarInput?.click());
 
-  avatarInput?.addEventListener('change', async () => {
+  avatarInput?.addEventListener("change", async () => {
     const file = avatarInput.files?.[0];
-    if(!file) return;
+    if (!file) return;
 
     // validasi dasar di sisi client
     const maxSizeMB = 3;
-    if(!['image/png','image/jpeg','image/webp'].includes(file.type)){
-      alert('Format foto harus PNG, JPG, atau WEBP.');
-      avatarInput.value = '';
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      alert("Format foto harus PNG, JPG, atau WEBP.");
+      avatarInput.value = "";
       return;
     }
-    if(file.size > maxSizeMB * 1024 * 1024){
+    if (file.size > maxSizeMB * 1024 * 1024) {
       alert(`Ukuran foto maksimal ${maxSizeMB}MB.`);
-      avatarInput.value = '';
+      avatarInput.value = "";
       return;
     }
 
     const currentUser = getCurrentUser();
-    if(!currentUser){
-      alert('Sesi login bermasalah, coba muat ulang halaman.');
+    if (!currentUser) {
+      alert("Sesi login bermasalah, coba muat ulang halaman.");
       return;
     }
 
@@ -64,39 +63,40 @@ onAuthReady(async () => {
     // preview instan sebelum upload selesai
     avatarImg.src = URL.createObjectURL(file);
 
-    const ext = file.name.split('.').pop();
+    const ext = file.name.split(".").pop();
     // nama file disertai timestamp biar nggak ke-cache browser/CDN dengan foto lama
     const filePath = `${currentUser.id}/avatar-${Date.now()}.${ext}`;
 
-    const { error: uploadError } = await supabaseClient
-      .storage
-      .from('avatars')
+    const { error: uploadError } = await supabaseClient.storage
+      .from("avatars")
       .upload(filePath, file, { upsert: true });
 
-    if(uploadError){
-      alert('Gagal upload foto: ' + uploadError.message);
+    if (uploadError) {
+      alert("Gagal upload foto: " + uploadError.message);
       avatarImg.src = originalAvatarSrc;
       avatarBtn.disabled = false;
-      avatarInput.value = '';
+      avatarInput.value = "";
       return;
     }
 
-    const { data: publicUrlData } = supabaseClient
-      .storage
-      .from('avatars')
+    const { data: publicUrlData } = supabaseClient.storage
+      .from("avatars")
       .getPublicUrl(filePath);
 
     const newAvatarUrl = publicUrlData.publicUrl;
 
     const { error: updateError } = await supabaseClient.auth.updateUser({
-      data: { avatar_url: newAvatarUrl }
+      data: { avatar_url: newAvatarUrl },
     });
 
     avatarBtn.disabled = false;
-    avatarInput.value = '';
+    avatarInput.value = "";
 
-    if(updateError){
-      alert('Foto ke-upload, tapi gagal menyimpan ke profil: ' + updateError.message);
+    if (updateError) {
+      alert(
+        "Foto ke-upload, tapi gagal menyimpan ke profil: " +
+          updateError.message,
+      );
       avatarImg.src = originalAvatarSrc;
       return;
     }
@@ -107,15 +107,17 @@ onAuthReady(async () => {
   });
 
   // ---------- TAB SWITCHING ----------
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const panels = document.querySelectorAll('.tab-panel');
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  const panels = document.querySelectorAll(".tab-panel");
 
-  tabBtns.forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      tabBtns.forEach(b => b.classList.remove('active'));
-      panels.forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById(`panel-${btn.dataset.tab}`).classList.add('active');
+  tabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      tabBtns.forEach((b) => b.classList.remove("active"));
+      panels.forEach((p) => p.classList.remove("active"));
+      btn.classList.add("active");
+      document
+        .getElementById(`panel-${btn.dataset.tab}`)
+        .classList.add("active");
     });
   });
 
@@ -125,54 +127,65 @@ onAuthReady(async () => {
   // server yang bisa gagal kalau token lagi bermasalah.
   const user = getCurrentUser();
   const userName = user?.user_metadata?.full_name || getUserName();
-  const userCampus = user?.user_metadata?.campus || '';
-  const userEmail = user?.email || '';
-  const userLocation = user?.user_metadata?.location || '';
-  const userAvatar = user?.user_metadata?.avatar_url || '';
+  const userCampus = user?.user_metadata?.campus || "";
+  const userEmail = user?.email || "";
+  const userLocation = user?.user_metadata?.location || "";
+  const userAvatar = user?.user_metadata?.avatar_url || "";
 
-  document.getElementById('phName').textContent = userName;
-  if(userCampus) document.getElementById('phCampus').textContent = `🎓 Mahasiswa — ${userCampus}`;
-  document.getElementById('phLocation').textContent = userLocation ? `📍 ${userLocation}` : '';
-  if(userAvatar) document.getElementById('phAvatar').src = userAvatar;
-  document.getElementById('settingsName').value = userName;
-  document.getElementById('settingsEmail').value = userEmail;
-  document.getElementById('settingsLocation').value = userLocation;
+  document.getElementById("phName").textContent = userName;
+  if (userCampus)
+    document.getElementById("phCampus").textContent =
+      `🎓 Mahasiswa — ${userCampus}`;
+  document.getElementById("phLocation").textContent = userLocation
+    ? `📍 ${userLocation}`
+    : "";
+  if (userAvatar) document.getElementById("phAvatar").src = userAvatar;
+  document.getElementById("settingsName").value = userName;
+  document.getElementById("settingsEmail").value = userEmail;
+  document.getElementById("settingsLocation").value = userLocation;
 
   // ---------- BARANG AKTIF (dari tabel items di Supabase, milik akun ini) ----------
-  const activeGrid = document.getElementById('activeGrid');
-  let myItems = null, itemsError = null;
+  const activeGrid = document.getElementById("activeGrid");
+  let myItems = null,
+    itemsError = null;
   try {
     const res = await supabaseClient
-      .from('items')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+      .from("items")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
     myItems = res.data;
     itemsError = res.error;
-  } catch(err){
+  } catch (err) {
     itemsError = err;
   }
 
-  const statActiveEl = document.getElementById('statActive');
+  const statActiveEl = document.getElementById("statActive");
 
-  if(itemsError){
+  if (itemsError) {
     activeGrid.innerHTML = `<p>Gagal memuat barang: ${itemsError.message}</p>`;
-  } else if(!myItems || myItems.length === 0){
+  } else if (!myItems || myItems.length === 0) {
     activeGrid.innerHTML = `<p>Kamu belum punya barang yang diunggah.</p>`;
-    if(statActiveEl) statActiveEl.textContent = '0';
+    if (statActiveEl) statActiveEl.textContent = "0";
   } else {
-    if(statActiveEl) statActiveEl.textContent = myItems.filter(i => i.status === 'Aktif').length;
-    activeGrid.innerHTML = myItems.map(item => {
-      const badgeClass = item.jenis === 'Barter' ? 'barter' : 'donasi';
-      const cover = item.photos?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop';
-      return `
+    if (statActiveEl)
+      statActiveEl.textContent = myItems.filter(
+        (i) => i.status === "Aktif",
+      ).length;
+    activeGrid.innerHTML = myItems
+      .map((item) => {
+        const badgeClass = item.jenis === "Barter" ? "barter" : "donasi";
+        const cover =
+          item.photos?.[0] ||
+          "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop";
+        return `
         <article class="item-card" data-item-id="${item.id}">
           <div class="ic-photo">
             <span class="ic-badge ${badgeClass}">${item.jenis.toUpperCase()}</span>
             <img src="${cover}" alt="${item.name}" loading="lazy">
             <div class="ic-hover-actions">
               <button class="ic-action-btn edit">Edit</button>
-              <button class="ic-action-btn deactivate">${item.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan'}</button>
+              <button class="ic-action-btn deactivate">${item.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"}</button>
               <button class="ic-action-btn delete">Hapus</button>
             </div>
           </div>
@@ -182,98 +195,108 @@ onAuthReady(async () => {
           </div>
         </article>
       `;
-    }).join('');
+      })
+      .join("");
   }
 
   // navigasi ke halaman edit — item ID diambil dari data-item-id di kartu barang
-  activeGrid.querySelectorAll('.ic-action-btn.edit').forEach(btn=>{
-    btn.addEventListener('click', (e)=>{
+  activeGrid.querySelectorAll(".ic-action-btn.edit").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      const itemId = btn.closest('.item-card').dataset.itemId;
+      const itemId = btn.closest(".item-card").dataset.itemId;
       window.location.href = `edit.html?id=${itemId}`;
     });
   });
 
   // toggle Aktif/Nonaktif — update beneran ke Supabase, bukan cuma tampilan
-  activeGrid.querySelectorAll('.ic-action-btn.deactivate').forEach(btn=>{
-    btn.addEventListener('click', async (e)=>{
+  activeGrid.querySelectorAll(".ic-action-btn.deactivate").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
       e.stopPropagation();
-      const card = btn.closest('.item-card');
+      const card = btn.closest(".item-card");
       const itemId = card.dataset.itemId;
-      const status = card.querySelector('.ic-status');
-      const isActive = status.textContent === 'Aktif';
-      const newStatus = isActive ? 'Nonaktif' : 'Aktif';
+      const status = card.querySelector(".ic-status");
+      const isActive = status.textContent === "Aktif";
+      const newStatus = isActive ? "Nonaktif" : "Aktif";
 
       const { error } = await supabaseClient
-        .from('items')
+        .from("items")
         .update({ status: newStatus })
-        .eq('id', itemId);
+        .eq("id", itemId);
 
-      if(error){
-        alert('Gagal mengubah status: ' + error.message);
+      if (error) {
+        alert("Gagal mengubah status: " + error.message);
         return;
       }
 
       status.textContent = newStatus;
-      status.style.background = isActive ? '#F2E9DC' : '';
-      status.style.color = isActive ? '#8A6D3B' : '';
-      btn.textContent = isActive ? 'Aktifkan' : 'Nonaktifkan';
+      status.style.background = isActive ? "#F2E9DC" : "";
+      status.style.color = isActive ? "#8A6D3B" : "";
+      btn.textContent = isActive ? "Aktifkan" : "Nonaktifkan";
 
-      const statEl = document.getElementById('statActive');
-      if(statEl) statEl.textContent = activeGrid.querySelectorAll('.ic-status').length
-        ? [...activeGrid.querySelectorAll('.ic-status')].filter(s => s.textContent === 'Aktif').length
-        : '0';
+      const statEl = document.getElementById("statActive");
+      if (statEl)
+        statEl.textContent = activeGrid.querySelectorAll(".ic-status").length
+          ? [...activeGrid.querySelectorAll(".ic-status")].filter(
+              (s) => s.textContent === "Aktif",
+            ).length
+          : "0";
     });
   });
 
   // hapus barang permanen — konfirmasi dulu, hapus foto di Storage, baru hapus baris di tabel
-  activeGrid.querySelectorAll('.ic-action-btn.delete').forEach(btn=>{
-    btn.addEventListener('click', async (e)=>{
+  activeGrid.querySelectorAll(".ic-action-btn.delete").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
       e.stopPropagation();
-      const card = btn.closest('.item-card');
+      const card = btn.closest(".item-card");
       const itemId = card.dataset.itemId;
-      const itemName = card.querySelector('.ic-title')?.textContent || 'barang ini';
+      const itemName =
+        card.querySelector(".ic-title")?.textContent || "barang ini";
 
-      const confirmed = confirm(`Hapus "${itemName}" secara permanen? Tindakan ini tidak bisa dibatalkan.`);
-      if(!confirmed) return;
+      const confirmed = confirm(
+        `Hapus "${itemName}" secara permanen? Tindakan ini tidak bisa dibatalkan.`,
+      );
+      if (!confirmed) return;
 
       btn.disabled = true;
-      btn.textContent = 'Menghapus…';
+      btn.textContent = "Menghapus…";
 
       // hapus dulu foto-fotonya dari Storage (kalau ada)
-      const itemData = myItems?.find(i => String(i.id) === String(itemId));
+      const itemData = myItems?.find((i) => String(i.id) === String(itemId));
       const photoPaths = (itemData?.photos || [])
-        .map(url => {
-          const marker = '/items/';
+        .map((url) => {
+          const marker = "/items/";
           const idx = url.indexOf(marker);
           return idx === -1 ? null : url.slice(idx + marker.length);
         })
         .filter(Boolean);
 
-      if(photoPaths.length){
-        await supabaseClient.storage.from('items').remove(photoPaths);
+      if (photoPaths.length) {
+        await supabaseClient.storage.from("items").remove(photoPaths);
       }
 
       const { error } = await supabaseClient
-        .from('items')
+        .from("items")
         .delete()
-        .eq('id', itemId);
+        .eq("id", itemId);
 
-      if(error){
-        alert('Gagal menghapus barang: ' + error.message);
+      if (error) {
+        alert("Gagal menghapus barang: " + error.message);
         btn.disabled = false;
-        btn.textContent = 'Hapus';
+        btn.textContent = "Hapus";
         return;
       }
 
       card.remove();
 
-      const statEl = document.getElementById('statActive');
-      if(statEl) statEl.textContent = activeGrid.querySelectorAll('.ic-status').length
-        ? [...activeGrid.querySelectorAll('.ic-status')].filter(s => s.textContent === 'Aktif').length
-        : '0';
+      const statEl = document.getElementById("statActive");
+      if (statEl)
+        statEl.textContent = activeGrid.querySelectorAll(".ic-status").length
+          ? [...activeGrid.querySelectorAll(".ic-status")].filter(
+              (s) => s.textContent === "Aktif",
+            ).length
+          : "0";
 
-      if(!activeGrid.querySelector('.item-card')){
+      if (!activeGrid.querySelector(".item-card")) {
         activeGrid.innerHTML = `<p>Kamu belum punya barang yang diunggah.</p>`;
       }
     });
@@ -283,44 +306,53 @@ onAuthReady(async () => {
   // Fitur transaksi (ajukan barter/donasi sampai selesai) belum dibikin, jadi
   // belum ada data transaksi asli buat ditampilin — daripada nampilin data contoh
   // yang menyesatkan, tampilkan pesan kosong aja.
-  const historyTimeline = document.getElementById('historyTimeline');
+  const historyTimeline = document.getElementById("historyTimeline");
   historyTimeline.innerHTML = `<p>Belum ada riwayat transaksi.</p>`;
 
   // ---------- ULASAN ----------
   // Sama kayak riwayat transaksi — fitur ulasan antar pengguna belum dibikin,
   // jadi belum ada data ulasan asli.
-  const reviewList = document.getElementById('reviewList');
+  const reviewList = document.getElementById("reviewList");
   reviewList.innerHTML = `<p>Belum ada ulasan.</p>`;
 
   // ---------- PENGATURAN: simpan nama & lokasi beneran ke Supabase ----------
-  document.querySelector('.btn-save-settings')?.addEventListener('click', async ()=>{
-    const btn = document.querySelector('.btn-save-settings');
-    const original = btn.textContent;
-    const newName = document.getElementById('settingsName').value.trim();
-    const newLocation = document.getElementById('settingsLocation').value.trim();
+  document
+    .querySelector(".btn-save-settings")
+    ?.addEventListener("click", async () => {
+      const btn = document.querySelector(".btn-save-settings");
+      const original = btn.textContent;
+      const newName = document.getElementById("settingsName").value.trim();
+      const newLocation = document
+        .getElementById("settingsLocation")
+        .value.trim();
 
-    btn.disabled = true;
-    btn.textContent = 'Menyimpan…';
+      btn.disabled = true;
+      btn.textContent = "Menyimpan…";
 
-    const { error } = await supabaseClient.auth.updateUser({
-      data: { full_name: newName, location: newLocation }
+      const { error } = await supabaseClient.auth.updateUser({
+        data: { full_name: newName, location: newLocation },
+      });
+
+      btn.disabled = false;
+
+      if (error) {
+        btn.textContent = "Gagal, coba lagi";
+        setTimeout(() => {
+          btn.textContent = original;
+        }, 1800);
+        return;
+      }
+
+      // refresh cache sesi biar getUserName() ikut update, terus perbarui tampilan nama & lokasi
+      await setLoggedIn();
+      document.getElementById("phName").textContent = getUserName();
+      document.getElementById("phLocation").textContent = newLocation
+        ? `📍 ${newLocation}`
+        : "";
+
+      btn.textContent = "Tersimpan ✓";
+      setTimeout(() => {
+        btn.textContent = original;
+      }, 1800);
     });
-
-    btn.disabled = false;
-
-    if(error){
-      btn.textContent = 'Gagal, coba lagi';
-      setTimeout(()=>{ btn.textContent = original; }, 1800);
-      return;
-    }
-
-    // refresh cache sesi biar getUserName() ikut update, terus perbarui tampilan nama & lokasi
-    await setLoggedIn();
-    document.getElementById('phName').textContent = getUserName();
-    document.getElementById('phLocation').textContent = newLocation ? `📍 ${newLocation}` : '';
-
-    btn.textContent = 'Tersimpan ✓';
-    setTimeout(()=>{ btn.textContent = original; }, 1800);
-  });
-
 });

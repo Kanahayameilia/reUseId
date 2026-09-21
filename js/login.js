@@ -63,4 +63,9 @@ form.addEventListener('submit', async (e)=>{
   const params = new URLSearchParams(window.location.search);
   const redirect = params.get('redirect') || 'browse.html';
   window.location.href = redirect;
+
 });
+
+// ---------- Masuk dengan Google ----------
+const googleBtn = document.querySelector('.btn-google');
+googleBtn?.addEventListener('click', () => signInWithGoogle(googleBtn));

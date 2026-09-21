@@ -76,4 +76,33 @@ async function logout(){
   window.location.href = 'index.html';
 }
 
+// ---------- login / daftar pakai Google ----------
+// Dipakai login.html & signup.html (auth.js dimuat di keduanya).
+// Kalau datang dari halaman lain (?redirect=...), balik ke sana setelah login.
+async function signInWithGoogle(btn){
+  let target = new URL('browse.html', window.location.href);
+  const redirect = new URLSearchParams(window.location.search).get('redirect');
+  if(redirect){
+    try{
+      const u = new URL(redirect, window.location.href);
+      if(u.origin === window.location.origin) target = u;   // cuma boleh balik ke situs sendiri
+    }catch{}
+  }
+
+  if(btn) btn.disabled = true;
+
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: target.href,
+      queryParams: { prompt: 'select_account' }   // biar bisa pilih akun kalau punya banyak
+    }
+  });
+
+  if(error){
+    if(btn) btn.disabled = false;
+    alert('Gagal masuk dengan Google: ' + error.message);
+  }
+}
+
 initAuth();

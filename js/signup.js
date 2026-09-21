@@ -176,3 +176,7 @@ form.addEventListener('submit', async (e)=>{
   await setLoggedIn();
   setTimeout(()=>{ window.location.href = 'browse.html'; }, 600);
 });
+
+// ---------- Masuk dengan Google ----------
+const googleBtn = document.querySelector('.btn-google');
+googleBtn?.addEventListener('click', () => signInWithGoogle(googleBtn));

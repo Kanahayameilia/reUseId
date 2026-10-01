@@ -710,6 +710,7 @@ composerInput.addEventListener("keydown", (e) => {
 const transactionPanel = document.getElementById("transactionPanel");
 
 let activeTx = null;
+let activeTxOffered = null;
 let txChannel = null;
 
 const TX_INFO = {
@@ -723,6 +724,7 @@ const TX_INFO = {
 // ---------- ambil transaksi terbaru untuk percakapan ini ----------
 async function loadTransaction(conv) {
   activeTx = null;
+  activeTxOffered = null;
   renderTransactionPanel();
 
   if (!conv.item_id) return;
@@ -746,7 +748,34 @@ async function loadTransaction(conv) {
   if (activeConversationId !== conv.id) return;
 
   activeTx = data || null;
+  await loadOfferedItem(activeTx);
+
+  if (activeConversationId !== conv.id) return;
+
   renderTransactionPanel();
+}
+
+// ---------- nama barang yang ditawarkan (khusus Barter) ----------
+async function loadOfferedItem(tx) {
+  if (!tx || !tx.offered_item_id) {
+    activeTxOffered = null;
+    return;
+  }
+
+  if (
+    activeTxOffered &&
+    String(activeTxOffered.id) === String(tx.offered_item_id)
+  ) {
+    return;
+  }
+
+  const { data } = await supabaseClient
+    .from("items")
+    .select("id, name")
+    .eq("id", tx.offered_item_id)
+    .maybeSingle();
+
+  activeTxOffered = data || null;
 }
 
 // ---------- tampilan panel ----------
@@ -762,6 +791,11 @@ function renderTransactionPanel() {
   const myConfirmed = isSeller ? tx.seller_confirmed : tx.buyer_confirmed;
   const otherConfirmed = isSeller ? tx.buyer_confirmed : tx.seller_confirmed;
   const label = tx.jenis === "Donasi" ? "Donasi" : "Barter";
+
+  const offerLine =
+    tx.jenis === "Barter" && activeTxOffered
+      ? `<div style="font-size:0.78rem;color:#6b7a73;margin-top:4px;">Ditawarkan: ${escapeHtml(activeTxOffered.name)}</div>`
+      : "";
 
   let info = TX_INFO[tx.status] || tx.status;
   let actions = "";
@@ -794,6 +828,7 @@ function renderTransactionPanel() {
       <div>
         <span class="txp-badge">${label}</span>
         <span class="txp-info">${info}</span>
+        ${offerLine}
       </div>
       <div class="txp-actions">${actions}</div>
     </div>`;
@@ -915,7 +950,7 @@ function subscribeTransactionRealtime(conv) {
         table: "transactions",
         filter: `item_id=eq.${conv.item_id}`,
       },
-      (payload) => {
+      async (payload) => {
         const row = payload.new;
         if (
           !row ||
@@ -926,6 +961,10 @@ function subscribeTransactionRealtime(conv) {
         if (activeConversationId !== conv.id) return;
 
         activeTx = row;
+        await loadOfferedItem(row);
+
+        if (activeConversationId !== conv.id) return;
+
         renderTransactionPanel();
       },
     )

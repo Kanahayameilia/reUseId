@@ -275,6 +275,125 @@ const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
     }
   }
 
+  // ---------- pilih barang yang ditawarkan (khusus Barter) ----------
+  function esc(str) {
+    const div = document.createElement("div");
+    div.textContent = str ?? "";
+    return div.innerHTML.replace(/"/g, "&quot;");
+  }
+
+  function injectOfferStyles() {
+    if (document.getElementById("offerModalStyle")) return;
+    const s = document.createElement("style");
+    s.id = "offerModalStyle";
+    s.textContent = `
+      .offer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999;}
+      .offer-card{background:#fff;border-radius:16px;width:100%;max-width:460px;max-height:85vh;display:flex;flex-direction:column;font-family:'DM Sans',sans-serif;}
+      .offer-head{padding:18px 20px 6px;}
+      .offer-head h3{margin:0 0 4px;font-size:1.05rem;}
+      .offer-head p{margin:0;font-size:.82rem;color:#6b7a73;}
+      .offer-list{overflow-y:auto;padding:10px 20px;display:flex;flex-direction:column;gap:8px;}
+      .offer-opt{display:flex;align-items:center;gap:12px;padding:8px;border:2px solid #e3e8e5;border-radius:12px;cursor:pointer;background:#fff;text-align:left;font:inherit;}
+      .offer-opt.selected{border-color:var(--sage,#4E8C6B);background:#f3f8f5;}
+      .offer-opt img{width:52px;height:52px;object-fit:cover;border-radius:8px;flex:0 0 auto;}
+      .offer-opt strong{display:block;font-size:.9rem;}
+      .offer-opt span{font-size:.78rem;color:#6b7a73;}
+      .offer-empty{margin:6px 0;font-size:.9rem;color:#6b7a73;}
+      .offer-empty a{color:var(--sage,#4E8C6B);font-weight:700;}
+      .offer-actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px 18px;}
+      .offer-btn{padding:9px 18px;border-radius:999px;border:1px solid #d5ddd9;background:#fff;font:inherit;font-weight:700;cursor:pointer;}
+      .offer-btn.primary{background:var(--sage,#4E8C6B);border-color:var(--sage,#4E8C6B);color:#fff;}
+      .offer-btn:disabled{opacity:.5;cursor:not-allowed;}
+    `;
+    document.head.appendChild(s);
+  }
+
+  // Mengembalikan { id, name } barang yang dipilih, atau null kalau dibatalkan.
+  async function pickOfferedItem(userId) {
+    injectOfferStyles();
+
+    const { data, error } = await supabaseClient
+      .from("items")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("status", "Aktif")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      alert("Gagal memuat barangmu: " + error.message);
+      return null;
+    }
+
+    const mine = data || [];
+
+    return new Promise((resolve) => {
+      const overlay = document.createElement("div");
+      overlay.className = "offer-overlay";
+
+      const listHtml = mine.length
+        ? mine
+            .map((it) => {
+              const cover = it.photo || it.photos?.[0] || FALLBACK_PHOTO;
+              return `
+          <button type="button" class="offer-opt" data-id="${esc(it.id)}">
+            <img src="${esc(cover)}" alt="">
+            <div>
+              <strong>${esc(it.name)}</strong>
+              <span>Kondisi: ${esc(it.kondisi || "-")}</span>
+            </div>
+          </button>`;
+            })
+            .join("")
+        : `<p class="offer-empty">Kamu belum punya barang aktif untuk ditawarkan.
+             <a href="upload.html">Unggah barang dulu</a></p>`;
+
+      overlay.innerHTML = `
+        <div class="offer-card" role="dialog" aria-modal="true">
+          <div class="offer-head">
+            <h3>Pilih barang yang kamu tawarkan</h3>
+            <p>Untuk barter "${esc(item.name)}". Barangmu dikunci kalau pemilik menerima.</p>
+          </div>
+          <div class="offer-list">${listHtml}</div>
+          <div class="offer-actions">
+            <button type="button" class="offer-btn" data-close>Batal</button>
+            ${mine.length ? `<button type="button" class="offer-btn primary" data-submit disabled>Ajukan</button>` : ""}
+          </div>
+        </div>`;
+
+      document.body.appendChild(overlay);
+
+      let selected = null;
+      const submitBtn = overlay.querySelector("[data-submit]");
+
+      const close = (value) => {
+        overlay.remove();
+        resolve(value);
+      };
+
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay || e.target.closest("[data-close]")) {
+          close(null);
+          return;
+        }
+
+        const opt = e.target.closest(".offer-opt");
+        if (opt) {
+          overlay
+            .querySelectorAll(".offer-opt")
+            .forEach((o) => o.classList.remove("selected"));
+          opt.classList.add("selected");
+          selected = mine.find((m) => String(m.id) === opt.dataset.id) || null;
+          if (submitBtn) submitBtn.disabled = !selected;
+          return;
+        }
+
+        if (e.target.closest("[data-submit]") && selected) {
+          close({ id: selected.id, name: selected.name });
+        }
+      });
+    });
+  }
+
   document.getElementById("btnAjukanBarter").addEventListener("click", () => {
     requireLogin(async () => {
       const me = getCurrentUser();
@@ -284,10 +403,23 @@ const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
         return;
       }
 
+      let offered = null;
+      if (!isDonasi) {
+        offered = await pickOfferedItem(me.id);
+        if (!offered) return; // dibatalkan atau belum punya barang
+      }
+
+      btnPrimary.disabled = true;
+
       // Trigger di database yang ngisi buyer_id, seller_id, jenis, dan status.
+      const payload = { item_id: item.id };
+      if (offered) payload.offered_item_id = offered.id;
+
       const { error } = await supabaseClient
         .from("transactions")
-        .insert({ item_id: item.id });
+        .insert(payload);
+
+      btnPrimary.disabled = false;
 
       // 23505 = sudah punya pengajuan aktif untuk barang ini -> langsung buka chat lama
       if (error && error.code === "23505") {
@@ -303,7 +435,7 @@ const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
       openConversation(
         isDonasi
           ? `Halo, saya mau ambil barang "${item.name}". Boleh?`
-          : `Halo, saya tertarik untuk barter barang "${item.name}".`,
+          : `Halo, saya tertarik barter barang "${item.name}". Saya tawarkan "${offered.name}".`,
       );
     });
   });

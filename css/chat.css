@@ -760,3 +760,86 @@ a {
     font-size: 0.82rem;
   }
 }
+
+/* =========================================================
+   PANEL TRANSAKSI  (tempel di paling bawah css/chat.css)
+========================================================= */
+
+.txp {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border, #e3e8e5);
+  background: #f3f8f5;
+}
+
+.txp-badge {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--sage, #4e8c6b);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.txp-info {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sage-dark, #2f6b4a);
+}
+
+.txp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.txp-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--border, #d5ddd9);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--sage-dark, #2f6b4a);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.txp-btn:hover {
+  border-color: var(--sage, #4e8c6b);
+}
+
+.txp-btn.primary {
+  background: var(--sage, #4e8c6b);
+  border-color: var(--sage, #4e8c6b);
+  color: #fff;
+}
+
+.txp-btn.danger {
+  color: #a33a3a;
+}
+
+.txp.selesai {
+  background: #e8f5ee;
+}
+
+.txp.ditolak,
+.txp.dibatalkan {
+  background: #f4f1ee;
+}
+
+.txp.ditolak .txp-badge,
+.txp.dibatalkan .txp-badge {
+  background: #9a9590;
+}
+
+.txp.ditolak .txp-info,
+.txp.dibatalkan .txp-info {
+  color: #6f6a65;
+}

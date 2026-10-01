@@ -109,9 +109,14 @@ const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
   const isDonasi = item.jenis === "Donasi";
 
   if (isDonasi) {
-    btnPrimary.hidden = true;
-    btnSecondary.classList.remove("btn-outline");
-    btnSecondary.classList.add("btn-filled");
+    btnPrimary.textContent = "Ajukan Ambil";
+  }
+
+  // barang yang sedang diproses / sudah selesai tidak bisa diajukan lagi
+  if (item.status && item.status !== "Aktif") {
+    btnPrimary.disabled = true;
+    btnPrimary.textContent =
+      item.status === "Selesai" ? "Sudah selesai" : "Sedang diproses";
   }
 
   // ---------- gallery ----------
@@ -271,12 +276,38 @@ const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
   }
 
   document.getElementById("btnAjukanBarter").addEventListener("click", () => {
-    requireLogin(() =>
+    requireLogin(async () => {
+      const me = getCurrentUser();
+
+      if (item.user_id === me.id) {
+        alert("Ini barang kamu sendiri.");
+        return;
+      }
+
+      // Trigger di database yang ngisi buyer_id, seller_id, jenis, dan status.
+      const { error } = await supabaseClient
+        .from("transactions")
+        .insert({ item_id: item.id });
+
+      // 23505 = sudah punya pengajuan aktif untuk barang ini -> langsung buka chat lama
+      if (error && error.code === "23505") {
+        openConversation();
+        return;
+      }
+
+      if (error) {
+        alert("Gagal mengajukan: " + error.message);
+        return;
+      }
+
       openConversation(
-        `Halo, saya tertarik untuk barter barang "${item.name}".`,
-      ),
-    );
+        isDonasi
+          ? `Halo, saya mau ambil barang "${item.name}". Boleh?`
+          : `Halo, saya tertarik untuk barter barang "${item.name}".`,
+      );
+    });
   });
+
   document.getElementById("btnHubungiPemilik").addEventListener("click", () => {
     requireLogin(() => openConversation());
   });

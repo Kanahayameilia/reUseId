@@ -178,15 +178,15 @@ function showSecurityWarning() {
 
 function showSensitiveDataWarning() {
   alert(
-    "⚠️ Pesan tidak dapat dikirim.\\n\\n" +
-      "Demi keamanan pengguna reUseId, jangan membagikan:\\n\\n" +
-      "• NIK / KTP\\n" +
-      "• Nomor rekening\\n" +
-      "• OTP / PIN / password\\n" +
-      "• Nomor kartu / CVV\\n" +
-      "• Nomor telepon\\n" +
-      "• Email pribadi\\n" +
-      "• Data pribadi atau identitas lainnya\\n\\n" +
+    "⚠️ Pesan tidak dapat dikirim.\n\n" +
+      "Demi keamanan pengguna reUseId, jangan membagikan:\n\n" +
+      "• NIK / KTP\n" +
+      "• Nomor rekening\n" +
+      "• OTP / PIN / password\n" +
+      "• Nomor kartu / CVV\n" +
+      "• Nomor telepon\n" +
+      "• Email pribadi\n" +
+      "• Data pribadi atau identitas lainnya\n\n" +
       "Silakan hapus informasi tersebut lalu kirim kembali pesan.",
   );
 }
@@ -409,6 +409,9 @@ async function openConversation(id) {
   showSecurityWarning();
 
   await loadMessages(id);
+
+  await loadTransaction(conv);
+  subscribeTransactionRealtime(conv);
 
   window.ReuseNotif?.markSeen(id);
 
@@ -699,6 +702,235 @@ composerInput.addEventListener("keydown", (e) => {
     composerForm.requestSubmit();
   }
 });
+
+// =========================================================
+// PANEL TRANSAKSI
+// =========================================================
+
+const transactionPanel = document.getElementById("transactionPanel");
+
+let activeTx = null;
+let txChannel = null;
+
+const TX_INFO = {
+  menunggu: "Menunggu respons pemilik barang",
+  diterima: "Disepakati. Atur waktu dan tempat serah terima lewat chat.",
+  selesai: "Transaksi selesai",
+  ditolak: "Pengajuan ditolak",
+  dibatalkan: "Transaksi dibatalkan",
+};
+
+// ---------- ambil transaksi terbaru untuk percakapan ini ----------
+async function loadTransaction(conv) {
+  activeTx = null;
+  renderTransactionPanel();
+
+  if (!conv.item_id) return;
+
+  const { data, error } = await supabaseClient
+    .from("transactions")
+    .select("*")
+    .eq("item_id", conv.item_id)
+    .eq("buyer_id", conv.buyer_id)
+    .eq("seller_id", conv.seller_id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.warn("Gagal memuat transaksi:", error.message);
+    return;
+  }
+
+  // user keburu pindah percakapan -> abaikan hasil lama
+  if (activeConversationId !== conv.id) return;
+
+  activeTx = data || null;
+  renderTransactionPanel();
+}
+
+// ---------- tampilan panel ----------
+function renderTransactionPanel() {
+  if (!activeTx) {
+    transactionPanel.hidden = true;
+    transactionPanel.innerHTML = "";
+    return;
+  }
+
+  const tx = activeTx;
+  const isSeller = tx.seller_id === currentUser.id;
+  const myConfirmed = isSeller ? tx.seller_confirmed : tx.buyer_confirmed;
+  const otherConfirmed = isSeller ? tx.buyer_confirmed : tx.seller_confirmed;
+  const label = tx.jenis === "Donasi" ? "Donasi" : "Barter";
+
+  let info = TX_INFO[tx.status] || tx.status;
+  let actions = "";
+
+  if (tx.status === "menunggu") {
+    if (isSeller) {
+      info = "Ada pengajuan untuk barangmu";
+      actions = `
+        <button class="txp-btn primary" data-act="terima">Terima</button>
+        <button class="txp-btn" data-act="tolak">Tolak</button>`;
+    } else {
+      actions = `<button class="txp-btn" data-act="batal">Batalkan pengajuan</button>`;
+    }
+  } else if (tx.status === "diterima") {
+    if (!myConfirmed) {
+      if (otherConfirmed) info = "Pihak lain sudah konfirmasi serah terima";
+      actions += `
+        <button class="txp-btn primary" data-act="konfirmasi">
+          ${isSeller ? "Barang sudah kuserahkan" : "Barang sudah kuterima"}
+        </button>`;
+    } else {
+      info = "Kamu sudah konfirmasi. Menunggu konfirmasi pihak lain.";
+    }
+    actions += `<button class="txp-btn danger" data-act="batal">Batalkan</button>`;
+  }
+
+  transactionPanel.hidden = false;
+  transactionPanel.innerHTML = `
+    <div class="txp ${tx.status}">
+      <div>
+        <span class="txp-badge">${label}</span>
+        <span class="txp-info">${info}</span>
+      </div>
+      <div class="txp-actions">${actions}</div>
+    </div>`;
+}
+
+// ---------- kirim catatan otomatis ke chat (sekalian jadi notifikasi) ----------
+async function postInfo(text) {
+  if (!activeConversationId) return;
+
+  const { data: msg, error } = await supabaseClient
+    .from("messages")
+    .insert({
+      conversation_id: activeConversationId,
+      sender_id: currentUser.id,
+      content: text,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.warn("Gagal kirim info transaksi:", error.message);
+    return;
+  }
+
+  await supabaseClient
+    .from("conversations")
+    .update({ last_message: text, last_message_at: new Date().toISOString() })
+    .eq("id", activeConversationId);
+
+  if (msg && !threadMessages.querySelector(`[data-id="${msg.id}"]`)) {
+    threadMessages.appendChild(renderMessage(msg));
+    threadMessages.scrollTop = threadMessages.scrollHeight;
+  }
+
+  loadConversations();
+}
+
+// ---------- ubah transaksi ----------
+async function updateTransaction(patch, note) {
+  if (!activeTx) return;
+
+  const { data, error } = await supabaseClient
+    .from("transactions")
+    .update(patch)
+    .eq("id", activeTx.id)
+    .select()
+    .single();
+
+  if (error) {
+    alert("Gagal memperbarui transaksi: " + error.message);
+    return;
+  }
+
+  activeTx = data;
+  renderTransactionPanel();
+
+  // kalau dua pihak sudah konfirmasi, database otomatis ubah status ke 'selesai'
+  if (data.status === "selesai") {
+    await postInfo(
+      "Transaksi selesai. Terima kasih sudah berbagi di Re:Use.ID!",
+    );
+  } else if (note) {
+    await postInfo(note);
+  }
+}
+
+// ---------- klik tombol di panel ----------
+transactionPanel.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-act]");
+  if (!btn || !activeTx) return;
+
+  const isSeller = activeTx.seller_id === currentUser.id;
+
+  switch (btn.dataset.act) {
+    case "terima":
+      updateTransaction(
+        { status: "diterima" },
+        "Pengajuan diterima. Yuk atur waktu dan tempat serah terima.",
+      );
+      break;
+
+    case "tolak":
+      updateTransaction({ status: "ditolak" }, "Maaf, pengajuan ini ditolak.");
+      break;
+
+    case "batal":
+      if (confirm("Yakin mau membatalkan?")) {
+        updateTransaction({ status: "dibatalkan" }, "Transaksi dibatalkan.");
+      }
+      break;
+
+    case "konfirmasi":
+      updateTransaction(
+        isSeller ? { seller_confirmed: true } : { buyer_confirmed: true },
+        isSeller
+          ? "Pemilik mengonfirmasi barang sudah diserahkan."
+          : "Penerima mengonfirmasi barang sudah diterima.",
+      );
+      break;
+  }
+});
+
+// ---------- realtime: panel ikut berubah kalau pihak lain mengubah status ----------
+function subscribeTransactionRealtime(conv) {
+  if (txChannel) {
+    supabaseClient.removeChannel(txChannel);
+    txChannel = null;
+  }
+
+  if (!conv.item_id) return;
+
+  txChannel = supabaseClient
+    .channel(`tx-${conv.id}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "transactions",
+        filter: `item_id=eq.${conv.item_id}`,
+      },
+      (payload) => {
+        const row = payload.new;
+        if (
+          !row ||
+          row.buyer_id !== conv.buyer_id ||
+          row.seller_id !== conv.seller_id
+        )
+          return;
+        if (activeConversationId !== conv.id) return;
+
+        activeTx = row;
+        renderTransactionPanel();
+      },
+    )
+    .subscribe();
+}
 
 // =========================================================
 // INIT

@@ -13,6 +13,30 @@
     <link rel="stylesheet" href="css/admin.css" />
   </head>
   <body>
+    <div
+      id="adminGate"
+      style="
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #f6f8f7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 12px;
+        font-family: &quot;DM Sans&quot;, sans-serif;
+        text-align: center;
+        padding: 24px;
+      "
+    >
+      <div
+        id="adminGateText"
+        style="font-size: 1rem; font-weight: 600; color: #1a3c34"
+      >
+        Memeriksa akses…
+      </div>
+    </div>
     <div class="admin-shell">
       <aside class="sidebar">
         <div class="sidebar-logo">
@@ -165,10 +189,14 @@
         </nav>
 
         <div class="sidebar-footer">
-          <img src="https://i.pravatar.cc/60?img=68" alt="Admin" />
+          <img
+            id="adminAvatar"
+            src="https://i.pravatar.cc/60?img=47"
+            alt="Admin"
+          />
           <div>
-            <div class="admin-name">Wulan H.</div>
-            <div class="admin-role">Super Admin</div>
+            <div class="admin-name" id="adminName">Admin</div>
+            <div class="admin-role" id="adminRole">Admin</div>
           </div>
         </div>
       </aside>
@@ -180,7 +208,7 @@
             <p>Ringkasan aktivitas platform Re:Use.ID</p>
           </div>
           <div class="header-right">
-            <span class="date-range">📅 1 – 31 Agustus 2026</span>
+            <span class="date-range" id="dateRange">📅 …</span>
           </div>
         </header>
 
@@ -210,8 +238,8 @@
               </svg>
             </div>
             <div class="kpi-label">Total Pengguna Terdaftar</div>
-            <div class="kpi-number">2.847</div>
-            <div class="kpi-trend up">▲ +12% vs bulan lalu</div>
+            <div class="kpi-number" id="kpiUsers">–</div>
+            <div class="kpi-trend up" id="kpiUsersTrend"></div>
           </article>
 
           <article class="kpi-card">
@@ -235,8 +263,8 @@
               </svg>
             </div>
             <div class="kpi-label">Barang Aktif</div>
-            <div class="kpi-number">1.203</div>
-            <div class="kpi-trend up">▲ +8% vs bulan lalu</div>
+            <div class="kpi-number" id="kpiItems">–</div>
+            <div class="kpi-trend up" id="kpiItemsTrend"></div>
           </article>
 
           <article class="kpi-card">
@@ -259,8 +287,8 @@
               </svg>
             </div>
             <div class="kpi-label">Transaksi Bulan Ini</div>
-            <div class="kpi-number">456</div>
-            <div class="kpi-trend down">▼ -3% vs bulan lalu</div>
+            <div class="kpi-number" id="kpiTx">–</div>
+            <div class="kpi-trend up" id="kpiTxTrend"></div>
           </article>
 
           <article class="kpi-card">
@@ -282,8 +310,8 @@
               </svg>
             </div>
             <div class="kpi-label">Barang Terdonasi</div>
-            <div class="kpi-number">618</div>
-            <div class="kpi-trend up">▲ +19% vs bulan lalu</div>
+            <div class="kpi-number" id="kpiDonated">–</div>
+            <div class="kpi-trend up" id="kpiDonatedTrend"></div>
           </article>
         </section>
 
@@ -323,6 +351,8 @@
                 <option value="Semua">Semua Status</option>
                 <option value="Selesai">Selesai</option>
                 <option value="Diproses">Diproses</option>
+                <option value="Menunggu">Menunggu</option>
+                <option value="Ditolak">Ditolak</option>
                 <option value="Dibatalkan">Dibatalkan</option>
               </select>
             </div>
@@ -333,7 +363,7 @@
               <thead>
                 <tr>
                   <th>No</th>
-                  <th>Pengguna</th>
+                  <th>Pengaju</th>
                   <th>Barang</th>
                   <th>Jenis</th>
                   <th>Tanggal</th>
@@ -352,7 +382,10 @@
       </main>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="js/admin.js"></script>
   </body>
 </html>

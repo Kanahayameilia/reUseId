@@ -80,19 +80,19 @@ function renderCard(item) {
     jarak * 1000 < 1000 ? `${Math.round(jarak * 1000)} m` : `${jarak} km`;
   return `
     <article class="card">
-      <a href="detail.html?id=${item.id}" class="card-photo">
-        <span class="badge ${badgeClass}">${item.jenis.toUpperCase()}</span>
-        <img src="${item.photo}" alt="${item.name}" loading="lazy">
+      <a href="detail.html?id=${encodeURIComponent(item.id)}" class="card-photo">
+        <span class="badge ${badgeClass}">${escHtml(item.jenis.toUpperCase())}</span>
+        <img src="${escHtml(item.photo)}" alt="${escHtml(item.name)}" loading="lazy">
       </a>
       <div class="card-body">
-        <h3 class="card-title">${item.name}</h3>
-        <span class="condition-tag">Kondisi: ${item.kondisi}</span>
-        <span class="card-distance">📍 ${jarakLabel} — ${item.lokasi}</span>
+        <h3 class="card-title">${escHtml(item.name)}</h3>
+        <span class="condition-tag">Kondisi: ${escHtml(item.kondisi)}</span>
+        <span class="card-distance">📍 ${jarakLabel} — ${escHtml(item.lokasi)}</span>
         <div class="card-owner">
-          <img src="${item.avatar}" alt="${item.owner}">
-          <span>${item.owner}</span>
+          <img src="${escHtml(item.avatar)}" alt="${escHtml(item.owner)}">
+          <span>${escHtml(item.owner)}</span>
         </div>
-        <a href="detail.html?id=${item.id}" class="btn-detail">Lihat Detail</a>
+        <a href="detail.html?id=${encodeURIComponent(item.id)}" class="btn-detail">Lihat Detail</a>
       </div>
     </article>
   `;

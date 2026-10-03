@@ -87,8 +87,21 @@ const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
   document.getElementById("ownerAvatar").src = item.avatar;
   document.getElementById("ownerAvatar").alt = item.owner;
   document.getElementById("ownerName").textContent = item.owner;
-  document.getElementById("ownerRating").innerHTML =
-    `⭐ ${item.rating}/5 &nbsp;·&nbsp; Member sejak ${item.memberSince}`;
+  const ownerRatingEl = document.getElementById("ownerRating");
+  ownerRatingEl.innerHTML = `Belum ada ulasan &nbsp;·&nbsp; Member sejak ${item.memberSince}`;
+
+  // rating asli: rata-rata ulasan yang diterima pemilik barang
+  supabaseClient
+    .from("reviews")
+    .select("rating")
+    .eq("reviewee_id", item.user_id)
+    .then(({ data: revs }) => {
+      if (!revs || !revs.length) return;
+      const avg = (
+        revs.reduce((a, r) => a + r.rating, 0) / revs.length
+      ).toFixed(1);
+      ownerRatingEl.innerHTML = `⭐ ${avg}/5 (${revs.length} ulasan) &nbsp;·&nbsp; Member sejak ${item.memberSince}`;
+    });
 
   // ---------- jarak asli: pakai lokasi GPS user kalau ada, fallback ke field "jarak" statis ----------
   const itemLocationEl = document.getElementById("itemLocation");

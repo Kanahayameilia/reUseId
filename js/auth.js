@@ -105,4 +105,10 @@ async function signInWithGoogle(btn) {
   }
 }
 
+function escHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+
 initAuth();

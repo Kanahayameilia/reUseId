@@ -46,8 +46,7 @@ onAuthReady(async () => {
         .map(
           (url, i) => `
       <div class="photo-thumb" data-index="${i}">
-        <img src="${url}" alt="Foto ${i + 1}">
-        <button type="button" class="remove-photo" data-index="${i}" aria-label="Hapus foto">✕</button>
+<img src="${escHtml(url)}" alt="Foto ${i + 1}">        <button type="button" class="remove-photo" data-index="${i}" aria-label="Hapus foto">✕</button>
       </div>
     `,
         )

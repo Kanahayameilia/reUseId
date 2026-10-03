@@ -1,4 +1,96 @@
-// ---------- sidebar nav (visual only — cuma Dashboard yang punya konten di demo ini) ----------
+// =========================================================
+// Re:Use.ID - DASHBOARD ADMIN (data asli dari Supabase)
+// =========================================================
+// supabaseClient ada di supabase-client.js; isLoggedIn()/onAuthReady() ada di auth.js
+// (keduanya dimuat sebelum file ini).
+//
+// Data diambil lewat fungsi database admin_stats() dan admin_transactions().
+// Kedua fungsi itu menolak non-admin, jadi pengecekan di halaman ini cuma
+// untuk tampilan. Yang menjaga data adalah database.
+// =========================================================
+
+const FALLBACK_AVATAR = "https://i.pravatar.cc/40?img=47";
+
+const MONTHS_SHORT = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "Mei",
+  "Jun",
+  "Jul",
+  "Agu",
+  "Sep",
+  "Okt",
+  "Nov",
+  "Des",
+];
+const MONTHS_LONG = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
+const DONUT_COLORS = [
+  "#4CAF7D",
+  "#3B7DDB",
+  "#D9A441",
+  "#1A3C34",
+  "#8E6BBF",
+  "#9AA5A0",
+];
+
+const STATUS_LABEL = {
+  menunggu: "Menunggu",
+  diterima: "Diproses",
+  selesai: "Selesai",
+  ditolak: "Ditolak",
+  dibatalkan: "Dibatalkan",
+};
+// kelas CSS lama pakai "diproses" untuk status Diterima
+const STATUS_CLASS = { diterima: "diproses" };
+
+// ---------- util ----------
+function esc(str) {
+  const div = document.createElement("div");
+  div.textContent = str ?? "";
+  return div.innerHTML.replace(/"/g, "&quot;");
+}
+
+function fmtNum(n) {
+  return Number(n || 0).toLocaleString("id-ID");
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+// gaya tambahan untuk status baru (Menunggu, Ditolak)
+(function injectStyles() {
+  const s = document.createElement("style");
+  s.textContent = `
+    .tx-status.menunggu{background:#fff4dd;color:#9a6a00;}
+    .tx-status.ditolak{background:#f1eeea;color:#6f6a65;}
+    .tx-owner{display:block;font-size:.72rem;color:#7a8b85;font-weight:400;}
+  `;
+  document.head.appendChild(s);
+})();
+
+// ---------- sidebar nav (visual only — cuma Dashboard yang punya konten) ----------
 document.querySelectorAll(".nav-item").forEach((item) => {
   item.addEventListener("click", (e) => {
     e.preventDefault();
@@ -9,243 +101,238 @@ document.querySelectorAll(".nav-item").forEach((item) => {
   });
 });
 
-// ---------- LINE CHART: Pertumbuhan Pengguna Aktif ----------
-const lineCtx = document.getElementById("lineChart").getContext("2d");
-new Chart(lineCtx, {
-  type: "line",
-  data: {
-    labels: ["Mar", "Apr", "Mei", "Jun", "Jul", "Agu"],
-    datasets: [
-      {
-        label: "Pengguna Baru",
-        data: [180, 240, 290, 310, 380, 420],
-        borderColor: "#4CAF7D",
-        backgroundColor: "rgba(76,175,125,0.1)",
-        borderWidth: 2.5,
-        pointRadius: 3,
-        pointBackgroundColor: "#4CAF7D",
-        tension: 0.35,
-        fill: true,
-      },
-      {
-        label: "Pengguna Aktif",
-        data: [420, 510, 640, 710, 890, 1040],
-        borderColor: "#3B7DDB",
-        backgroundColor: "rgba(59,125,219,0.06)",
-        borderWidth: 2.5,
-        pointRadius: 3,
-        pointBackgroundColor: "#3B7DDB",
-        tension: 0.35,
-        fill: true,
-      },
-    ],
-  },
-  options: {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: { color: "#EEF1EF" },
-        ticks: { color: "#66756F", font: { family: "DM Sans", size: 11 } },
-      },
-      x: {
-        grid: { display: false },
-        ticks: { color: "#66756F", font: { family: "DM Sans", size: 11 } },
-      },
+// ---------- profil admin di sidebar (akun yang sedang login) ----------
+function fillAdminProfile() {
+  const u = getCurrentUser();
+  const name =
+    u?.user_metadata?.full_name || u?.user_metadata?.name || getUserName();
+  document.getElementById("adminName").textContent = name;
+  document.getElementById("adminRole").textContent = "Admin";
+  document.getElementById("adminAvatar").src =
+    u?.user_metadata?.avatar_url || FALLBACK_AVATAR;
+}
+
+// ---------- dashboard ----------
+async function initDashboard() {
+  // rentang tanggal = bulan berjalan
+  const now = new Date();
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  document.getElementById("dateRange").textContent =
+    `📅 1 – ${lastDay} ${MONTHS_LONG[now.getMonth()]} ${now.getFullYear()}`;
+
+  const [statsRes, txRes] = await Promise.all([
+    supabaseClient.rpc("admin_stats"),
+    supabaseClient.rpc("admin_transactions"),
+  ]);
+
+  if (statsRes.error) {
+    console.error("admin_stats gagal:", statsRes.error);
+    alert("Gagal memuat statistik: " + statsRes.error.message);
+  } else {
+    // tiap bagian dibungkus sendiri-sendiri, supaya kalau grafik gagal,
+    // KPI dan tabel di bawahnya tetap tampil
+    try {
+      renderKpis(statsRes.data);
+    } catch (err) {
+      console.error("Gagal menampilkan KPI:", err);
+    }
+
+    if (typeof Chart === "undefined") {
+      const msg = `<p style="padding:24px;color:#7a8b85;">Grafik gagal dimuat (library Chart.js tidak terunduh). Cek koneksi internet lalu muat ulang.</p>`;
+      document.querySelectorAll(".chart-card canvas").forEach((c) => {
+        c.insertAdjacentHTML("afterend", msg);
+        c.remove();
+      });
+    } else {
+      try {
+        renderLineChart(statsRes.data.series || []);
+      } catch (err) {
+        console.error("Gagal menggambar grafik pengguna:", err);
+      }
+      try {
+        renderDonut(statsRes.data.categories || []);
+      } catch (err) {
+        console.error("Gagal menggambar donut kategori:", err);
+      }
+    }
+  }
+
+  if (txRes.error) {
+    console.error("admin_transactions gagal:", txRes.error);
+    txTableBody.innerHTML = `<tr><td colspan="6">Gagal memuat transaksi: ${esc(txRes.error.message)}</td></tr>`;
+    paginationInfo.textContent = "";
+  } else {
+    transactions = txRes.data || [];
+    renderTable();
+  }
+}
+
+// ---------- KPI ----------
+function setTrend(id, text, down) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle("down", !!down);
+  el.classList.toggle("up", !down);
+}
+
+function renderKpis(s) {
+  document.getElementById("kpiUsers").textContent = fmtNum(s.total_users);
+  document.getElementById("kpiItems").textContent = fmtNum(s.active_items);
+  document.getElementById("kpiTx").textContent = fmtNum(s.tx_month);
+  document.getElementById("kpiDonated").textContent = fmtNum(s.donated_total);
+
+  setTrend("kpiUsersTrend", `▲ +${fmtNum(s.new_users)} baru bulan ini`, false);
+  setTrend(
+    "kpiItemsTrend",
+    `▲ +${fmtNum(s.items_month)} diunggah bulan ini`,
+    false,
+  );
+  setTrend(
+    "kpiDonatedTrend",
+    `▲ +${fmtNum(s.donated_month)} selesai bulan ini`,
+    false,
+  );
+
+  if (s.tx_prev > 0) {
+    const pct = Math.round(((s.tx_month - s.tx_prev) / s.tx_prev) * 100);
+    setTrend(
+      "kpiTxTrend",
+      `${pct >= 0 ? "▲ +" : "▼ "}${pct}% vs bulan lalu`,
+      pct < 0,
+    );
+  } else {
+    setTrend("kpiTxTrend", "Belum ada data bulan lalu", false);
+  }
+}
+
+// ---------- LINE CHART: Pertumbuhan Pengguna ----------
+function renderLineChart(series) {
+  const labels = series.map(
+    (p) => MONTHS_SHORT[Number(p.month.slice(5, 7)) - 1],
+  );
+
+  new Chart(document.getElementById("lineChart").getContext("2d"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Pengguna Baru",
+          data: series.map((p) => p.new_users),
+          borderColor: "#4CAF7D",
+          backgroundColor: "rgba(76,175,125,0.1)",
+          borderWidth: 2.5,
+          pointRadius: 3,
+          pointBackgroundColor: "#4CAF7D",
+          tension: 0.35,
+          fill: true,
+        },
+        {
+          label: "Pengguna Aktif",
+          data: series.map((p) => p.active_users),
+          borderColor: "#3B7DDB",
+          backgroundColor: "rgba(59,125,219,0.06)",
+          borderWidth: 2.5,
+          pointRadius: 3,
+          pointBackgroundColor: "#3B7DDB",
+          tension: 0.35,
+          fill: true,
+        },
+      ],
     },
-    interaction: { mode: "index", intersect: false },
-  },
-});
-
-// ---------- DONUT CHART: Distribusi Kategori Barang ----------
-const categoryData = [
-  { label: "Pakaian", value: 38, color: "#4CAF7D" },
-  { label: "Buku", value: 27, color: "#3B7DDB" },
-  { label: "Elektronik", value: 20, color: "#D9A441" },
-  { label: "Perabot", value: 15, color: "#1A3C34" },
-];
-
-const donutCtx = document.getElementById("donutChart").getContext("2d");
-new Chart(donutCtx, {
-  type: "doughnut",
-  data: {
-    labels: categoryData.map((c) => c.label),
-    datasets: [
-      {
-        data: categoryData.map((c) => c.value),
-        backgroundColor: categoryData.map((c) => c.color),
-        borderWidth: 0,
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: "#EEF1EF" },
+          ticks: {
+            color: "#66756F",
+            precision: 0,
+            font: { family: "DM Sans", size: 11 },
+          },
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: "#66756F", font: { family: "DM Sans", size: 11 } },
+        },
       },
-    ],
-  },
-  options: {
-    responsive: true,
-    cutout: "68%",
-    plugins: { legend: { display: false } },
-  },
-});
+      interaction: { mode: "index", intersect: false },
+    },
+  });
+}
 
-const donutLegend = document.getElementById("donutLegend");
-donutLegend.innerHTML = categoryData
-  .map(
-    (c) => `
-  <div class="donut-legend-item">
-    <span class="dot" style="background:${c.color}"></span>
-    ${c.label}
-    <span class="donut-legend-pct">${c.value}%</span>
-  </div>
-`,
-  )
-  .join("");
+// ---------- DONUT CHART: Distribusi Kategori ----------
+function renderDonut(categories) {
+  const donutLegend = document.getElementById("donutLegend");
+  const ctx = document.getElementById("donutChart").getContext("2d");
+
+  if (!categories.length) {
+    new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: ["Kosong"],
+        datasets: [{ data: [1], backgroundColor: ["#E3E8E5"], borderWidth: 0 }],
+      },
+      options: {
+        responsive: true,
+        cutout: "68%",
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      },
+    });
+    donutLegend.innerHTML = `<div class="donut-legend-item">Belum ada barang</div>`;
+    return;
+  }
+
+  // 5 kategori terbesar, sisanya digabung jadi "Lainnya"
+  const sorted = [...categories].sort((a, b) => b.total - a.total);
+  let top = sorted.slice(0, 5);
+  const rest = sorted.slice(5).reduce((a, c) => a + c.total, 0);
+  if (rest > 0) top.push({ kategori: "Lainnya", total: rest });
+
+  const sum = top.reduce((a, c) => a + c.total, 0);
+  const data = top.map((c, i) => ({
+    label: c.kategori,
+    value: c.total,
+    pct: Math.round((c.total / sum) * 100),
+    color: DONUT_COLORS[i % DONUT_COLORS.length],
+  }));
+
+  new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: data.map((c) => c.label),
+      datasets: [
+        {
+          data: data.map((c) => c.value),
+          backgroundColor: data.map((c) => c.color),
+          borderWidth: 0,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      cutout: "68%",
+      plugins: { legend: { display: false } },
+    },
+  });
+
+  donutLegend.innerHTML = data
+    .map(
+      (c) => `
+    <div class="donut-legend-item">
+      <span class="dot" style="background:${c.color}"></span>
+      ${esc(c.label)}
+      <span class="donut-legend-pct">${c.pct}%</span>
+    </div>`,
+    )
+    .join("");
+}
 
 // ---------- TABEL TRANSAKSI ----------
-const transactions = [
-  {
-    user: "Rani A.",
-    avatar: "https://i.pravatar.cc/40?img=32",
-    item: "Jaket Denim Oversize",
-    jenis: "Barter",
-    date: "29 Agu 2026",
-    status: "Selesai",
-  },
-  {
-    user: "Dimas P.",
-    avatar: "https://i.pravatar.cc/40?img=12",
-    item: "Buku Kalkulus II",
-    jenis: "Donasi",
-    date: "29 Agu 2026",
-    status: "Selesai",
-  },
-  {
-    user: "Sari W.",
-    avatar: "https://i.pravatar.cc/40?img=45",
-    item: "Lampu Meja LED",
-    jenis: "Barter",
-    date: "28 Agu 2026",
-    status: "Diproses",
-  },
-  {
-    user: "Fajar N.",
-    avatar: "https://i.pravatar.cc/40?img=8",
-    item: "Meja Belajar Lipat",
-    jenis: "Donasi",
-    date: "28 Agu 2026",
-    status: "Selesai",
-  },
-  {
-    user: "Bagas T.",
-    avatar: "https://i.pravatar.cc/40?img=15",
-    item: "Kemeja Flanel Kotak",
-    jenis: "Barter",
-    date: "27 Agu 2026",
-    status: "Dibatalkan",
-  },
-  {
-    user: "Intan R.",
-    avatar: "https://i.pravatar.cc/40?img=25",
-    item: "Novel Fiksi Bekas",
-    jenis: "Donasi",
-    date: "27 Agu 2026",
-    status: "Selesai",
-  },
-  {
-    user: "Yoga S.",
-    avatar: "https://i.pravatar.cc/40?img=51",
-    item: "Kabel & Charger Laptop",
-    jenis: "Barter",
-    date: "26 Agu 2026",
-    status: "Diproses",
-  },
-  {
-    user: "Citra D.",
-    avatar: "https://i.pravatar.cc/40?img=38",
-    item: "Rak Buku Kayu Kecil",
-    jenis: "Barter",
-    date: "26 Agu 2026",
-    status: "Selesai",
-  },
-  {
-    user: "Reza M.",
-    avatar: "https://i.pravatar.cc/40?img=60",
-    item: "Tas Ransel Kampus",
-    jenis: "Donasi",
-    date: "25 Agu 2026",
-    status: "Selesai",
-  },
-  {
-    user: "Putri L.",
-    avatar: "https://i.pravatar.cc/40?img=44",
-    item: "Sepatu Sneakers",
-    jenis: "Barter",
-    date: "25 Agu 2026",
-    status: "Selesai",
-  },
-  {
-    user: "Andi K.",
-    avatar: "https://i.pravatar.cc/40?img=53",
-    item: "Kipas Angin Kecil",
-    jenis: "Donasi",
-    date: "24 Agu 2026",
-    status: "Dibatalkan",
-  },
-  {
-    user: "Nadia F.",
-    avatar: "https://i.pravatar.cc/40?img=47",
-    item: "Setrika Portable",
-    jenis: "Barter",
-    date: "24 Agu 2026",
-    status: "Diproses",
-  },
-  {
-    user: "Rian S.",
-    avatar: "https://i.pravatar.cc/40?img=14",
-    item: "Buku Fisika Dasar",
-    jenis: "Donasi",
-    date: "23 Agu 2026",
-    status: "Selesai",
-  },
-  {
-    user: "Wahyu P.",
-    avatar: "https://i.pravatar.cc/40?img=17",
-    item: "Jam Weker Analog",
-    jenis: "Barter",
-    date: "23 Agu 2026",
-    status: "Selesai",
-  },
-  {
-    user: "Melati S.",
-    avatar: "https://i.pravatar.cc/40?img=29",
-    item: "Dompet Kulit",
-    jenis: "Donasi",
-    date: "22 Agu 2026",
-    status: "Selesai",
-  },
-  {
-    user: "Doni H.",
-    avatar: "https://i.pravatar.cc/40?img=52",
-    item: "Kaos Olahraga",
-    jenis: "Barter",
-    date: "22 Agu 2026",
-    status: "Diproses",
-  },
-  {
-    user: "Fitri A.",
-    avatar: "https://i.pravatar.cc/40?img=31",
-    item: "Tumbler Stainless",
-    jenis: "Donasi",
-    date: "21 Agu 2026",
-    status: "Selesai",
-  },
-  {
-    user: "Agus W.",
-    avatar: "https://i.pravatar.cc/40?img=59",
-    item: "Headphone Bekas",
-    jenis: "Barter",
-    date: "21 Agu 2026",
-    status: "Dibatalkan",
-  },
-];
+let transactions = [];
 
 const ROWS_PER_PAGE = 8;
 let currentPage = 1;
@@ -256,9 +343,13 @@ const paginationEl = document.getElementById("pagination");
 const paginationInfo = document.getElementById("paginationInfo");
 const statusFilter = document.getElementById("statusFilter");
 
+function statusLabel(tx) {
+  return STATUS_LABEL[tx.status] || tx.status;
+}
+
 function getFilteredTransactions() {
   if (activeStatus === "Semua") return transactions;
-  return transactions.filter((tx) => tx.status === activeStatus);
+  return transactions.filter((tx) => statusLabel(tx) === activeStatus);
 }
 
 function renderTable() {
@@ -272,28 +363,29 @@ function renderTable() {
   txTableBody.innerHTML = pageRows
     .map((tx, i) => {
       const jenisClass = tx.jenis === "Barter" ? "barter" : "donasi";
-      const statusClass = tx.status.toLowerCase();
+      const statusClass = STATUS_CLASS[tx.status] || tx.status;
       return `
       <tr>
         <td>${start + i + 1}</td>
         <td>
           <div class="tx-user">
-            <img src="${tx.avatar}" alt="${tx.user}">
-            ${tx.user}
+            <img src="${esc(tx.buyer_avatar || FALLBACK_AVATAR)}" alt="">
+            <span>${esc(tx.buyer_name)}<span class="tx-owner">ke ${esc(tx.seller_name)}</span></span>
           </div>
         </td>
-        <td>${tx.item}</td>
-        <td><span class="tx-badge ${jenisClass}">${tx.jenis}</span></td>
-        <td>${tx.date}</td>
-        <td><span class="tx-status ${statusClass}">${tx.status}</span></td>
-      </tr>
-    `;
+        <td>${esc(tx.item_name || "Barang sudah dihapus")}</td>
+        <td><span class="tx-badge ${jenisClass}">${esc(tx.jenis)}</span></td>
+        <td>${fmtDate(tx.created_at)}</td>
+        <td><span class="tx-status ${esc(statusClass)}">${esc(statusLabel(tx))}</span></td>
+      </tr>`;
     })
     .join("");
 
   paginationInfo.textContent =
     filtered.length === 0
-      ? "Nggak ada transaksi dengan status ini"
+      ? transactions.length === 0
+        ? "Belum ada transaksi"
+        : "Nggak ada transaksi dengan status ini"
       : `Menampilkan ${start + 1}–${Math.min(start + ROWS_PER_PAGE, filtered.length)} dari ${filtered.length} transaksi`;
 
   renderPagination(totalPages);
@@ -335,4 +427,38 @@ statusFilter.addEventListener("change", () => {
   renderTable();
 });
 
-renderTable();
+// ---------- gerbang akses ----------
+const gateEl = document.getElementById("adminGate");
+const gateTextEl = document.getElementById("adminGateText");
+
+function showGateMessage(html) {
+  gateTextEl.innerHTML = html;
+}
+
+onAuthReady(async () => {
+  if (!isLoggedIn()) {
+    window.location.href = "login.html?redirect=admin.html";
+    return;
+  }
+
+  const { data: ok, error } = await supabaseClient.rpc("is_admin");
+
+  if (error) {
+    showGateMessage(
+      `Gagal memeriksa akses.<br><span style="font-weight:400;font-size:.85rem;">${esc(error.message)}</span><br>` +
+        `<span style="font-weight:400;font-size:.85rem;">Pastikan <b>bagian3_admin.sql</b> sudah dijalankan.</span>`,
+    );
+    return;
+  }
+
+  if (!ok) {
+    showGateMessage(
+      `Halaman ini khusus admin.<br><a href="index.html" style="color:#4E8C6B;font-weight:700;">← Kembali ke beranda</a>`,
+    );
+    return;
+  }
+
+  gateEl.remove();
+  fillAdminProfile();
+  initDashboard();
+});

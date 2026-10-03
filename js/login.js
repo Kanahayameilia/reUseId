@@ -64,8 +64,15 @@ form.addEventListener("submit", async (e) => {
   // kalau tadi diarahkan ke sini dari halaman lain (misal detail.html),
   // balik ke halaman itu setelah login. Kalau nggak ada, ke browse.html.
   const params = new URLSearchParams(window.location.search);
-  const redirect = params.get("redirect") || "browse.html";
-  window.location.href = redirect;
+  let target = "browse.html";
+  try {
+    const u = new URL(
+      params.get("redirect") || "browse.html",
+      window.location.href,
+    );
+    if (u.origin === window.location.origin) target = u.href;
+  } catch {}
+  window.location.href = target;
 });
 
 // ---------- Masuk dengan Google ----------

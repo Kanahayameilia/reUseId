@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profil Pengguna | Re:Use.ID</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/profile.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="index.html" class="logo">
+          <span class="mark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2C7 6 4 10.5 4 14.5C4 18.6 7.4 22 12 22C16.6 22 20 18.6 20 14.5C20 10.5 17 6 12 2Z"
+                fill="white"
+              />
+            </svg>
+          </span>
+          Re:Use.ID
+        </a>
+        <div class="topbar-right">
+          <a href="browse.html" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M19 12H5M5 12L12 19M5 12L12 5"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Kembali ke Jelajahi Barang
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="profile-header">
+        <div class="ph-main">
+          <div class="ph-avatar-wrap">
+            <img
+              class="ph-avatar"
+              id="phAvatar"
+              src="https://i.pravatar.cc/160?img=32"
+              alt="Foto profil"
+            />
+          </div>
+          <div class="ph-info">
+            <div class="ph-name-row">
+              <h1 id="phName">Memuat…</h1>
+            </div>
+            <span class="ph-tag" id="phCampus">🎓 Mahasiswa</span>
+            <div class="ph-meta">
+              <span id="phSince" class="meta-dim"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ph-stats">
+          <div class="stat-item">
+            <div class="stat-num" id="statActive">0</div>
+            <div class="stat-label">Barang Aktif</div>
+          </div>
+          <div class="stat-div"></div>
+          <div class="stat-item">
+            <div class="stat-num" id="statReviews">0</div>
+            <div class="stat-label">Ulasan</div>
+          </div>
+          <div class="stat-div"></div>
+          <div class="stat-item">
+            <div class="stat-num" id="statRating">–</div>
+            <div class="stat-label">Rating</div>
+          </div>
+        </div>
+      </section>
+
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="aktif">Barang Aktif</button>
+        <button class="tab-btn" data-tab="ulasan">Ulasan</button>
+      </nav>
+
+      <section id="panel-aktif" class="tab-panel active">
+        <div class="grid" id="activeGrid"></div>
+      </section>
+
+      <section id="panel-ulasan" class="tab-panel">
+        <div class="review-list" id="reviewList"></div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/user.js"></script>
+  </body>
+</html>

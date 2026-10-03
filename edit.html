@@ -163,10 +163,17 @@
             </div>
           </div>
 
-          <div class="field">
-            <label>Titik Lokasi di Peta</label>
-
-            <div class="map-tools">
+                    <div class="field">
+            <label for="itemLokasi">Lokasi</label>
+            <input
+              type="text"
+              id="itemLokasi"
+              name="itemLokasi"
+              placeholder="Contoh: Kos Tidar Utara, Magelang"
+              required
+            />
+            <span class="field-error" id="err-itemLokasi"></span>
+          </div>
               <input
                 type="text"
                 id="mapSearch"

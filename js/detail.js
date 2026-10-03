@@ -87,6 +87,12 @@ const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
   document.getElementById("ownerAvatar").src = item.avatar;
   document.getElementById("ownerAvatar").alt = item.owner;
   document.getElementById("ownerName").textContent = item.owner;
+
+  const profileLink = document.querySelector(".profile-link");
+  if (profileLink && item.user_id) {
+    profileLink.href = `user.html?id=${encodeURIComponent(item.user_id)}`;
+  }
+
   const ownerRatingEl = document.getElementById("ownerRating");
   ownerRatingEl.innerHTML = `Belum ada ulasan &nbsp;·&nbsp; Member sejak ${item.memberSince}`;
 

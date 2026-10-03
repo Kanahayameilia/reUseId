@@ -79,6 +79,24 @@ function fmtDate(iso) {
   });
 }
 
+function ensureBox(canvasId, boxClass, w, h) {
+  const canvas = document.getElementById(canvasId);
+  let box = canvas.parentElement;
+  if (!box.classList.contains(boxClass)) {
+    box = document.createElement("div");
+    box.className = boxClass;
+    canvas.parentNode.insertBefore(box, canvas);
+    box.appendChild(canvas);
+  }
+  canvas.removeAttribute("width");
+  canvas.removeAttribute("height");
+  box.style.position = "relative";
+  box.style.width = w;
+  box.style.height = h;
+  box.style.flex = "0 0 auto";
+  return canvas;
+}
+
 // gaya tambahan untuk status baru (Menunggu, Ditolak)
 (function injectStyles() {
   const s = document.createElement("style");
@@ -212,7 +230,8 @@ function renderLineChart(series) {
     (p) => MONTHS_SHORT[Number(p.month.slice(5, 7)) - 1],
   );
 
-  new Chart(document.getElementById("lineChart").getContext("2d"), {
+  const lineCanvas = ensureBox("lineChart", "line-box", "100%", "180px");
+  new Chart(lineCanvas.getContext("2d"), {
     type: "line",
     data: {
       labels,
@@ -243,6 +262,7 @@ function renderLineChart(series) {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
         y: {
@@ -267,8 +287,9 @@ function renderLineChart(series) {
 // ---------- DONUT CHART: Distribusi Kategori ----------
 function renderDonut(categories) {
   const donutLegend = document.getElementById("donutLegend");
-  const ctx = document.getElementById("donutChart").getContext("2d");
-
+  const ctx = ensureBox("donutChart", "donut-box", "130px", "130px").getContext(
+    "2d",
+  );
   if (!categories.length) {
     new Chart(ctx, {
       type: "doughnut",
@@ -278,6 +299,7 @@ function renderDonut(categories) {
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         cutout: "68%",
         plugins: { legend: { display: false }, tooltip: { enabled: false } },
       },
@@ -314,6 +336,7 @@ function renderDonut(categories) {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       cutout: "68%",
       plugins: { legend: { display: false } },
     },

@@ -3,8 +3,7 @@
 // item_data.js masih dimuat buat kompatibilitas lama, tapi ITEMS sudah dikosongkan —
 // halaman ini sekarang murni ambil data dari tabel "items" di Supabase.
 
-const FALLBACK_PHOTO =
-  "assets/item-default.svg";
+const FALLBACK_PHOTO = "assets/item-default.svg";
 const FALLBACK_AVATAR = "assets/avatar-default.svg";
 
 (async function () {
@@ -148,8 +147,9 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
   thumbRow.innerHTML = item.photos
     .map(
       (src, i) => `
-<button class="thumb ${i === 0 ? "active" : ""}" data-src="${escHtml(src)}">
-<img src="${escHtml(src)}" alt="${escHtml(item.name)} — foto ${i + 1}">    </button>
+    <button class="thumb ${i === 0 ? "active" : ""}" data-src="${escHtml(src)}">
+      <img src="${escHtml(src)}" alt="${escHtml(item.name)} — foto ${i + 1}">
+    </button>
   `,
     )
     .join("");
@@ -188,9 +188,11 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
           <article class="sim-card">
             <a href="detail.html?id=${sim.id}" class="sim-photo">
               <span class="sim-badge ${badgeClass}">${sim.jenis.toUpperCase()}</span>
-<img src="${escHtml(cover)}" alt="${escHtml(sim.name)}" loading="lazy">            </a>
-            <div class="sim-body">${escHtml(sim.lokasi || "-")}</div>
-<div class="sim-title">${escHtml(sim.name)}</div>              <div class="sim-distance">📍 ${sim.jarak || 0} km — 
+              <img src="${escHtml(cover)}" alt="${escHtml(sim.name)}" loading="lazy">
+            </a>
+            <div class="sim-body">
+              <div class="sim-title">${escHtml(sim.name)}</div>
+              <div class="sim-distance">📍 ${sim.jarak || 0} km — ${escHtml(sim.lokasi || "-")}</div>
               <a href="detail.html?id=${sim.id}" class="sim-btn">Lihat Detail</a>
             </div>
           </article>
@@ -412,9 +414,6 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
 
   document.getElementById("btnAjukanBarter").addEventListener("click", () => {
     requireLogin(async () => {
-
-    document.getElementById("btnAjukanBarter").addEventListener("click", () => {
-    requireLogin(async () => {
       if (!requireAvatar()) return; // wajib foto profil dulu
       const me = getCurrentUser();
 
@@ -464,5 +463,6 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
     requireLogin(() => {
       if (!requireAvatar()) return; // wajib foto profil dulu
       openConversation();
-    });  });
+    });
+  });
 })();

@@ -294,7 +294,7 @@ async function loadConversations() {
 
       const active = conv.id === activeConversationId ? "active" : "";
 
-      const avatar = other.avatar || "https://i.pravatar.cc/80?img=47";
+      const avatar = other.avatar || "assets/avatar-default.svg";
 
       const name = other.name || "Pengguna Re:Use.ID";
 
@@ -393,7 +393,7 @@ async function openConversation(id) {
   threadEmpty.hidden = true;
   threadActive.hidden = false;
 
-  threadAvatar.src = other.avatar || "https://i.pravatar.cc/80?img=47";
+  threadAvatar.src = other.avatar || "assets/avatar-default.svg";
 
   threadName.textContent = other.name || "Pengguna Re:Use.ID";
 

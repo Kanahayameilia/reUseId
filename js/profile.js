@@ -27,6 +27,23 @@ onAuthReady(async () => {
     document.getElementById("settingsName")?.focus();
   });
 
+  // ---------- datang dari halaman lain karena WAJIB foto profil ----------
+  const _qs = new URLSearchParams(window.location.search);
+  const needPhoto = _qs.get("need") === "photo";
+  function safeBackUrl() {
+    const b = _qs.get("back") || "";
+    // cuma boleh balik ke halaman .html di situs sendiri
+    return /^[\w-]+\.html(\?[\w=&%.-]*)?$/.test(b) ? b : "browse.html";
+  }
+  if (needPhoto) {
+    const banner = document.createElement("div");
+    banner.style.cssText =
+      "background:#FFF6DD;border:1px solid #F0D58A;color:#6B5200;padding:12px 16px;border-radius:12px;margin-bottom:16px;font-size:.92rem;line-height:1.5;";
+    banner.textContent =
+      "📸 Upload foto profil dulu ya, biar sesama pengguna saling percaya. Setelah itu kamu otomatis dibawa balik.";
+    document.querySelector(".profile-header")?.before(banner);
+  }
+
   // ---------- GANTI FOTO PROFIL (upload ke Supabase Storage, bucket "avatars") ----------
   const avatarBtn = document.getElementById("btnChangeAvatar");
   const avatarInput = document.getElementById("avatarInput");
@@ -104,8 +121,10 @@ onAuthReady(async () => {
     // refresh cache sesi biar getCurrentUser()/getUserName() ikut update
     await setLoggedIn();
     avatarImg.src = newAvatarUrl;
-  });
 
+    // datang dari halaman yang mewajibkan foto -> balik ke sana
+    if (needPhoto) window.location.href = safeBackUrl();
+  });
   // ---------- TAB SWITCHING ----------
   const tabBtns = document.querySelectorAll(".tab-btn");
   const panels = document.querySelectorAll(".tab-panel");
@@ -175,9 +194,7 @@ onAuthReady(async () => {
     activeGrid.innerHTML = myItems
       .map((item) => {
         const badgeClass = item.jenis === "Barter" ? "barter" : "donasi";
-        const cover =
-          item.photos?.[0] ||
-          "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop";
+        const cover = item.photos?.[0] || "assets/item-default.svg";
         return `
         <article class="item-card" data-item-id="${item.id}">
           <div class="ic-photo">
@@ -306,9 +323,8 @@ onAuthReady(async () => {
   const statDoneEl = document.getElementById("statDone");
   const statRatingEl = document.getElementById("statRating");
 
-  const HIST_PHOTO =
-    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop";
-  const HIST_AVATAR = "https://i.pravatar.cc/80?img=47";
+  const HIST_PHOTO = "assets/item-default.svg";
+  const HIST_AVATAR = "assets/avatar-default.svg";
 
   const TX_LABEL = {
     menunggu: "Menunggu",

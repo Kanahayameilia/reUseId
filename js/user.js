@@ -1,8 +1,8 @@
 // supabaseClient ada di supabase-client.js; onAuthReady/isLoggedIn/getUserId/escHtml ada di auth.js.
 
-const FALLBACK_AVATAR = "https://i.pravatar.cc/160?img=32";
+const FALLBACK_AVATAR = "assets/avatar-default.svg";
 const FALLBACK_PHOTO =
-  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop";
+  "assets/item-default.svg";
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

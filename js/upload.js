@@ -14,6 +14,14 @@ onAuthReady(() => {
     return;
   }
 
+    if (!isLoggedIn()) {
+    window.location.href = "login.html?redirect=upload.html";
+    return;
+  }
+
+  // Wajib punya foto profil sebelum upload barang.
+  if (!requireAvatar()) return;
+
   const form = document.getElementById("uploadForm");
   const dropzone = document.getElementById("dropzone");
   const photoInput = document.getElementById("photoInput");
@@ -226,7 +234,7 @@ onAuthReady(() => {
         owner: currentUser.user_metadata?.full_name || getUserName(),
         avatar:
           currentUser.user_metadata?.avatar_url ||
-          "https://i.pravatar.cc/80?img=47",
+          "assets/avatar-default.svg",
         rating: 5,
         member_since: memberSince,
         status: "Aktif",

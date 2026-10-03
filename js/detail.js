@@ -4,8 +4,8 @@
 // halaman ini sekarang murni ambil data dari tabel "items" di Supabase.
 
 const FALLBACK_PHOTO =
-  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&h=900&fit=crop";
-const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
+  "assets/item-default.svg";
+const FALLBACK_AVATAR = "assets/avatar-default.svg";
 
 (async function () {
   const params = new URLSearchParams(window.location.search);
@@ -412,6 +412,10 @@ const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
 
   document.getElementById("btnAjukanBarter").addEventListener("click", () => {
     requireLogin(async () => {
+
+    document.getElementById("btnAjukanBarter").addEventListener("click", () => {
+    requireLogin(async () => {
+      if (!requireAvatar()) return; // wajib foto profil dulu
       const me = getCurrentUser();
 
       if (item.user_id === me.id) {
@@ -457,6 +461,8 @@ const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
   });
 
   document.getElementById("btnHubungiPemilik").addEventListener("click", () => {
-    requireLogin(() => openConversation());
-  });
+    requireLogin(() => {
+      if (!requireAvatar()) return; // wajib foto profil dulu
+      openConversation();
+    });  });
 })();

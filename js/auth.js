@@ -48,6 +48,24 @@ function getUserName() {
   return _cachedSession?.user?.user_metadata?.full_name || "Pengguna";
 }
 
+// ---------- wajib punya foto profil ----------
+// Dipakai sebelum aksi yang butuh kepercayaan: upload barang, ajukan barter,
+// hubungi pemilik. Return true kalau boleh lanjut. Kalau belum punya foto,
+// pengguna diarahkan ke profil, lalu otomatis balik ke halaman ini setelah upload.
+function hasAvatar() {
+  const meta = getCurrentUser()?.user_metadata;
+  return !!(meta?.avatar_url || meta?.picture);
+}
+
+function requireAvatar() {
+  if (hasAvatar()) return true;
+  const back =
+    window.location.pathname.split("/").pop() + window.location.search;
+  window.location.href =
+    "profile.html?need=photo&back=" + encodeURIComponent(back);
+  return false;
+}
+
 function getUserId() {
   return _cachedSession?.user?.id || null;
 }

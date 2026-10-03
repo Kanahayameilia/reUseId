@@ -9,7 +9,7 @@
 // untuk tampilan. Yang menjaga data adalah database.
 // =========================================================
 
-const FALLBACK_AVATAR = "https://i.pravatar.cc/40?img=47";
+const FALLBACK_AVATAR = "assets/avatar-default.svg";
 
 const MONTHS_SHORT = [
   "Jan",

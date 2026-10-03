@@ -1,0 +1,25 @@
+/* ===== Logo: semua tile putih ===== */
+body .logo .mark,
+body .form-logo .mark,
+body .visual-logo .mark,
+body .footer-logo .mark,
+body .sidebar-logo .mark,
+body .mark {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  padding: 3px !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+body .sidebar-logo .mark {
+  width: 36px !important;
+  height: 36px !important;
+}

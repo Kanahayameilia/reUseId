@@ -2,13 +2,20 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
 
     <title>Pesan | Re:Use.ID</title>
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
 
     <link
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap"
@@ -17,29 +24,45 @@
 
     <!-- Chat CSS -->
     <link rel="stylesheet" href="css/chat.css" />
-      <link rel="icon" type="image/png" href="assets/favicon.png" />
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" href="assets/favicon.png" />
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+    <!-- Favicon -->
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+
+<!-- Logo CSS -->
     <link rel="stylesheet" href="css/logo.css" />
   </head>
 
   <body>
     <!-- =====================================================
-       TOPBAR
-  ====================================================== -->
+         TOPBAR
+    ====================================================== -->
 
     <header class="topbar">
       <div class="topbar-inner">
+
         <!-- Logo -->
         <a href="index.html" class="logo">
-             <span class="mark"><img src="assets/logo-icon.png" alt="Logo Re:Use.ID" style="width:100%;height:100%;object-fit:contain;display:block" /></span>
+          <span class="mark">
+            <img
+              src="assets/logo-icon.png"
+              alt="Logo Re:Use.ID"
+              style="
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                display: block;
+              "
+            />
+          </span>
 
           Re:Use.ID
         </a>
 
         <!-- Kembali -->
-        <a href="browse.html" class="back-link">
+        <a
+          href="browse.html"
+          class="back-link"
+        >
           <svg
             width="16"
             height="16"
@@ -58,46 +81,67 @@
 
           Kembali ke Jelajahi Barang
         </a>
+
       </div>
     </header>
 
     <!-- =====================================================
-       CHAT SHELL
-  ====================================================== -->
+         CHAT SHELL
+    ====================================================== -->
 
-    <div class="chat-shell" id="chatShell">
+    <div
+      class="chat-shell"
+      id="chatShell"
+    >
+
       <!-- ===================================================
-         DAFTAR PERCAKAPAN
-    ==================================================== -->
+           CHAT LIST
+      ==================================================== -->
 
-      <aside class="chat-list" id="chatList">
-        <div class="chat-list-header">Pesan</div>
+      <aside
+        class="chat-list"
+        id="chatList"
+      >
+
+        <div class="chat-list-header">
+          Pesan
+        </div>
 
         <div id="chatListBody">
-          <div class="chat-list-empty">Memuat percakapan…</div>
+          <div class="chat-list-empty">
+            Memuat percakapan…
+          </div>
         </div>
+
       </aside>
 
       <!-- ===================================================
-         THREAD CHAT
-    ==================================================== -->
+           CHAT THREAD
+      ==================================================== -->
 
-      <section class="chat-thread" id="chatThread">
+      <section
+        class="chat-thread"
+        id="chatThread"
+      >
+
         <!-- Belum memilih percakapan -->
-
-        <div class="thread-empty" id="threadEmpty">
-          Pilih percakapan di sebelah kiri buat mulai chat.
+        <div
+          class="thread-empty"
+          id="threadEmpty"
+        >
+          Pilih percakapan di sebelah kiri
+          buat mulai chat.
         </div>
 
         <!-- Percakapan aktif -->
+        <div
+          class="thread-active"
+          id="threadActive"
+          hidden
+        >
 
-        <div class="thread-active" id="threadActive" hidden>
-          <!-- ===============================================
-             HEADER CHAT
-        ================================================ -->
-
+          <!-- Header Chat -->
           <div class="thread-header">
-            <!-- Tombol kembali di mobile -->
 
             <a
               class="thread-back"
@@ -107,8 +151,6 @@
               ←
             </a>
 
-            <!-- Avatar -->
-
             <img
               class="thread-header-avatar"
               id="threadAvatar"
@@ -116,43 +158,35 @@
               alt="Foto profil pengguna"
             />
 
-            <!-- Nama + barang -->
-
             <div>
-              <div class="thread-header-name" id="threadName"></div>
 
-              <div class="thread-header-item" id="threadItemName"></div>
+              <div
+                class="thread-header-name"
+                id="threadName"
+              ></div>
+
+              <div
+                class="thread-header-item"
+                id="threadItemName"
+              ></div>
+
             </div>
+
           </div>
 
-          <!-- ===============================================
-             PANEL TRANSAKSI
-             
-             Akan diisi otomatis oleh chat.js.
-             
-             Contoh:
-             - Menunggu penjual
-             - Diterima
-             - Serah terima
-             - Konfirmasi pembeli
-             - Selesai
-        ================================================ -->
+          <!-- Transaction Panel -->
+          <div
+            id="transactionPanel"
+            hidden
+          ></div>
 
-          <div id="transactionPanel" hidden></div>
+          <!-- Messages -->
+          <div
+            class="thread-messages"
+            id="threadMessages"
+          ></div>
 
-          <!-- ===============================================
-             DAFTAR PESAN
-        ================================================ -->
-
-          <div class="thread-messages" id="threadMessages"></div>
-
-          <!-- ===============================================
-             INPUT FOTO BUKTI COD / SERAH TERIMA
-             
-             Input ini disembunyikan dan dipanggil
-             melalui tombol dari transactionPanel.
-        ================================================ -->
-
+          <!-- Proof Input -->
           <input
             type="file"
             id="proofInput"
@@ -160,11 +194,63 @@
             hidden
           />
 
-          <!-- ===============================================
-             COMPOSER
-        ================================================ -->
+          <!-- Image Preview -->
+          <div
+            class="chat-image-preview"
+            id="chatImagePreview"
+            hidden
+          >
 
-          <form class="thread-composer" id="composerForm">
+            <img
+              id="chatImagePreviewImg"
+              src=""
+              alt="Preview foto"
+            />
+
+            <div class="chat-image-preview-info">
+
+              <span
+                id="chatImagePreviewName"
+              ></span>
+
+              <button
+                type="button"
+                id="chatImageRemove"
+                aria-label="Hapus foto"
+              >
+                ×
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- Composer -->
+          <form
+            class="thread-composer"
+            id="composerForm"
+          >
+
+            <!-- Input Foto -->
+            <input
+              type="file"
+              id="chatImageInput"
+              accept="image/jpeg,image/png,image/webp"
+              hidden
+            />
+
+            <!-- Tombol Kamera/Galeri -->
+            <button
+              type="button"
+              class="chat-attach-btn"
+              id="chatImageButton"
+              title="Kirim foto dari galeri"
+              aria-label="Kirim foto dari galeri"
+            >
+              📷
+            </button>
+
+            <!-- Input Pesan -->
             <input
               type="text"
               id="composerInput"
@@ -174,20 +260,40 @@
               aria-label="Tulis pesan"
             />
 
-            <button type="submit" id="composerSend">Kirim</button>
+            <!-- Tombol Kirim -->
+            <button
+              type="submit"
+              id="composerSend"
+            >
+              Kirim
+            </button>
+
           </form>
+
         </div>
+
       </section>
+
     </div>
 
     <!-- =====================================================
-       SUPABASE
-  ====================================================== -->
+         SCRIPTS
+    ====================================================== -->
 
+    <!-- Supabase -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <!-- Supabase Client -->
     <script src="js/supabase-client.js"></script>
+
+    <!-- Auth -->
     <script src="js/auth.js"></script>
+
+    <!-- Notifications -->
     <script src="js/notifications.js"></script>
+
+    <!-- Chat -->
     <script src="js/chat.js"></script>
+
   </body>
 </html>

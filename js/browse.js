@@ -37,8 +37,7 @@ getUserLocation().then((loc) => {
 });
 
 // ---------- gabungkan data barang dummy dengan barang asli dari Supabase ----------
-let ALL_ITEMS = ITEMS;
-
+let ALL_ITEMS = [];
 async function loadSupabaseItems() {
   try {
     const { data, error } = await supabaseClient

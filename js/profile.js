@@ -182,16 +182,14 @@ onAuthReady(async () => {
         <article class="item-card" data-item-id="${item.id}">
           <div class="ic-photo">
             <span class="ic-badge ${badgeClass}">${item.jenis.toUpperCase()}</span>
-            <img src="${cover}" alt="${item.name}" loading="lazy">
-            <div class="ic-hover-actions">
+<img src="${escHtml(cover)}" alt="${escHtml(item.name)}" loading="lazy">            <div class="ic-hover-actions">
               <button class="ic-action-btn edit">Edit</button>
               <button class="ic-action-btn deactivate">${item.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"}</button>
               <button class="ic-action-btn delete">Hapus</button>
             </div>
           </div>
           <div class="ic-body">
-            <div class="ic-title">${item.name}</div>
-            <span class="ic-status">${item.status}</span>
+<div class="ic-title">${escHtml(item.name)}</div>            <span class="ic-status">${item.status}</span>
           </div>
         </article>
       `;

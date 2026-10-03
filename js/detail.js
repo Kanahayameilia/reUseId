@@ -148,9 +148,8 @@ const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
   thumbRow.innerHTML = item.photos
     .map(
       (src, i) => `
-    <button class="thumb ${i === 0 ? "active" : ""}" data-src="${src}">
-      <img src="${src}" alt="${item.name} — foto ${i + 1}">
-    </button>
+<button class="thumb ${i === 0 ? "active" : ""}" data-src="${escHtml(src)}">
+<img src="${escHtml(src)}" alt="${escHtml(item.name)} — foto ${i + 1}">    </button>
   `,
     )
     .join("");
@@ -189,11 +188,9 @@ const FALLBACK_AVATAR = "https://i.pravatar.cc/80?img=47";
           <article class="sim-card">
             <a href="detail.html?id=${sim.id}" class="sim-photo">
               <span class="sim-badge ${badgeClass}">${sim.jenis.toUpperCase()}</span>
-              <img src="${cover}" alt="${sim.name}" loading="lazy">
-            </a>
-            <div class="sim-body">
-              <div class="sim-title">${sim.name}</div>
-              <div class="sim-distance">📍 ${sim.jarak || 0} km — ${sim.lokasi || "-"}</div>
+<img src="${escHtml(cover)}" alt="${escHtml(sim.name)}" loading="lazy">            </a>
+            <div class="sim-body">${escHtml(sim.lokasi || "-")}</div>
+<div class="sim-title">${escHtml(sim.name)}</div>              <div class="sim-distance">📍 ${sim.jarak || 0} km — 
               <a href="detail.html?id=${sim.id}" class="sim-btn">Lihat Detail</a>
             </div>
           </article>

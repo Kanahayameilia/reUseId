@@ -42,12 +42,9 @@ const composerSend = document.getElementById("composerSend");
 const chatImageInput = document.getElementById("chatImageInput");
 const chatImageButton = document.getElementById("chatImageButton");
 const chatImagePreview = document.getElementById("chatImagePreview");
-const chatImagePreviewImg =
-  document.getElementById("chatImagePreviewImg");
-const chatImagePreviewName =
-  document.getElementById("chatImagePreviewName");
-const chatImageRemove =
-  document.getElementById("chatImageRemove");
+const chatImagePreviewImg = document.getElementById("chatImagePreviewImg");
+const chatImagePreviewName = document.getElementById("chatImagePreviewName");
+const chatImageRemove = document.getElementById("chatImageRemove");
 
 // =========================================================
 // KONFIGURASI FOTO
@@ -68,20 +65,13 @@ async function uploadChatImage(file) {
     throw new Error("Foto tidak ditemukan.");
   }
 
-  const extension =
-    (file.name.split(".").pop() || "jpg").toLowerCase();
+  const extension = (file.name.split(".").pop() || "jpg").toLowerCase();
 
-  const allowedExtensions = [
-    "jpg",
-    "jpeg",
-    "png",
-    "webp",
-  ];
+  const allowedExtensions = ["jpg", "jpeg", "png", "webp"];
 
-  const safeExtension =
-    allowedExtensions.includes(extension)
-      ? extension
-      : "jpg";
+  const safeExtension = allowedExtensions.includes(extension)
+    ? extension
+    : "jpg";
 
   const filePath =
     `${activeConversationId}/` +
@@ -89,28 +79,24 @@ async function uploadChatImage(file) {
     `${Date.now()}-${crypto.randomUUID()}.` +
     safeExtension;
 
-  const { error: uploadError } =
-    await supabaseClient.storage
-      .from(CHAT_IMAGE_BUCKET)
-      .upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: file.type,
-      });
+  const { error: uploadError } = await supabaseClient.storage
+    .from(CHAT_IMAGE_BUCKET)
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type,
+    });
 
   if (uploadError) {
     throw uploadError;
   }
 
-  const { data } =
-    supabaseClient.storage
-      .from(CHAT_IMAGE_BUCKET)
-      .getPublicUrl(filePath);
+  const { data } = supabaseClient.storage
+    .from(CHAT_IMAGE_BUCKET)
+    .getPublicUrl(filePath);
 
   if (!data?.publicUrl) {
-    throw new Error(
-      "URL foto tidak berhasil dibuat.",
-    );
+    throw new Error("URL foto tidak berhasil dibuat.");
   }
 
   return data.publicUrl;
@@ -139,9 +125,7 @@ async function uploadChatImage(file) {
 function containsSensitiveData(message) {
   if (!message) return false;
 
-  const text = String(message)
-    .toLowerCase()
-    .trim();
+  const text = String(message).toLowerCase().trim();
 
   const sensitivePatterns = [
     // NIK / KTP
@@ -191,9 +175,7 @@ function containsSensitiveData(message) {
     /\bno[\s.-]*telepon\b/,
   ];
 
-  return sensitivePatterns.some((pattern) =>
-    pattern.test(text),
-  );
+  return sensitivePatterns.some((pattern) => pattern.test(text));
 }
 
 // =========================================================
@@ -201,22 +183,15 @@ function containsSensitiveData(message) {
 // =========================================================
 
 function showSecurityWarning() {
-  if (
-    document.getElementById(
-      "chatSecurityWarning",
-    )
-  ) {
+  if (document.getElementById("chatSecurityWarning")) {
     return;
   }
 
-  const warning =
-    document.createElement("div");
+  const warning = document.createElement("div");
 
-  warning.id =
-    "chatSecurityWarning";
+  warning.id = "chatSecurityWarning";
 
-  warning.className =
-    "chat-security-warning";
+  warning.className = "chat-security-warning";
 
   warning.innerHTML = `
     <div class="chat-security-title">
@@ -236,14 +211,8 @@ function showSecurityWarning() {
     </div>
   `;
 
-  if (
-    composerForm &&
-    composerForm.parentNode
-  ) {
-    composerForm.parentNode.insertBefore(
-      warning,
-      composerForm,
-    );
+  if (composerForm && composerForm.parentNode) {
+    composerForm.parentNode.insertBefore(warning, composerForm);
   }
 }
 
@@ -271,21 +240,14 @@ function showSensitiveDataWarning() {
 // =========================================================
 
 function otherParty(conv) {
-  const isBuyer =
-    conv.buyer_id === currentUser.id;
+  const isBuyer = conv.buyer_id === currentUser.id;
 
   return {
-    id: isBuyer
-      ? conv.seller_id
-      : conv.buyer_id,
+    id: isBuyer ? conv.seller_id : conv.buyer_id,
 
-    name: isBuyer
-      ? conv.seller_name
-      : conv.buyer_name,
+    name: isBuyer ? conv.seller_name : conv.buyer_name,
 
-    avatar: isBuyer
-      ? conv.seller_avatar
-      : conv.buyer_avatar,
+    avatar: isBuyer ? conv.seller_avatar : conv.buyer_avatar,
   };
 }
 
@@ -304,9 +266,7 @@ function formatTime(iso) {
 
   const now = new Date();
 
-  const sameDay =
-    d.toDateString() ===
-    now.toDateString();
+  const sameDay = d.toDateString() === now.toDateString();
 
   return sameDay
     ? d.toLocaleTimeString("id-ID", {
@@ -324,8 +284,7 @@ function formatTime(iso) {
 // =========================================================
 
 function escapeHtml(str) {
-  const div =
-    document.createElement("div");
+  const div = document.createElement("div");
 
   div.textContent = str ?? "";
 
@@ -339,17 +298,14 @@ function escapeHtml(str) {
 async function loadConversations() {
   if (!currentUser) return;
 
-  const { data, error } =
-    await supabaseClient
-      .from("conversations")
-      .select("*")
-      .or(
-        `buyer_id.eq.${currentUser.id},seller_id.eq.${currentUser.id}`,
-      )
-      .order("last_message_at", {
-        ascending: false,
-        nullsFirst: false,
-      });
+  const { data, error } = await supabaseClient
+    .from("conversations")
+    .select("*")
+    .or(`buyer_id.eq.${currentUser.id},seller_id.eq.${currentUser.id}`)
+    .order("last_message_at", {
+      ascending: false,
+      nullsFirst: false,
+    });
 
   if (error) {
     chatListBody.innerHTML = `
@@ -375,64 +331,36 @@ async function loadConversations() {
     return;
   }
 
-  const unread =
-    window.ReuseNotif
-      ? await ReuseNotif.getUnreadByConv(
-          data.map((c) => c.id),
-        )
-      : {};
+  const unread = window.ReuseNotif
+    ? await ReuseNotif.getUnreadByConv(data.map((c) => c.id))
+    : {};
 
-  chatListBody.innerHTML =
-    data
-      .map((conv) => {
-        const other =
-          otherParty(conv);
+  chatListBody.innerHTML = data
+    .map((conv) => {
+      const other = otherParty(conv);
 
-        const active =
-          conv.id ===
-          activeConversationId
-            ? "active"
-            : "";
+      const active = conv.id === activeConversationId ? "active" : "";
 
-        const avatar =
-          other.avatar || "assets/avatar-default.svg";
+      const avatar = other.avatar || "assets/avatar-default.svg";
 
-        const name =
-          other.name ||
-          "Pengguna Re:Use.ID";
+      const name = other.name || "Pengguna Re:Use.ID";
 
-        const itemName =
-          conv.item_name || "";
+      const itemName = conv.item_name || "";
 
-        const lastMessage =
-          conv.last_message ||
-          "Belum ada pesan";
+      const lastMessage = conv.last_message || "Belum ada pesan";
 
-        const unreadCount =
-          conv.id ===
-          activeConversationId
-            ? 0
-            : unread[conv.id] || 0;
+      const unreadCount =
+        conv.id === activeConversationId ? 0 : unread[conv.id] || 0;
 
-        return `
+      return `
           <div
-            class="conv-item ${active} ${
-              unreadCount
-                ? "unread"
-                : ""
-            }"
-            data-id="${escapeHtml(
-              conv.id,
-            )}"
+            class="conv-item ${active} ${unreadCount ? "unread" : ""}"
+            data-id="${escapeHtml(conv.id)}"
           >
             <img
               class="conv-avatar"
-              src="${escapeHtml(
-                avatar,
-              )}"
-              alt="${escapeHtml(
-                name,
-              )}"
+              src="${escapeHtml(avatar)}"
+              alt="${escapeHtml(name)}"
             >
 
             <div class="conv-info">
@@ -445,17 +373,13 @@ async function loadConversations() {
               </div>
 
               <div class="conv-last-message">
-                ${escapeHtml(
-                  lastMessage,
-                )}
+                ${escapeHtml(lastMessage)}
               </div>
             </div>
 
             <div class="conv-meta">
               <div class="conv-time">
-                ${formatTime(
-                  conv.last_message_at,
-                )}
+                ${formatTime(conv.last_message_at)}
               </div>
 
               ${
@@ -470,83 +394,55 @@ async function loadConversations() {
             </div>
           </div>
         `;
-      })
-      .join("");
+    })
+    .join("");
 
-  chatListBody
-    .querySelectorAll(".conv-item")
-    .forEach((el) => {
-      el.addEventListener(
-        "click",
-        () => {
-          openConversation(
-            el.dataset.id,
-          );
-        },
-      );
+  chatListBody.querySelectorAll(".conv-item").forEach((el) => {
+    el.addEventListener("click", () => {
+      openConversation(el.dataset.id);
     });
+  });
 }
 
 // =========================================================
 // BUKA CONVERSATION
 // =========================================================
 
-async function openConversation(
-  conversationId,
-) {
+async function openConversation(conversationId) {
   if (!conversationId) return;
 
-  activeConversationId =
-    conversationId;
+  activeConversationId = conversationId;
 
-  chatListBody
-    .querySelectorAll(".conv-item")
-    .forEach((el) => {
-      el.classList.toggle(
-        "active",
-        el.dataset.id ===
-          conversationId,
-      );
-    });
+  chatListBody.querySelectorAll(".conv-item").forEach((el) => {
+    el.classList.toggle("active", el.dataset.id === conversationId);
+  });
 
-  const { data: conv, error } =
-    await supabaseClient
-      .from("conversations")
-      .select("*")
-      .eq("id", conversationId)
-      .maybeSingle();
+  const { data: conv, error } = await supabaseClient
+    .from("conversations")
+    .select("*")
+    .eq("id", conversationId)
+    .maybeSingle();
 
   if (error || !conv) {
-    console.error(
-      "Gagal membuka conversation:",
-      error,
-    );
+    console.error("Gagal membuka conversation:", error);
 
     return;
   }
 
   activeConversation = conv;
 
-  const other =
-    otherParty(conv);
+  const other = otherParty(conv);
 
   threadEmpty.hidden = true;
   threadActive.hidden = false;
 
-  threadName.textContent =
-    other.name ||
-    "Pengguna Re:Use.ID";
+  threadName.textContent = other.name || "Pengguna Re:Use.ID";
 
-  threadAvatar.src =
-    other.avatar ||
-    "assets/avatar-default.svg";
+  threadAvatar.src = other.avatar || "assets/avatar-default.svg";
 
-  threadItemName.textContent =
-    conv.item_name || "";
+  threadItemName.textContent = conv.item_name || "";
 
-  threadAvatar.alt =
-    other.name ||
-    "Pengguna Re:Use.ID";
+  threadAvatar.alt = other.name || "Pengguna Re:Use.ID";
 
   showSecurityWarning();
 
@@ -568,33 +464,22 @@ async function loadMessages() {
     return;
   }
 
-  const conversationId =
-    activeConversationId;
+  const conversationId = activeConversationId;
 
-  const { data, error } =
-    await supabaseClient
-      .from("messages")
-      .select("*")
-      .eq(
-        "conversation_id",
-        conversationId,
-      )
-      .order("created_at", {
-        ascending: true,
-      });
+  const { data, error } = await supabaseClient
+    .from("messages")
+    .select("*")
+    .eq("conversation_id", conversationId)
+    .order("created_at", {
+      ascending: true,
+    });
 
-  if (
-    conversationId !==
-    activeConversationId
-  ) {
+  if (conversationId !== activeConversationId) {
     return;
   }
 
   if (error) {
-    console.error(
-      "Gagal memuat messages:",
-      error,
-    );
+    console.error("Gagal memuat messages:", error);
 
     threadMessages.innerHTML = `
       <div class="chat-list-empty">
@@ -618,13 +503,10 @@ async function loadMessages() {
   }
 
   data.forEach((msg) => {
-    threadMessages.appendChild(
-      renderMessage(msg),
-    );
+    threadMessages.appendChild(renderMessage(msg));
   });
 
-  threadMessages.scrollTop =
-    threadMessages.scrollHeight;
+  threadMessages.scrollTop = threadMessages.scrollHeight;
 }
 
 // =========================================================
@@ -632,93 +514,62 @@ async function loadMessages() {
 // =========================================================
 
 function renderMessage(msg) {
-  const wrapper =
-    document.createElement("div");
+  const wrapper = document.createElement("div");
 
-  wrapper.className =
-    "message-wrapper";
+  wrapper.className = "message-wrapper";
 
-  wrapper.dataset.id =
-    msg.id;
+  wrapper.dataset.id = msg.id;
 
-  if (
-    msg.sender_id ===
-    currentUser.id
-  ) {
+  if (msg.sender_id === currentUser.id) {
     wrapper.classList.add("mine");
   } else {
     wrapper.classList.add("theirs");
   }
 
-  const bubble =
-    document.createElement("div");
+  const bubble = document.createElement("div");
 
-  bubble.className =
-    "message-bubble";
+  bubble.className = "message-bubble";
 
   // FOTO
   if (msg.image_url) {
-    const image =
-      document.createElement("img");
+    const image = document.createElement("img");
 
-    image.className =
-      "msg-image";
+    image.className = "msg-image";
 
-    image.src =
-      msg.image_url;
+    image.src = msg.image_url;
 
-    image.alt =
-      "Foto yang dikirim";
+    image.alt = "Foto yang dikirim";
 
-    image.loading =
-      "lazy";
+    image.loading = "lazy";
 
-    image.addEventListener(
-      "click",
-      () => {
-        window.open(
-          msg.image_url,
-          "_blank",
-        );
-      },
-    );
+    image.addEventListener("click", () => {
+      window.open(msg.image_url, "_blank");
+    });
 
     bubble.appendChild(image);
   }
 
   // TEKS
   if (msg.content) {
-    const content =
-      document.createElement("div");
+    const content = document.createElement("div");
 
-    content.className =
-      "msg-content";
+    content.className = "msg-content";
 
-    content.textContent =
-      msg.content;
+    content.textContent = msg.content;
 
-    bubble.appendChild(
-      content,
-    );
+    bubble.appendChild(content);
   }
 
   // WAKTU
-  const time =
-    document.createElement("div");
+  const time = document.createElement("div");
 
-  time.className =
-    "msg-time";
+  time.className = "msg-time";
 
-  time.textContent =
-    formatTime(
-      msg.created_at,
-    );
+  time.textContent = formatTime(msg.created_at);
 
   bubble.appendChild(time);
 
-  wrapper.appendChild(
-    bubble,
-  );
+  wrapper.appendChild(bubble);
 
   return wrapper;
 }
@@ -729,9 +580,7 @@ function renderMessage(msg) {
 
 function subscribeRealtime() {
   if (messagesChannel) {
-    supabaseClient.removeChannel(
-      messagesChannel,
-    );
+    supabaseClient.removeChannel(messagesChannel);
 
     messagesChannel = null;
   }
@@ -740,334 +589,242 @@ function subscribeRealtime() {
     return;
   }
 
-  const conversationId =
-    activeConversationId;
+  const conversationId = activeConversationId;
 
-  messagesChannel =
-    supabaseClient
-      .channel(
-        `messages-${conversationId}`,
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter:
-            `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          if (
-            activeConversationId !==
-            conversationId
-          ) {
-            return;
-          }
+  messagesChannel = supabaseClient
+    .channel(`messages-${conversationId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `conversation_id=eq.${conversationId}`,
+      },
+      (payload) => {
+        if (activeConversationId !== conversationId) {
+          return;
+        }
 
-          const msg =
-            payload.new;
+        const msg = payload.new;
 
-          const existing =
-            threadMessages.querySelector(
-              `[data-id="${msg.id}"]`,
-            );
+        const existing = threadMessages.querySelector(`[data-id="${msg.id}"]`);
 
-          if (existing) {
-            return;
-          }
+        if (existing) {
+          return;
+        }
 
-          const optimistic =
-            threadMessages.querySelector(
-              `[data-id^="temp-"]`,
-            );
+        const optimistic = threadMessages.querySelector(`[data-id^="temp-"]`);
 
-          if (
-            optimistic &&
-            msg.sender_id ===
-              currentUser.id
-          ) {
-            optimistic.remove();
-          }
+        if (optimistic && msg.sender_id === currentUser.id) {
+          optimistic.remove();
+        }
 
-          const empty =
-            threadMessages.querySelector(
-              ".chat-list-empty",
-            );
+        const empty = threadMessages.querySelector(".chat-list-empty");
 
-          if (empty) {
-            empty.remove();
-          }
+        if (empty) {
+          empty.remove();
+        }
 
-          threadMessages.appendChild(
-            renderMessage(msg),
-          );
+        threadMessages.appendChild(renderMessage(msg));
 
-          threadMessages.scrollTop =
-            threadMessages.scrollHeight;
-        },
-      )
-      .subscribe();
+        threadMessages.scrollTop = threadMessages.scrollHeight;
+      },
+    )
+    .subscribe();
 }
 
 // =========================================================
 // KIRIM PESAN + FOTO
 // =========================================================
 
-composerForm.addEventListener(
-  "submit",
-  async (e) => {
-    e.preventDefault();
+composerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const content =
-      composerInput.value.trim();
+  const content = composerInput.value.trim();
 
-    const imageFile =
-      selectedChatImage;
+  const imageFile = selectedChatImage;
 
-    // Tidak boleh kosong
-    if (!content && !imageFile) {
-      return;
-    }
-
-    // Harus memilih conversation
-    if (!activeConversationId) {
-      alert(
-        "Pilih percakapan terlebih dahulu.",
-      );
-
-      return;
-    }
-
-    // Cek data sensitif
-    if (
-      containsSensitiveData(
-        content,
-      )
-    ) {
-      showSensitiveDataWarning();
-
-      composerInput.focus();
-
-      return;
-    }
-
-    // Maksimal 2000 karakter
-    if (content.length > 2000) {
-      alert(
-        "Pesan terlalu panjang. " +
-          "Maksimal 2000 karakter.",
-      );
-
-      composerInput.focus();
-
-      return;
-    }
-
-    composerSend.disabled = true;
-
-    if (chatImageButton) {
-      chatImageButton.disabled = true;
-    }
-
-    let imageUrl = null;
-
-    try {
-      // Upload foto
-      if (imageFile) {
-        imageUrl =
-          await uploadChatImage(
-            imageFile,
-          );
-      }
-
-      // ID sementara
-      const tempId =
-        `temp-${Date.now()}`;
-
-      // Pesan optimistic
-      const optimisticMsg = {
-        id: tempId,
-
-        conversation_id:
-          activeConversationId,
-
-        sender_id:
-          currentUser.id,
-
-        content:
-          content || "",
-
-        image_url:
-          imageUrl,
-
-        created_at:
-          new Date().toISOString(),
-      };
-
-      const emptyMessage =
-        threadMessages.querySelector(
-          ".chat-list-empty",
-        );
-
-      if (emptyMessage) {
-        emptyMessage.remove();
-      }
-
-      threadMessages.appendChild(
-        renderMessage(
-          optimisticMsg,
-        ),
-      );
-
-      threadMessages.scrollTop =
-        threadMessages.scrollHeight;
-
-     // =========================================================
-// SIMPAN PESAN KE DATABASE
-// =========================================================
-
-const { error: insertError } = await supabaseClient
-  .from("messages")
-  .insert({
-    conversation_id: activeConversationId,
-    sender_id: currentUser.id,
-    content: content || "",
-    image_url: imageUrl
-  });
-
-if (insertError) {
-  // Hapus pesan optimistic jika database gagal
-  const tempElement = threadMessages.querySelector(
-    `[data-id="${tempId}"]`
-  );
-
-  if (tempElement) {
-    tempElement.remove();
+  // Tidak boleh kosong
+  if (!content && !imageFile) {
+    return;
   }
 
-  throw insertError;
-}
+  // Harus memilih conversation
+  if (!activeConversationId) {
+    alert("Pilih percakapan terlebih dahulu.");
 
-// =========================================================
-// KOSONGKAN INPUT
-// =========================================================
+    return;
+  }
 
-composerInput.value = "";
-      clearChatImage();
+  // Cek data sensitif
+  if (containsSensitiveData(content)) {
+    showSensitiveDataWarning();
 
-      // Preview conversation
-      const previewText =
-        imageUrl
-          ? content
-            ? `📷 ${content}`
-            : "📷 Foto"
-          : content;
+    composerInput.focus();
 
-      const {
-        error: updateError,
-      } = await supabaseClient
-        .from("conversations")
-        .update({
-          last_message:
-            previewText,
+    return;
+  }
 
-          last_message_at:
-            new Date().toISOString(),
-        })
-        .eq(
-          "id",
-          activeConversationId,
-        );
+  // Maksimal 2000 karakter
+  if (content.length > 2000) {
+    alert("Pesan terlalu panjang. " + "Maksimal 2000 karakter.");
 
-      if (updateError) {
-        console.warn(
-          "Gagal memperbarui preview conversation:",
-          updateError.message,
-        );
-      }
+    composerInput.focus();
 
-      await loadConversations();
+    return;
+  }
 
-    } catch (error) {
-      console.error(
-        "Gagal mengirim pesan:",
-        error,
-      );
+  composerSend.disabled = true;
 
-      alert(
-        "Gagal mengirim pesan: " +
-          error.message,
-      );
+  if (chatImageButton) {
+    chatImageButton.disabled = true;
+  }
 
-    } finally {
-      composerSend.disabled =
-        false;
+  let imageUrl = null;
 
-      if (chatImageButton) {
-        chatImageButton.disabled =
-          false;
-      }
+  try {
+    // Upload foto
+    if (imageFile) {
+      imageUrl = await uploadChatImage(imageFile);
     }
-  },
-);
+
+    // ID sementara
+    const tempId = `temp-${Date.now()}`;
+
+    // Pesan optimistic
+    const optimisticMsg = {
+      id: tempId,
+
+      conversation_id: activeConversationId,
+
+      sender_id: currentUser.id,
+
+      content: content || "",
+
+      image_url: imageUrl,
+
+      created_at: new Date().toISOString(),
+    };
+
+    const emptyMessage = threadMessages.querySelector(".chat-list-empty");
+
+    if (emptyMessage) {
+      emptyMessage.remove();
+    }
+
+    threadMessages.appendChild(renderMessage(optimisticMsg));
+
+    threadMessages.scrollTop = threadMessages.scrollHeight;
+
+    // =========================================================
+    // SIMPAN PESAN KE DATABASE
+    // =========================================================
+
+    const { error: insertError } = await supabaseClient
+      .from("messages")
+      .insert({
+        conversation_id: activeConversationId,
+        sender_id: currentUser.id,
+        content: content || "",
+        image_url: imageUrl,
+      });
+
+    if (insertError) {
+      // Hapus pesan optimistic jika database gagal
+      const tempElement = threadMessages.querySelector(`[data-id="${tempId}"]`);
+
+      if (tempElement) {
+        tempElement.remove();
+      }
+
+      throw insertError;
+    }
+
+    // =========================================================
+    // KOSONGKAN INPUT
+    // =========================================================
+
+    composerInput.value = "";
+    clearChatImage();
+
+    // Preview conversation
+    const previewText = imageUrl
+      ? content
+        ? `📷 ${content}`
+        : "📷 Foto"
+      : content;
+
+    const { error: updateError } = await supabaseClient
+      .from("conversations")
+      .update({
+        last_message: previewText,
+
+        last_message_at: new Date().toISOString(),
+      })
+      .eq("id", activeConversationId);
+
+    if (updateError) {
+      console.warn(
+        "Gagal memperbarui preview conversation:",
+        updateError.message,
+      );
+    }
+
+    await loadConversations();
+  } catch (error) {
+    console.error("Gagal mengirim pesan:", error);
+
+    alert("Gagal mengirim pesan: " + error.message);
+  } finally {
+    composerSend.disabled = false;
+
+    if (chatImageButton) {
+      chatImageButton.disabled = false;
+    }
+  }
+});
 
 // =========================================================
 // ENTER = KIRIM
 // SHIFT + ENTER = BARIS BARU
 // =========================================================
 
-composerInput.addEventListener(
-  "keydown",
-  (e) => {
-    if (
-      e.key === "Enter" &&
-      !e.shiftKey
-    ) {
-      e.preventDefault();
+composerInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
 
-      composerForm.requestSubmit();
-    }
-  },
-);
+    composerForm.requestSubmit();
+  }
+});
 
 // =========================================================
 // PANEL TRANSAKSI
 // =========================================================
 
-const transactionPanel =
-  document.getElementById(
-    "transactionPanel",
-  );
+const transactionPanel = document.getElementById("transactionPanel");
 
 let activeTx = null;
 let activeTxOffered = null;
 let txChannel = null;
 
 const TX_INFO = {
-  menunggu:
-    "Menunggu respons pemilik barang",
+  menunggu: "Menunggu respons pemilik barang",
 
-  diterima:
-    "Disepakati. Atur waktu dan tempat serah terima lewat chat.",
+  diterima: "Disepakati. Atur waktu dan tempat serah terima lewat chat.",
 
-  selesai:
-    "Transaksi selesai",
+  selesai: "Transaksi selesai",
 
-  ditolak:
-    "Pengajuan ditolak",
+  ditolak: "Pengajuan ditolak",
 
-  dibatalkan:
-    "Transaksi dibatalkan",
+  dibatalkan: "Transaksi dibatalkan",
 };
 
 // =========================================================
 // LOAD TRANSACTION
 // =========================================================
 
-async function loadTransaction(
-  conv,
-) {
+async function loadTransaction(conv) {
   activeTx = null;
   activeTxOffered = null;
 
@@ -1077,24 +834,12 @@ async function loadTransaction(
     return;
   }
 
-  const {
-    data,
-    error,
-  } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("transactions")
     .select("*")
-    .eq(
-      "item_id",
-      conv.item_id,
-    )
-    .eq(
-      "buyer_id",
-      conv.buyer_id,
-    )
-    .eq(
-      "seller_id",
-      conv.seller_id,
-    )
+    .eq("item_id", conv.item_id)
+    .eq("buyer_id", conv.buyer_id)
+    .eq("seller_id", conv.seller_id)
     .order("created_at", {
       ascending: false,
     })
@@ -1102,32 +847,20 @@ async function loadTransaction(
     .maybeSingle();
 
   if (error) {
-    console.warn(
-      "Gagal memuat transaksi:",
-      error.message,
-    );
+    console.warn("Gagal memuat transaksi:", error.message);
 
     return;
   }
 
-  if (
-    activeConversationId !==
-    conv.id
-  ) {
+  if (activeConversationId !== conv.id) {
     return;
   }
 
-  activeTx =
-    data || null;
+  activeTx = data || null;
 
-  await loadOfferedItem(
-    activeTx,
-  );
+  await loadOfferedItem(activeTx);
 
-  if (
-    activeConversationId !==
-    conv.id
-  ) {
+  if (activeConversationId !== conv.id) {
     return;
   }
 
@@ -1138,41 +871,26 @@ async function loadTransaction(
 // LOAD OFFERED ITEM
 // =========================================================
 
-async function loadOfferedItem(
-  tx,
-) {
-  if (
-    !tx ||
-    !tx.offered_item_id
-  ) {
+async function loadOfferedItem(tx) {
+  if (!tx || !tx.offered_item_id) {
     activeTxOffered = null;
     return;
   }
 
   if (
     activeTxOffered &&
-    String(
-      activeTxOffered.id,
-    ) ===
-      String(
-        tx.offered_item_id,
-      )
+    String(activeTxOffered.id) === String(tx.offered_item_id)
   ) {
     return;
   }
 
-  const { data } =
-    await supabaseClient
-      .from("items")
-      .select("id, name")
-      .eq(
-        "id",
-        tx.offered_item_id,
-      )
-      .maybeSingle();
+  const { data } = await supabaseClient
+    .from("items")
+    .select("id, name")
+    .eq("id", tx.offered_item_id)
+    .maybeSingle();
 
-  activeTxOffered =
-    data || null;
+  activeTxOffered = data || null;
 }
 
 // =========================================================
@@ -1180,160 +898,67 @@ async function loadOfferedItem(
 // =========================================================
 
 function renderTransactionPanel() {
-  if (!transactionPanel) {
-    return;
-  }
-
   if (!activeTx) {
-    transactionPanel.hidden =
-      true;
-
-    transactionPanel.innerHTML =
-      "";
-
+    transactionPanel.hidden = true;
+    transactionPanel.innerHTML = "";
     return;
   }
 
-  const tx =
-    activeTx;
-
-  const isSeller =
-    tx.seller_id ===
-    currentUser.id;
-
-  const myConfirmed =
-    isSeller
-      ? tx.seller_confirmed
-      : tx.buyer_confirmed;
-
-  const otherConfirmed =
-    isSeller
-      ? tx.buyer_confirmed
-      : tx.seller_confirmed;
-
-  const label =
-    tx.jenis === "Donasi"
-      ? "Donasi"
-      : "Barter";
+  const tx = activeTx;
+  const isSeller = tx.seller_id === currentUser.id;
+  const label = tx.jenis === "Donasi" ? "Donasi" : "Barter";
 
   const offerLine =
-    tx.jenis === "Barter" &&
-    activeTxOffered
-      ? `
-        <div
-          style="
-            font-size:0.78rem;
-            color:#6b7a73;
-            margin-top:4px;
-          "
-        >
-          Ditawarkan:
-          ${escapeHtml(
-            activeTxOffered.name,
-          )}
-        </div>
-      `
+    tx.jenis === "Barter" && activeTxOffered
+      ? `<div style="font-size:0.78rem;color:#6b7a73;margin-top:4px;">Ditawarkan: ${escapeHtml(activeTxOffered.name)}</div>`
       : "";
 
-  let info =
-    TX_INFO[tx.status] ||
-    tx.status;
-
+  let info = TX_INFO[tx.status] || tx.status;
   let actions = "";
 
-  if (
-    tx.status ===
-    "menunggu"
-  ) {
+  if (tx.status === "menunggu") {
     if (isSeller) {
-      info =
-        "Ada pengajuan untuk barangmu";
-
+      info = "Ada pengajuan untuk barangmu";
       actions = `
-        <button
-          class="txp-btn primary"
-          data-act="terima"
-        >
-          Terima
-        </button>
-
-        <button
-          class="txp-btn"
-          data-act="tolak"
-        >
-          Tolak
-        </button>
-      `;
+        <button class="txp-btn primary" data-act="terima">Terima</button>
+        <button class="txp-btn" data-act="tolak">Tolak</button>`;
     } else {
-      actions = `
-        <button
-          class="txp-btn"
-          data-act="batal"
-        >
-          Batalkan pengajuan
-        </button>
-      `;
+      actions = `<button class="txp-btn" data-act="batal">Batalkan pengajuan</button>`;
     }
-
-  } else if (
-    tx.status ===
-    "diterima"
-  ) {
-    if (!myConfirmed) {
-      if (otherConfirmed) {
-        info =
-          "Pihak lain sudah konfirmasi serah terima";
+  } else if (tx.status === "diterima") {
+    // LANGKAH 1: pemilik menyerahkan barang dulu
+    if (!tx.seller_confirmed) {
+      if (isSeller) {
+        info = "Serahkan barang ke penerima, lalu konfirmasi di sini";
+        actions = `<button class="txp-btn primary" data-act="konfirmasi">Barang sudah kuserahkan</button>`;
+      } else {
+        info = "Menunggu pemilik menyerahkan barang";
       }
-
-      actions += `
-        <button
-          class="txp-btn primary"
-          data-act="konfirmasi"
-        >
-          ${
-            isSeller
-              ? "Barang sudah kuserahkan"
-              : "Barang sudah kuterima"
-          }
-        </button>
-      `;
-    } else {
-      info =
-        "Kamu sudah konfirmasi. Menunggu konfirmasi pihak lain.";
+      // masih boleh batal selama barang belum diserahkan
+      actions += `<button class="txp-btn danger" data-act="batal">Batalkan</button>`;
     }
-
-    actions += `
-      <button
-        class="txp-btn danger"
-        data-act="batal"
-      >
-        Batalkan
-      </button>
-    `;
+    // LANGKAH 2: penerima konfirmasi setelah barang diserahkan
+    else if (!tx.buyer_confirmed) {
+      if (isSeller) {
+        info = "Barang sudah kamu serahkan. Menunggu penerima mengonfirmasi.";
+      } else {
+        info =
+          "Pemilik sudah menyerahkan barang. Konfirmasi kalau sudah kamu terima.";
+        actions = `<button class="txp-btn primary" data-act="konfirmasi">Barang sudah kuterima</button>`;
+      }
+    }
   }
 
-  transactionPanel.hidden =
-    false;
-
+  transactionPanel.hidden = false;
   transactionPanel.innerHTML = `
     <div class="txp ${tx.status}">
       <div>
-        <span class="txp-badge">
-          ${label}
-        </span>
-
-        <span class="txp-info">
-          ${info}
-        </span>
-
+        <span class="txp-badge">${label}</span>
+        <span class="txp-info">${info}</span>
         ${offerLine}
       </div>
-
-      <div class="txp-actions">
-        ${actions}
-      </div>
-    </div>
-  `;
+      <div class="txp-actions">${actions}</div>
+    </div>`;
 }
 
 // =========================================================
@@ -1345,29 +970,20 @@ async function postInfo(text) {
     return;
   }
 
-  const {
-    data: msg,
-    error,
-  } = await supabaseClient
+  const { data: msg, error } = await supabaseClient
     .from("messages")
     .insert({
-      conversation_id:
-        activeConversationId,
+      conversation_id: activeConversationId,
 
-      sender_id:
-        currentUser.id,
+      sender_id: currentUser.id,
 
-      content:
-        text,
+      content: text,
     })
     .select()
     .single();
 
   if (error) {
-    console.warn(
-      "Gagal kirim info transaksi:",
-      error.message,
-    );
+    console.warn("Gagal kirim info transaksi:", error.message);
 
     return;
   }
@@ -1375,29 +991,16 @@ async function postInfo(text) {
   await supabaseClient
     .from("conversations")
     .update({
-      last_message:
-        text,
+      last_message: text,
 
-      last_message_at:
-        new Date().toISOString(),
+      last_message_at: new Date().toISOString(),
     })
-    .eq(
-      "id",
-      activeConversationId,
-    );
+    .eq("id", activeConversationId);
 
-  if (
-    msg &&
-    !threadMessages.querySelector(
-      `[data-id="${msg.id}"]`,
-    )
-  ) {
-    threadMessages.appendChild(
-      renderMessage(msg),
-    );
+  if (msg && !threadMessages.querySelector(`[data-id="${msg.id}"]`)) {
+    threadMessages.appendChild(renderMessage(msg));
 
-    threadMessages.scrollTop =
-      threadMessages.scrollHeight;
+    threadMessages.scrollTop = threadMessages.scrollHeight;
   }
 
   loadConversations();
@@ -1407,18 +1010,12 @@ async function postInfo(text) {
 // UPDATE TRANSACTION
 // =========================================================
 
-async function updateTransaction(
-  patch,
-  note,
-) {
+async function updateTransaction(patch, note) {
   if (!activeTx) {
     return;
   }
 
-  const {
-    data,
-    error,
-  } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("transactions")
     .update(patch)
     .eq("id", activeTx.id)
@@ -1426,10 +1023,7 @@ async function updateTransaction(
     .single();
 
   if (error) {
-    alert(
-      "Gagal memperbarui transaksi: " +
-        error.message,
-    );
+    alert("Gagal memperbarui transaksi: " + error.message);
 
     return;
   }
@@ -1438,10 +1032,7 @@ async function updateTransaction(
 
   renderTransactionPanel();
 
-  if (
-    data.status ===
-    "selesai"
-  ) {
+  if (data.status === "selesai") {
     await postInfo(
       "Transaksi selesai. Terima kasih sudah berbagi di Re:Use.ID!",
     );
@@ -1455,104 +1046,78 @@ async function updateTransaction(
 // =========================================================
 
 if (transactionPanel) {
-  transactionPanel.addEventListener(
-    "click",
-    (e) => {
-      const btn =
-        e.target.closest(
-          "[data-act]",
+  transactionPanel.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-act]");
+
+    if (!btn || !activeTx) {
+      return;
+    }
+
+    const isSeller = activeTx.seller_id === currentUser.id;
+
+    switch (btn.dataset.act) {
+      case "terima":
+        updateTransaction(
+          {
+            status: "diterima",
+          },
+
+          "Pengajuan diterima. Yuk atur waktu dan tempat serah terima.",
         );
 
-      if (
-        !btn ||
-        !activeTx
-      ) {
-        return;
-      }
+        break;
 
-      const isSeller =
-        activeTx.seller_id ===
-        currentUser.id;
+      case "tolak":
+        updateTransaction(
+          {
+            status: "ditolak",
+          },
 
-      switch (
-        btn.dataset.act
-      ) {
-        case "terima":
+          "Maaf, pengajuan ini ditolak.",
+        );
+
+        break;
+
+      case "batal":
+        if (confirm("Yakin mau membatalkan?")) {
           updateTransaction(
             {
-              status:
-                "diterima",
+              status: "dibatalkan",
             },
 
-            "Pengajuan diterima. Yuk atur waktu dan tempat serah terima.",
+            "Transaksi dibatalkan.",
           );
+        }
 
-          break;
+        break;
 
-        case "tolak":
-          updateTransaction(
-            {
-              status:
-                "ditolak",
-            },
-
-            "Maaf, pengajuan ini ditolak.",
-          );
-
-          break;
-
-        case "batal":
-          if (
-            confirm(
-              "Yakin mau membatalkan?",
-            )
-          ) {
-            updateTransaction(
-              {
-                status:
-                  "dibatalkan",
+      case "konfirmasi":
+        updateTransaction(
+          isSeller
+            ? {
+                seller_confirmed: true,
+              }
+            : {
+                buyer_confirmed: true,
               },
 
-              "Transaksi dibatalkan.",
-            );
-          }
+          isSeller
+            ? "Pemilik mengonfirmasi barang sudah diserahkan."
+            : "Penerima mengonfirmasi barang sudah diterima.",
+        );
 
-          break;
-
-        case "konfirmasi":
-          updateTransaction(
-            isSeller
-              ? {
-                  seller_confirmed:
-                    true,
-                }
-              : {
-                  buyer_confirmed:
-                    true,
-                },
-
-            isSeller
-              ? "Pemilik mengonfirmasi barang sudah diserahkan."
-              : "Penerima mengonfirmasi barang sudah diterima.",
-          );
-
-          break;
-      }
-    },
-  );
+        break;
+    }
+  });
 }
 
 // =========================================================
 // REALTIME TRANSAKSI
 // =========================================================
 
-function subscribeTransactionRealtime(
-  conv,
-) {
+function subscribeTransactionRealtime(conv) {
   if (txChannel) {
-    supabaseClient.removeChannel(
-      txChannel,
-    );
+    supabaseClient.removeChannel(txChannel);
 
     txChannel = null;
   }
@@ -1561,59 +1126,44 @@ function subscribeTransactionRealtime(
     return;
   }
 
-  txChannel =
-    supabaseClient
-      .channel(
-        `tx-${conv.id}`,
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "transactions",
-          filter:
-            `item_id=eq.${conv.item_id}`,
-        },
+  txChannel = supabaseClient
+    .channel(`tx-${conv.id}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "transactions",
+        filter: `item_id=eq.${conv.item_id}`,
+      },
 
-        async (payload) => {
-          const row =
-            payload.new;
+      async (payload) => {
+        const row = payload.new;
 
-          if (
-            !row ||
-            row.buyer_id !==
-              conv.buyer_id ||
-            row.seller_id !==
-              conv.seller_id
-          ) {
-            return;
-          }
+        if (
+          !row ||
+          row.buyer_id !== conv.buyer_id ||
+          row.seller_id !== conv.seller_id
+        ) {
+          return;
+        }
 
-          if (
-            activeConversationId !==
-            conv.id
-          ) {
-            return;
-          }
+        if (activeConversationId !== conv.id) {
+          return;
+        }
 
-          activeTx = row;
+        activeTx = row;
 
-          await loadOfferedItem(
-            row,
-          );
+        await loadOfferedItem(row);
 
-          if (
-            activeConversationId !==
-            conv.id
-          ) {
-            return;
-          }
+        if (activeConversationId !== conv.id) {
+          return;
+        }
 
-          renderTransactionPanel();
-        },
-      )
-      .subscribe();
+        renderTransactionPanel();
+      },
+    )
+    .subscribe();
 }
 
 // =========================================================
@@ -1623,15 +1173,10 @@ function subscribeTransactionRealtime(
 function clearChatImage() {
   selectedChatImage = null;
 
-  if (
-    selectedChatImagePreviewUrl
-  ) {
-    URL.revokeObjectURL(
-      selectedChatImagePreviewUrl,
-    );
+  if (selectedChatImagePreviewUrl) {
+    URL.revokeObjectURL(selectedChatImagePreviewUrl);
 
-    selectedChatImagePreviewUrl =
-      null;
+    selectedChatImagePreviewUrl = null;
   }
 
   if (chatImageInput) {
@@ -1639,166 +1184,110 @@ function clearChatImage() {
   }
 
   if (chatImagePreview) {
-    chatImagePreview.hidden =
-      true;
+    chatImagePreview.hidden = true;
   }
 
   if (chatImagePreviewImg) {
-    chatImagePreviewImg.removeAttribute(
-      "src",
-    );
+    chatImagePreviewImg.removeAttribute("src");
   }
 
   if (chatImagePreviewName) {
-    chatImagePreviewName.textContent =
-      "";
+    chatImagePreviewName.textContent = "";
   }
 }
 
-if (
-  chatImageButton &&
-  chatImageInput
-) {
-  chatImageButton.addEventListener(
-    "click",
-    () => {
-      if (!activeConversationId) {
-        alert(
-          "Pilih percakapan terlebih dahulu.",
-        );
+if (chatImageButton && chatImageInput) {
+  chatImageButton.addEventListener("click", () => {
+    if (!activeConversationId) {
+      alert("Pilih percakapan terlebih dahulu.");
 
-        return;
-      }
+      return;
+    }
 
-      chatImageInput.click();
-    },
-  );
+    chatImageInput.click();
+  });
 }
 
 if (chatImageInput) {
-  chatImageInput.addEventListener(
-    "change",
-    () => {
-      const file =
-        chatImageInput.files?.[0];
+  chatImageInput.addEventListener("change", () => {
+    const file = chatImageInput.files?.[0];
 
-      if (!file) {
-        return;
-      }
+    if (!file) {
+      return;
+    }
 
-      if (
-        !file.type.startsWith(
-          "image/",
-        )
-      ) {
-        alert(
-          "File yang dipilih harus berupa foto.",
-        );
+    if (!file.type.startsWith("image/")) {
+      alert("File yang dipilih harus berupa foto.");
 
-        clearChatImage();
+      clearChatImage();
 
-        return;
-      }
+      return;
+    }
 
-      if (
-        file.size >
-        MAX_CHAT_IMAGE_SIZE
-      ) {
-        alert(
-          "Ukuran foto maksimal 5 MB.",
-        );
+    if (file.size > MAX_CHAT_IMAGE_SIZE) {
+      alert("Ukuran foto maksimal 5 MB.");
 
-        clearChatImage();
+      clearChatImage();
 
-        return;
-      }
+      return;
+    }
 
-      selectedChatImage =
-        file;
+    selectedChatImage = file;
 
-      selectedChatImagePreviewUrl =
-        URL.createObjectURL(
-          file,
-        );
+    selectedChatImagePreviewUrl = URL.createObjectURL(file);
 
-      if (
-        chatImagePreviewImg
-      ) {
-        chatImagePreviewImg.src =
-          selectedChatImagePreviewUrl;
-      }
+    if (chatImagePreviewImg) {
+      chatImagePreviewImg.src = selectedChatImagePreviewUrl;
+    }
 
-      if (
-        chatImagePreviewName
-      ) {
-        chatImagePreviewName.textContent =
-          file.name;
-      }
+    if (chatImagePreviewName) {
+      chatImagePreviewName.textContent = file.name;
+    }
 
-      if (
-        chatImagePreview
-      ) {
-        chatImagePreview.hidden =
-          false;
-      }
-    },
-  );
+    if (chatImagePreview) {
+      chatImagePreview.hidden = false;
+    }
+  });
 }
 
 if (chatImageRemove) {
-  chatImageRemove.addEventListener(
-    "click",
-    clearChatImage,
-  );
+  chatImageRemove.addEventListener("click", clearChatImage);
 }
 
 // =========================================================
 // INIT
 // =========================================================
 
-document.addEventListener(
-  "reuse-unread-changed",
-  () => {
-    if (currentUser) {
-      loadConversations();
-    }
-  },
-);
+document.addEventListener("reuse-unread-changed", () => {
+  if (currentUser) {
+    loadConversations();
+  }
+});
 
 onAuthReady(async () => {
   if (!isLoggedIn()) {
-    window.location.href =
-      `login.html?redirect=${encodeURIComponent(
-        window.location.pathname +
-          window.location.search,
-      )}`;
+    window.location.href = `login.html?redirect=${encodeURIComponent(
+      window.location.pathname + window.location.search,
+    )}`;
 
     return;
   }
 
-  currentUser =
-    getCurrentUser();
+  currentUser = getCurrentUser();
 
   if (!currentUser) {
-    window.location.href =
-      "login.html";
+    window.location.href = "login.html";
 
     return;
   }
 
   await loadConversations();
 
-  const params =
-    new URLSearchParams(
-      window.location.search,
-    );
+  const params = new URLSearchParams(window.location.search);
 
-  const requestedId =
-    params.get("id");
+  const requestedId = params.get("id");
 
   if (requestedId) {
-    await openConversation(
-      requestedId,
-    );
+    await openConversation(requestedId);
   }
 });

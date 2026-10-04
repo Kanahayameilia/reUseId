@@ -503,10 +503,14 @@ const REPORT_STATUS_LABEL = {
 
 let allReports = [];
 
+// Tiap menu sidebar punya <div id="view-NAMA">. Menu tanpa view jatuh ke dashboard.
 function showAdminView(page) {
-  const isReports = page === "laporan";
-  document.getElementById("view-dashboard").hidden = isReports;
-  document.getElementById("view-laporan").hidden = !isReports;
+  const target = document.getElementById("view-" + page) ? page : "dashboard";
+  document.querySelectorAll('[id^="view-"]').forEach((el) => {
+    el.hidden = el.id !== "view-" + target;
+  });
+  // isi data halaman (Pengguna, Listing, Transaksi, Pengaturan) -> admin-pages.js
+  if (typeof window.loadAdminPage === "function") window.loadAdminPage(target);
 }
 
 function updateReportBadge() {

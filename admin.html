@@ -11,6 +11,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/admin.css" />
+    <link rel="stylesheet" href="css/admin-pages.css" />
     <link rel="icon" type="image/png" href="assets/favicon.png" />
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
     <link rel="icon" type="image/png" href="assets/favicon.png" />
@@ -436,6 +437,163 @@
             <div class="table-footer"><span id="reportInfo"></span></div>
           </section>
         </div>
+
+        <div id="view-pengguna" hidden>
+          <header class="main-header">
+            <div>
+              <h1>Pengguna</h1>
+              <p>Semua akun yang terdaftar di Re:Use.ID</p>
+            </div>
+          </header>
+
+          <section class="table-card">
+            <div class="table-head">
+              <h3>Pengguna</h3>
+              <div class="table-filters">
+                <input
+                  type="search"
+                  class="pg-search"
+                  id="userSearch"
+                  placeholder="Cari nama, email, kampus…"
+                />
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Pengguna</th>
+                    <th>Kampus</th>
+                    <th>Barang</th>
+                    <th>Bergabung</th>
+                    <th>Login terakhir</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer"><span id="userInfo"></span></div>
+          </section>
+        </div>
+
+        <div id="view-listing" hidden>
+          <header class="main-header">
+            <div>
+              <h1>Listing Barang</h1>
+              <p>Semua barang yang diunggah pengguna</p>
+            </div>
+          </header>
+
+          <section class="table-card">
+            <div class="table-head">
+              <h3>Listing Barang</h3>
+              <div class="table-filters">
+                <input
+                  type="search"
+                  class="pg-search"
+                  id="itemSearch"
+                  placeholder="Cari barang, pemilik, kategori…"
+                /><select id="itemStatusFilter">
+                  <option value="Semua">Semua Status</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Barang</th>
+                    <th>Pemilik</th>
+                    <th>Jenis</th>
+                    <th>Status</th>
+                    <th>Diunggah</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="itemTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer"><span id="itemInfo"></span></div>
+          </section>
+        </div>
+
+        <div id="view-transaksi" hidden>
+          <header class="main-header">
+            <div>
+              <h1>Transaksi</h1>
+              <p>Semua pengajuan barter dan donasi</p>
+            </div>
+          </header>
+
+          <section class="table-card">
+            <div class="table-head">
+              <h3>Transaksi</h3>
+              <div class="table-filters">
+                <input
+                  type="search"
+                  class="pg-search"
+                  id="txSearch"
+                  placeholder="Cari pengaju, pemilik, barang…"
+                /><select id="txPageStatus">
+                  <option value="Semua">Semua Status</option>
+                  <option value="menunggu">Menunggu</option>
+                  <option value="diterima">Diproses</option>
+                  <option value="selesai">Selesai</option>
+                  <option value="ditolak">Ditolak</option>
+                  <option value="dibatalkan">Dibatalkan</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Pengaju</th>
+                    <th>Barang</th>
+                    <th>Jenis</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="txPageBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer"><span id="txPageInfo"></span></div>
+          </section>
+        </div>
+
+        <div id="view-pengaturan" hidden>
+          <header class="main-header">
+            <div>
+              <h1>Pengaturan</h1>
+              <p>Akun admin yang sedang login</p>
+            </div>
+          </header>
+          <div class="pg-card">
+            <h3>Akun Admin</h3>
+            <div class="pg-row">
+              <span>Nama</span><span id="setName">-</span>
+            </div>
+            <div class="pg-row">
+              <span>Email</span><span id="setEmail">-</span>
+            </div>
+            <div class="pg-row">
+              <span>Kampus</span><span id="setCampus">-</span>
+            </div>
+            <div class="pg-row">
+              <span>ID akun</span><span id="setId">-</span>
+            </div>
+            <div class="pg-actions">
+              <button type="button" class="pg-btn" id="setReload">
+                Muat ulang halaman
+              </button>
+              <button type="button" class="pg-btn primary" id="setLogout">
+                Keluar
+              </button>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
 
@@ -444,5 +602,6 @@
     <script src="js/auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="js/admin.js"></script>
+    <script src="js/admin-pages.js"></script>
   </body>
 </html>

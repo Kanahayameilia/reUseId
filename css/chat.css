@@ -46,6 +46,7 @@ body {
   color: var(--ink);
 
   height: 100vh;
+  height: 100dvh; /* HP: ikut tinggi layar asli (tanpa tertutup bar browser) */
 
   display: flex;
   flex-direction: column;

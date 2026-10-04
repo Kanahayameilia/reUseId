@@ -437,6 +437,7 @@ async function openConversation(conversationId) {
 
   threadEmpty.hidden = true;
   threadActive.hidden = false;
+  chatShell.classList.add("has-active"); // HP: tampilkan panel chat, sembunyikan daftar
 
   threadName.textContent = other.name || "Pengguna Re:Use.ID";
 

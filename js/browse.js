@@ -28,8 +28,24 @@ let userLoc = null; // { lat, lng, label } — null berarti izin lokasi ditolak/
 
 const locationChipLabel = document.querySelector(".location-chip span");
 
+// Area layanan baru Kota & Kab. Magelang. Kalau user ada di luar area, jarak dihitung dari pusat Kota Magelang
+const MAGELANG_BOUNDS = { south: -7.72, north: -7.15, west: 110.02, east: 110.5 };
+const MAGELANG_CENTER = { lat: -7.4706, lng: 110.2177, label: "Kota Magelang" };
+
+function insideMagelang(loc) {
+  return (
+    loc &&
+    loc.lat >= MAGELANG_BOUNDS.south &&
+    loc.lat <= MAGELANG_BOUNDS.north &&
+    loc.lng >= MAGELANG_BOUNDS.west &&
+    loc.lng <= MAGELANG_BOUNDS.east
+  );
+}
+
 getUserLocation().then((loc) => {
-  userLoc = loc;
+  userLoc = loc && !insideMagelang(loc) ? MAGELANG_CENTER : loc;
+  loc = userLoc;
+  // ...sisanya (locationChipLabel dst.) tetap
   if (locationChipLabel) {
     locationChipLabel.textContent = loc?.label || "Lokasi tidak diketahui";
   }

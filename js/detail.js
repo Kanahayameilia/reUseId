@@ -217,7 +217,7 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
 
   // ---------- buka / buat conversation, lalu pindah ke chat.html ----------
   // Tabel "conversations" & "messages" dipakai bareng sama chat.js.
-  async function openConversation(autoMessage = null) {
+  async function openConversation(autoMessage = null, greetIfNew = null) {
     const currentUser = getCurrentUser();
 
     if (item.user_id === currentUser.id) {
@@ -227,8 +227,8 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
 
     try {
       let conversationId = null;
+      let isNew = false;
 
-      // cari conversation yang sudah ada buat kombinasi barang+pembeli+penjual ini
       const { data: existing, error: findError } = await supabaseClient
         .from("conversations")
         .select("id")
@@ -264,7 +264,22 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
 
         if (createError) throw new Error(createError.message);
         conversationId = created.id;
+        isNew = true;
       }
+
+      // chat baru lewat "Hubungi Pemilik": kirim sapaan biar nggak kosong
+      if (!autoMessage && greetIfNew) {
+        let kosong = isNew;
+        if (!kosong) {
+          const { count } = await supabaseClient
+            .from("messages")
+            .select("id", { count: "exact", head: true })
+            .eq("conversation_id", conversationId);
+          kosong = (count || 0) === 0;
+        }
+        if (kosong) autoMessage = greetIfNew;
+      }
+      console.log("DEBUG chat", { isNew, autoMessage, greetIfNew }); 
 
       if (autoMessage) {
         const { error: msgError } = await supabaseClient
@@ -460,9 +475,11 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
   });
 
   document.getElementById("btnHubungiPemilik").addEventListener("click", () => {
-    requireLogin(() => {
-      if (!requireAvatar()) return; // wajib foto profil dulu
-      openConversation();
-    });
+    requireLogin(() =>
+      openConversation(
+        null,
+        'Halo, saya mau tanya soal barang "' + item.name + '". Masih tersedia?',
+      ),
+    );
   });
 })();

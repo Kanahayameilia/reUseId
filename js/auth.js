@@ -47,11 +47,16 @@ async function initAuth() {
   enforceCampusGate();
 }
 
-// ---------- gate pilih kampus ----------
-// Daftar lewat form sudah divalidasi di signup.js. Tapi daftar lewat Google nggak
-// lewat form itu, jadi akunnya belum punya kampus. Selama kampus belum diisi,
-// tampilkan popup wajib pilih kampus (cuma dari daftar Magelang).
-// Akun lama yang sudah punya kampus (walau di luar Magelang) nggak diganggu.
+// ---------- gate kampus ----------
+// 1) Akun belum punya kampus (daftar lewat Google): wajib pilih kampus Magelang.
+// 2) Akun lama dengan kampus di luar Magelang: dikasih tenggat 7 hari buat ganti kampus.
+//    Selama tenggat -> banner + popup peringatan (bisa ditutup).
+//    Lewat tenggat  -> akun diblokir: popup nggak bisa ditutup sampai kampus diganti.
+// Tenggat disimpan di user_metadata.campus_deadline, mulai dihitung saat akun itu
+// pertama kali login setelah fitur ini aktif.
+// Catatan: ini pembatasan di sisi tampilan (browser), bukan blokir di server.
+const CAMPUS_GRACE_DAYS = 7;
+
 function enforceCampusGate() {
   const page = window.location.pathname.split("/").pop() || "index.html";
   const skip = [
@@ -65,8 +70,95 @@ function enforceCampusGate() {
 
   const user = getCurrentUser();
   if (!user) return;
-  if (String(user.user_metadata?.campus ?? "").trim()) return;
-  if (document.getElementById("campusGate")) return;
+
+  const meta = user.user_metadata || {};
+  const campus = String(meta.campus ?? "").trim();
+
+  if (!campus) {
+    openCampusModal({ mode: "missing" });
+    return;
+  }
+  if (isMagelangCampus(campus)) return;
+
+  // ---- kampus di luar Magelang ----
+  let deadline = meta.campus_deadline ? new Date(meta.campus_deadline) : null;
+  if (!deadline || Number.isNaN(deadline.getTime())) {
+    deadline = new Date(Date.now() + CAMPUS_GRACE_DAYS * 86400000);
+    supabaseClient.auth
+      .updateUser({ data: { campus_deadline: deadline.toISOString() } })
+      .then(({ error }) => {
+        if (error)
+          console.warn("Gagal menyimpan tenggat kampus:", error.message);
+      });
+  }
+
+  if (deadline.getTime() <= Date.now()) {
+    openCampusModal({ mode: "blocked", campus });
+    return;
+  }
+
+  showCampusBanner(campus, deadline);
+  let warned = false;
+  try {
+    warned = sessionStorage.getItem("campusWarned") === "1";
+    sessionStorage.setItem("campusWarned", "1");
+  } catch {}
+  if (!warned) openCampusModal({ mode: "warn", campus, deadline });
+}
+
+function campusDaysLeft(deadline) {
+  return Math.max(1, Math.ceil((deadline.getTime() - Date.now()) / 86400000));
+}
+
+function campusDeadlineText(deadline) {
+  return deadline.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function showCampusBanner(campus, deadline) {
+  if (document.getElementById("campusBanner")) return;
+  const bar = document.createElement("div");
+  bar.id = "campusBanner";
+  bar.setAttribute(
+    "style",
+    "flex:none;background:#fff4d6;border-bottom:1px solid #f0c36d;color:#5f4500;padding:10px 16px;font:600 .85rem 'DM Sans',sans-serif;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:center;text-align:center;",
+  );
+  bar.innerHTML = `
+    <span>⚠️ Kampusmu (${escHtml(campus)}) di luar Magelang. Ganti kampus dalam
+    ${campusDaysLeft(deadline)} hari (sebelum ${escHtml(campusDeadlineText(deadline))})
+    atau akunmu akan diblokir.</span>
+    <button type="button" id="campusBannerBtn" style="border:none;background:#5f4500;color:#fff;border-radius:999px;padding:6px 14px;font:700 .8rem 'DM Sans',sans-serif;cursor:pointer;">Ganti kampus</button>`;
+  document.body.prepend(bar);
+  bar
+    .querySelector("#campusBannerBtn")
+    .addEventListener("click", () =>
+      openCampusModal({ mode: "warn", campus, deadline }),
+    );
+}
+
+// mode: "missing" (belum punya kampus) | "warn" (masih dalam tenggat) | "blocked" (tenggat habis)
+function openCampusModal({ mode, campus = "", deadline = null }) {
+  document.getElementById("campusGate")?.remove();
+
+  const copy = {
+    missing: {
+      title: "Pilih asal kampusmu",
+      text: "Re:Use.ID saat ini baru untuk mahasiswa perguruan tinggi di Magelang. Pilih kampusmu untuk melanjutkan.",
+    },
+    warn: {
+      title: "Kampusmu di luar Magelang",
+      text: deadline
+        ? `Kamu terdaftar dari ${escHtml(campus)}. Re:Use.ID kini hanya untuk perguruan tinggi di Magelang. Ganti kampusmu sebelum ${escHtml(campusDeadlineText(deadline))} (${campusDaysLeft(deadline)} hari lagi), atau akunmu akan diblokir.`
+        : "",
+    },
+    blocked: {
+      title: "Akunmu diblokir",
+      text: `Kampus yang terdaftar (${escHtml(campus)}) di luar Magelang dan batas waktu penggantian sudah lewat. Pilih kampus di Magelang untuk membuka blokir, atau keluar.`,
+    },
+  }[mode];
 
   const overlay = document.createElement("div");
   overlay.id = "campusGate";
@@ -76,18 +168,19 @@ function enforceCampusGate() {
   );
   overlay.innerHTML = `
     <div role="dialog" aria-modal="true" style="background:#fff;border-radius:16px;max-width:420px;width:100%;padding:24px;">
-      <h3 style="margin:0 0 6px;font-size:1.1rem;color:#1a3c34;">Pilih asal kampusmu</h3>
-      <p style="margin:0 0 16px;font-size:.88rem;line-height:1.5;color:#66756f;">
-        Re:Use.ID saat ini baru untuk mahasiswa perguruan tinggi di Magelang.
-        Pilih kampusmu untuk melanjutkan.
-      </p>
+      <h3 style="margin:0 0 6px;font-size:1.1rem;color:${mode === "blocked" ? "#c0392b" : "#1a3c34"};">${copy.title}</h3>
+      <p style="margin:0 0 16px;font-size:.88rem;line-height:1.5;color:#66756f;">${copy.text}</p>
       <select id="campusGateSelect" style="width:100%;padding:12px;border:1.5px solid #e6e9e7;border-radius:10px;font:inherit;margin-bottom:8px;">
         <option value="">— Pilih kampus —</option>
         ${MAGELANG_CAMPUSES.map((c) => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join("")}
       </select>
       <div id="campusGateErr" style="min-height:18px;font-size:.8rem;color:#c0392b;margin-bottom:8px;"></div>
       <div style="display:flex;gap:8px;justify-content:flex-end;">
-        <button type="button" id="campusGateLogout" style="padding:10px 16px;border:1px solid #d5ddd9;background:#fff;border-radius:999px;font:inherit;font-weight:700;cursor:pointer;">Keluar</button>
+        ${
+          mode === "warn"
+            ? `<button type="button" id="campusGateLater" style="padding:10px 16px;border:1px solid #d5ddd9;background:#fff;border-radius:999px;font:inherit;font-weight:700;cursor:pointer;">Nanti</button>`
+            : `<button type="button" id="campusGateLogout" style="padding:10px 16px;border:1px solid #d5ddd9;background:#fff;border-radius:999px;font:inherit;font-weight:700;cursor:pointer;">Keluar</button>`
+        }
         <button type="button" id="campusGateSave" style="padding:10px 18px;border:none;background:#4caf7d;color:#fff;border-radius:999px;font:inherit;font-weight:700;cursor:pointer;">Simpan</button>
       </div>
     </div>`;
@@ -97,16 +190,21 @@ function enforceCampusGate() {
   const err = overlay.querySelector("#campusGateErr");
   const saveBtn = overlay.querySelector("#campusGateSave");
 
-  overlay.querySelector("#campusGateLogout").addEventListener("click", logout);
+  overlay.querySelector("#campusGateLogout")?.addEventListener("click", logout);
+  overlay
+    .querySelector("#campusGateLater")
+    ?.addEventListener("click", () => overlay.remove());
+
   saveBtn.addEventListener("click", async () => {
-    const campus = select.value;
-    if (!isMagelangCampus(campus)) {
+    const picked = select.value;
+    if (!isMagelangCampus(picked)) {
       err.textContent = "Pilih kampus dari daftar yang tersedia.";
       return;
     }
     saveBtn.disabled = true;
+    // campus_deadline: null = hapus tenggat karena kampus sudah diganti
     const { error } = await supabaseClient.auth.updateUser({
-      data: { campus },
+      data: { campus: picked, campus_deadline: null },
     });
     if (error) {
       saveBtn.disabled = false;

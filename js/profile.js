@@ -163,6 +163,46 @@ onAuthReady(async () => {
   document.getElementById("settingsEmail").value = userEmail;
   document.getElementById("settingsLocation").value = userLocation;
 
+  // ---------- dropdown ganti kampus (maks 3x) ----------
+  const campusSelect = document.getElementById("settingsCampus");
+  const campusInfo = document.getElementById("campusChangeInfo");
+
+  function renderCampusSetting() {
+    const u = getCurrentUser();
+    const current = String(u?.user_metadata?.campus ?? "").trim();
+    const outside = current && !isMagelangCampus(current);
+    const left = getCampusChangesLeft(u);
+
+    let options = "";
+    if (!current) options += `<option value="">— Pilih kampus —</option>`;
+    if (outside)
+      options += `<option value="${escHtml(current)}" selected>${escHtml(current)} (di luar Magelang)</option>`;
+    options += MAGELANG_CAMPUSES.map(
+      (c) =>
+        `<option value="${escHtml(c)}"${c.toLowerCase() === current.toLowerCase() ? " selected" : ""}>${escHtml(c)}</option>`,
+    ).join("");
+    campusSelect.innerHTML = options;
+
+    // jatah cuma terpakai kalau kampus sekarang sudah di Magelang
+    if (outside) {
+      campusSelect.disabled = false;
+      campusInfo.className = "settings-hint warn";
+      campusInfo.textContent =
+        "Kampusmu di luar Magelang. Pilih kampus di Magelang sebelum batas waktu habis. Ini tidak mengurangi jatah ganti kampus.";
+    } else if (current && left === 0) {
+      campusSelect.disabled = true;
+      campusInfo.className = "settings-hint warn";
+      campusInfo.textContent = `Batas ganti kampus (${CAMPUS_MAX_CHANGES}x) sudah habis, jadi kampus tidak bisa diganti lagi.`;
+    } else {
+      campusSelect.disabled = false;
+      campusInfo.className = "settings-hint";
+      campusInfo.textContent = current
+        ? `Sisa jatah ganti kampus: ${left} dari ${CAMPUS_MAX_CHANGES}.`
+        : "Pilih asal kampusmu.";
+    }
+  }
+  renderCampusSetting();
+
   // ---------- BARANG AKTIF (dari tabel items di Supabase, milik akun ini) ----------
   const activeGrid = document.getElementById("activeGrid");
   let myItems = null,
@@ -642,8 +682,54 @@ onAuthReady(async () => {
       btn.disabled = true;
       btn.textContent = "Menyimpan…";
 
+      const updateData = { full_name: newName, location: newLocation };
+
+      // ---- ganti kampus (kalau dropdown diubah) ----
+      const meNow = getCurrentUser();
+      const oldCampus = String(meNow?.user_metadata?.campus ?? "").trim();
+      const pickedCampus = campusSelect.value.trim();
+      let campusChanged = false;
+
+      if (
+        pickedCampus &&
+        pickedCampus.toLowerCase() !== oldCampus.toLowerCase()
+      ) {
+        if (!isMagelangCampus(pickedCampus)) {
+          alert("Pilih kampus dari daftar perguruan tinggi di Magelang.");
+          btn.disabled = false;
+          btn.textContent = original;
+          return;
+        }
+
+        const change = buildCampusChange(meNow, pickedCampus);
+
+        if (change.counts) {
+          if (getCampusChangesLeft(meNow) <= 0) {
+            alert(`Batas ganti kampus (${CAMPUS_MAX_CHANGES}x) sudah habis.`);
+            btn.disabled = false;
+            btn.textContent = original;
+            renderCampusSetting();
+            return;
+          }
+          const sisaSetelah = getCampusChangesLeft(meNow) - 1;
+          const ok = confirm(
+            `Ganti kampus ke "${pickedCampus}"?\n\n` +
+              `Kamu hanya bisa ganti kampus maksimal ${CAMPUS_MAX_CHANGES} kali. ` +
+              `Setelah ini sisa jatahmu ${sisaSetelah}.`,
+          );
+          if (!ok) {
+            btn.disabled = false;
+            btn.textContent = original;
+            return;
+          }
+        }
+
+        Object.assign(updateData, change.data);
+        campusChanged = true;
+      }
+
       const { error } = await supabaseClient.auth.updateUser({
-        data: { full_name: newName, location: newLocation },
+        data: updateData,
       });
 
       btn.disabled = false;
@@ -662,6 +748,13 @@ onAuthReady(async () => {
       document.getElementById("phLocation").textContent = newLocation
         ? `📍 ${newLocation}`
         : "";
+
+      if (campusChanged) {
+        document.getElementById("phCampus").textContent =
+          `🎓 Mahasiswa — ${updateData.campus}`;
+        document.getElementById("campusBanner")?.remove(); // banner peringatan kampus ikut hilang
+      }
+      renderCampusSetting();
 
       btn.textContent = "Tersimpan ✓";
       setTimeout(() => {

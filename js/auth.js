@@ -31,6 +31,33 @@ function isMagelangCampus(name) {
   return MAGELANG_CAMPUSES.some((c) => c.toLowerCase() === n);
 }
 
+// ---------- batas ganti kampus ----------
+// Maksimal 3x ganti kampus (antar kampus Magelang). Jumlahnya disimpan di
+// user_metadata.campus_changes. Yang TIDAK dihitung: pilih kampus pertama kali
+// (akun Google) dan pindah dari kampus di luar Magelang ke kampus Magelang,
+// karena itu keharusan, bukan pilihan.
+const CAMPUS_MAX_CHANGES = 3;
+
+function getCampusChangesUsed(user) {
+  const n = Number(user?.user_metadata?.campus_changes);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+}
+
+function getCampusChangesLeft(user) {
+  return Math.max(0, CAMPUS_MAX_CHANGES - getCampusChangesUsed(user));
+}
+
+// Bikin data yang dikirim ke updateUser() untuk ganti kampus.
+// counts = true kalau ganti ini menghabiskan jatah.
+function buildCampusChange(user, newCampus) {
+  const old = String(user?.user_metadata?.campus ?? "").trim();
+  const counts =
+    isMagelangCampus(old) && old.toLowerCase() !== newCampus.toLowerCase();
+  const data = { campus: newCampus, campus_deadline: null };
+  if (counts) data.campus_changes = getCampusChangesUsed(user) + 1;
+  return { data, counts };
+}
+
 let _cachedSession = null;
 let _authReady = false;
 

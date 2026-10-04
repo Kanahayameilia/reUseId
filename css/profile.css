@@ -582,6 +582,36 @@ input {
   color: var(--ink);
   transition: border-color 0.2s;
 }
+.settings-row select {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: var(--ink);
+  background: var(--white);
+  transition: border-color 0.2s;
+}
+.settings-row select:focus {
+  outline: none;
+  border-color: var(--sage);
+}
+.settings-row select:disabled {
+  background: #f4f6f5;
+  color: var(--ink-soft);
+  cursor: not-allowed;
+}
+.settings-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+.settings-hint.warn {
+  color: #b8860b;
+}
 .settings-row input:focus {
   outline: none;
   border-color: var(--sage);

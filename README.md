@@ -4,7 +4,10 @@ Platform barter dan donasi barang layak pakai untuk mahasiswa Magelang.
 
 **Demo:** 
 [aged-frost-562a.kanahayameiliea.workers.dev]
+
 (https://aged-frost-562a.kanahayameiliea.workers.dev/)
+
+<img src="assets/qr-reuseid.png" alt="QR demo Re:Use.ID" width="160" />
 
 **Fitur**
 

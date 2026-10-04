@@ -201,6 +201,93 @@ a {
   border-radius: 100px;
 }
 
+.tag-btn {
+  border: 1.5px solid transparent;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
+}
+.tag-btn:hover {
+  border-color: var(--sage);
+  transform: translateY(-1px);
+}
+.tag-btn.active {
+  background: var(--sage);
+  color: var(--white);
+}
+
+.tag-panel {
+  background: var(--cream);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin: -12px 0 28px;
+}
+.tag-panel[hidden] {
+  display: none;
+}
+.tag-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 0.92rem;
+  color: var(--teal);
+}
+.tag-panel-close {
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  padding: 2px 6px;
+}
+.tag-panel-msg {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+}
+.tag-related {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.tag-related-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.tag-related .tag {
+  background: var(--white);
+}
+.tag-results {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+.tag-result {
+  flex: 0 0 110px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.tag-result img {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #eef1ef;
+  margin-bottom: 6px;
+}
+.tag-result:hover span {
+  color: var(--sage-dark);
+}
+
 .owner-card {
   display: flex;
   align-items: center;

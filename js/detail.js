@@ -79,9 +79,128 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
 
   document.getElementById("itemDescription").textContent = item.description;
 
-  document.getElementById("itemTags").innerHTML = (item.tags || [])
-    .map((t) => `<span class="tag">#${t}</span>`)
+  // ---------- tag bisa diklik: tampilkan tag & barang serupa ----------
+  const normTag = (t) => String(t).trim().replace(/^#+/, "").toLowerCase();
+  const itemTagsEl = document.getElementById("itemTags");
+  const tagPanel = document.getElementById("tagPanel");
+  let activeTag = null;
+  let tagPool = null; // cache barang aktif, di-fetch sekali saat tag pertama diklik
+
+  itemTagsEl.innerHTML = (item.tags || [])
+    .map(
+      (t) =>
+        `<button type="button" class="tag tag-btn" data-tag="${escHtml(normTag(t))}" aria-pressed="false">#${escHtml(normTag(t))}</button>`,
+    )
     .join("");
+
+  function markActiveTag() {
+    itemTagsEl.querySelectorAll(".tag-btn").forEach((b) => {
+      const on = b.dataset.tag === activeTag;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", on);
+    });
+  }
+
+  async function loadTagPool() {
+    if (tagPool) return tagPool;
+    const { data, error } = await supabaseClient
+      .from("items")
+      .select("*")
+      .eq("status", "Aktif")
+      .neq("id", item.id)
+      .order("created_at", { ascending: false })
+      .limit(300);
+    if (error) throw error;
+    tagPool = (data || []).filter(
+      (it) => Array.isArray(it.tags) && it.tags.length,
+    );
+    return tagPool;
+  }
+
+  async function showTag(tag) {
+    // klik tag yang sama sekali lagi = tutup panel
+    if (activeTag === tag) {
+      activeTag = null;
+      markActiveTag();
+      tagPanel.hidden = true;
+      return;
+    }
+    activeTag = tag;
+    markActiveTag();
+    tagPanel.hidden = false;
+    tagPanel.innerHTML = `<p class="tag-panel-msg">Memuat barang dengan tag #${escHtml(tag)}…</p>`;
+
+    let pool;
+    try {
+      pool = await loadTagPool();
+    } catch (err) {
+      console.error("Gagal memuat tag serupa:", err);
+      tagPanel.innerHTML = `<p class="tag-panel-msg">Gagal memuat barang dengan tag ini.</p>`;
+      return;
+    }
+    if (activeTag !== tag) return; // user keburu klik tag lain
+
+    const matches = pool.filter((it) =>
+      it.tags.some((t) => normTag(t) === tag),
+    );
+
+    // tag serupa = tag lain yang sering muncul bareng tag ini
+    const counts = {};
+    matches.forEach((it) =>
+      it.tags.forEach((t) => {
+        const n = normTag(t);
+        if (n && n !== tag) counts[n] = (counts[n] || 0) + 1;
+      }),
+    );
+    const related = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([n]) => n);
+
+    const relatedHtml = related.length
+      ? `<div class="tag-related">
+           <span class="tag-related-label">Tag serupa:</span>
+           ${related.map((n) => `<button type="button" class="tag tag-btn" data-tag="${escHtml(n)}">#${escHtml(n)}</button>`).join("")}
+         </div>`
+      : "";
+
+    const cardsHtml = matches.length
+      ? `<div class="tag-results">${matches
+          .slice(0, 12)
+          .map((it) => {
+            const cover = it.photo || it.photos?.[0] || FALLBACK_PHOTO;
+            return `
+            <a class="tag-result" href="detail.html?id=${encodeURIComponent(it.id)}">
+              <img src="${escHtml(cover)}" alt="${escHtml(it.name)}" loading="lazy">
+              <span>${escHtml(it.name)}</span>
+            </a>`;
+          })
+          .join("")}</div>`
+      : `<p class="tag-panel-msg">Belum ada barang lain dengan tag #${escHtml(tag)}.</p>`;
+
+    tagPanel.innerHTML = `
+      <div class="tag-panel-head">
+        <strong>Barang dengan tag #${escHtml(tag)}</strong>
+        <button type="button" class="tag-panel-close" aria-label="Tutup">✕</button>
+      </div>
+      ${relatedHtml}
+      ${cardsHtml}`;
+  }
+
+  itemTagsEl.addEventListener("click", (e) => {
+    const b = e.target.closest(".tag-btn");
+    if (b) showTag(b.dataset.tag);
+  });
+  tagPanel.addEventListener("click", (e) => {
+    if (e.target.closest(".tag-panel-close")) {
+      activeTag = null;
+      markActiveTag();
+      tagPanel.hidden = true;
+      return;
+    }
+    const b = e.target.closest(".tag-btn"); // klik tag serupa -> pindah ke tag itu
+    if (b) showTag(b.dataset.tag);
+  });
 
   document.getElementById("ownerAvatar").src = item.avatar;
   document.getElementById("ownerAvatar").alt = item.owner;
@@ -279,7 +398,7 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
         }
         if (kosong) autoMessage = greetIfNew;
       }
-      console.log("DEBUG chat", { isNew, autoMessage, greetIfNew }); 
+      console.log("DEBUG chat", { isNew, autoMessage, greetIfNew });
 
       if (autoMessage) {
         const { error: msgError } = await supabaseClient

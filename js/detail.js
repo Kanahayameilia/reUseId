@@ -593,6 +593,19 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
     });
   });
 
+  const btnLapor = document.getElementById("btnLaporBarang");
+  onAuthReady(() => {
+    if (isLoggedIn() && getUserId() === item.user_id) btnLapor.hidden = true;
+  });
+  btnLapor.addEventListener("click", () => {
+    openReport({
+      type: "item",
+      itemId: item.id,
+      itemName: item.name,
+      userId: item.user_id,
+    });
+  });
+
   document.getElementById("btnHubungiPemilik").addEventListener("click", () => {
     requireLogin(() =>
       openConversation(

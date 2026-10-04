@@ -484,4 +484,207 @@ onAuthReady(async () => {
   gateEl.remove();
   fillAdminProfile();
   initDashboard();
+  initReports();
 });
+
+// =========================================================
+// LAPORAN MASUK (barang, chat, bug)
+// =========================================================
+// Data dari tabel "reports" (lihat bagian4_laporan.sql). Aturan RLS-nya yang
+// menjaga data: cuma admin yang bisa baca semua & mengubah status.
+
+const REPORT_TYPE_LABEL = { item: "Barang", chat: "Chat", bug: "Bug" };
+const REPORT_STATUS_LABEL = {
+  baru: "Baru",
+  diproses: "Diproses",
+  selesai: "Selesai",
+  ditolak: "Ditolak",
+};
+
+let allReports = [];
+
+function showAdminView(page) {
+  const isReports = page === "laporan";
+  document.getElementById("view-dashboard").hidden = isReports;
+  document.getElementById("view-laporan").hidden = !isReports;
+}
+
+function updateReportBadge() {
+  const n = allReports.filter((r) => r.status === "baru").length;
+  const el = document.getElementById("reportNavBadge");
+  el.textContent = n > 99 ? "99+" : String(n);
+  el.hidden = n === 0;
+}
+
+async function loadReports() {
+  const { data, error } = await supabaseClient
+    .from("reports")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(500);
+
+  const body = document.getElementById("reportTableBody");
+  if (error) {
+    console.error("Gagal memuat laporan:", error);
+    body.innerHTML = `<tr><td colspan="6">Gagal memuat laporan: ${esc(error.message)}<br>Pastikan <b>bagian4_laporan.sql</b> sudah dijalankan.</td></tr>`;
+    return;
+  }
+  allReports = data || [];
+  updateReportBadge();
+  renderReports();
+}
+
+function reportTargetCell(r) {
+  if (r.type === "bug") {
+    return `${esc(r.meta?.area || "-")}<span class="rp-sub-cell">${esc(r.meta?.page || "")}</span>`;
+  }
+  return esc(r.target_label || "-");
+}
+
+function renderReports() {
+  const typeF = document.getElementById("reportTypeFilter").value;
+  const statusF = document.getElementById("reportStatusFilter").value;
+  const rows = allReports.filter(
+    (r) =>
+      (typeF === "Semua" || r.type === typeF) &&
+      (statusF === "Semua" || r.status === statusF),
+  );
+
+  const body = document.getElementById("reportTableBody");
+  body.innerHTML = rows
+    .map(
+      (r) => `
+    <tr class="rp-row" data-id="${esc(r.id)}">
+      <td>${fmtDate(r.created_at)}</td>
+      <td><span class="rp-type ${esc(r.type)}">${esc(REPORT_TYPE_LABEL[r.type] || r.type)}</span></td>
+      <td>
+        <div class="tx-user">
+          <img src="${esc(r.reporter_avatar || FALLBACK_AVATAR)}" alt="">
+          <span>${esc(r.reporter_name || "Pengguna")}</span>
+        </div>
+      </td>
+      <td>${reportTargetCell(r)}</td>
+      <td>${esc(r.reason)}</td>
+      <td><span class="tx-status ${esc(r.status)}">${esc(REPORT_STATUS_LABEL[r.status] || r.status)}</span></td>
+    </tr>`,
+    )
+    .join("");
+
+  document.getElementById("reportInfo").textContent = rows.length
+    ? `${rows.length} laporan`
+    : allReports.length
+      ? "Tidak ada laporan dengan filter ini"
+      : "Belum ada laporan masuk";
+}
+
+function openReportDetail(id) {
+  const r = allReports.find((x) => x.id === id);
+  if (!r) return;
+
+  const links = [];
+  if (r.target_item_id)
+    links.push(
+      `<a href="detail.html?id=${encodeURIComponent(r.target_item_id)}" target="_blank" rel="noopener">Buka barang ↗</a>`,
+    );
+  if (r.target_user_id)
+    links.push(
+      `<a href="user.html?id=${encodeURIComponent(r.target_user_id)}" target="_blank" rel="noopener">Buka profil ${r.type === "item" ? "pemilik" : "terlapor"} ↗</a>`,
+    );
+
+  const evidence =
+    Array.isArray(r.evidence) && r.evidence.length
+      ? `<div class="rp-field"><b>Bukti chat (${r.evidence.length} pesan terakhir)</b>
+        <div class="rp-evidence">${r.evidence
+          .map(
+            (m) => `<div class="rp-msg ${esc(m.dari)}">
+              <small>${m.dari === "pelapor" ? "Pelapor" : "Terlapor"} · ${esc(fmtDate(m.waktu))}</small>
+              ${esc(m.isi)}${m.foto ? ` <a href="${esc(m.foto)}" target="_blank" rel="noopener">[foto]</a>` : ""}
+            </div>`,
+          )
+          .join("")}</div></div>`
+      : "";
+
+  const meta = r.meta
+    ? `<div class="rp-field"><b>Info teknis</b><div>Halaman: ${esc(r.meta.page)} · Layar: ${esc(r.meta.viewport)}<br><span style="color:var(--ink-soft);font-size:.78rem">${esc(r.meta.ua)}</span></div></div>`
+    : "";
+
+  const modal = document.createElement("div");
+  modal.className = "rp-modal";
+  modal.innerHTML = `
+    <div class="rp-panel" role="dialog" aria-modal="true">
+      <h3>Laporan ${esc(REPORT_TYPE_LABEL[r.type] || r.type)}</h3>
+      <div class="meta">Dari ${esc(r.reporter_name || "Pengguna")} · ${esc(fmtDate(r.created_at))}</div>
+      <div class="rp-field"><b>Alasan</b><div>${esc(r.reason)}</div></div>
+      ${r.details ? `<div class="rp-field"><b>Keterangan</b><div>${esc(r.details)}</div></div>` : ""}
+      ${r.target_label && r.type !== "bug" ? `<div class="rp-field"><b>Yang dilaporkan</b><div>${esc(r.target_label)}</div></div>` : ""}
+      ${links.length ? `<div class="rp-field">${links.join(" &nbsp;·&nbsp; ")}</div>` : ""}
+      ${evidence}
+      ${meta}
+      <div class="rp-field"><b>Status</b>
+        <select id="rpStatus">${Object.entries(REPORT_STATUS_LABEL)
+          .map(
+            ([v, l]) =>
+              `<option value="${v}" ${v === r.status ? "selected" : ""}>${l}</option>`,
+          )
+          .join("")}</select>
+      </div>
+      <div class="rp-field"><b>Catatan admin</b>
+        <textarea id="rpNote" maxlength="1000" placeholder="Tindakan yang diambil…">${esc(r.admin_note || "")}</textarea>
+      </div>
+      <div class="rp-panel-actions">
+        <button type="button" id="rpClose">Tutup</button>
+        <button type="button" class="primary" id="rpSave">Simpan</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  const close = () => modal.remove();
+  modal.addEventListener("click", (e) => e.target === modal && close());
+  modal.querySelector("#rpClose").addEventListener("click", close);
+
+  modal.querySelector("#rpSave").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    const status = modal.querySelector("#rpStatus").value;
+    const note = modal.querySelector("#rpNote").value.trim() || null;
+    btn.disabled = true;
+
+    const { error } = await supabaseClient
+      .from("reports")
+      .update({
+        status,
+        admin_note: note,
+        resolved_at:
+          status === "selesai" || status === "ditolak"
+            ? new Date().toISOString()
+            : null,
+      })
+      .eq("id", r.id);
+
+    if (error) {
+      btn.disabled = false;
+      alert("Gagal menyimpan: " + error.message);
+      return;
+    }
+    Object.assign(r, { status, admin_note: note });
+    updateReportBadge();
+    renderReports();
+    close();
+  });
+}
+
+function initReports() {
+  document.querySelectorAll(".nav-item").forEach((item) => {
+    item.addEventListener("click", () => showAdminView(item.dataset.page));
+  });
+  document
+    .getElementById("reportTypeFilter")
+    .addEventListener("change", renderReports);
+  document
+    .getElementById("reportStatusFilter")
+    .addEventListener("change", renderReports);
+  document.getElementById("reportTableBody").addEventListener("click", (e) => {
+    const row = e.target.closest(".rp-row");
+    if (row) openReportDetail(row.dataset.id);
+  });
+  loadReports();
+}

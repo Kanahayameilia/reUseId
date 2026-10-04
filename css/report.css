@@ -1,0 +1,221 @@
+/* Re:Use.ID - modal & tombol laporan (dimuat otomatis oleh js/report.js) */
+.rp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  font-family: "DM Sans", sans-serif;
+}
+.rp-card {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 22px;
+  color: #1f2a26;
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.35);
+}
+.rp-card h3 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  color: #1a3c34;
+}
+.rp-sub {
+  margin: 0 0 14px;
+  font-size: 0.84rem;
+  color: #66756f;
+  line-height: 1.45;
+}
+.rp-target {
+  background: #f6f8f7;
+  border: 1px solid #e6e9e7;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.84rem;
+  margin-bottom: 14px;
+  overflow-wrap: anywhere;
+}
+.rp-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1a3c34;
+  margin: 12px 0 6px;
+}
+.rp-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rp-reason {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1.5px solid #e6e9e7;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+.rp-reason:has(input:checked) {
+  border-color: #4caf7d;
+  background: #eaf6ef;
+}
+.rp-reason input {
+  accent-color: #4caf7d;
+}
+.rp-card textarea,
+.rp-card select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e6e9e7;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.88rem;
+  resize: vertical;
+}
+.rp-card textarea {
+  min-height: 84px;
+}
+.rp-card textarea:focus,
+.rp-card select:focus {
+  outline: none;
+  border-color: #4caf7d;
+}
+.rp-note {
+  font-size: 0.76rem;
+  color: #66756f;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+.rp-err {
+  min-height: 18px;
+  font-size: 0.8rem;
+  color: #c0392b;
+  margin-top: 8px;
+}
+.rp-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+.rp-btn {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid #d5ddd9;
+  background: #fff;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+.rp-btn.primary {
+  background: #4caf7d;
+  border-color: #4caf7d;
+  color: #fff;
+}
+.rp-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.rp-done {
+  text-align: center;
+  padding: 12px 0 4px;
+}
+.rp-done .rp-ico {
+  font-size: 2.2rem;
+}
+
+/* tombol "Laporkan" kecil di halaman detail */
+.report-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #8a9892;
+  cursor: pointer;
+}
+.report-link:hover {
+  color: #c0392b;
+}
+
+/* tombol di header chat */
+.thread-report-btn {
+  flex: none;
+  padding: 7px 12px;
+  border: 1.5px solid #e6e9e7;
+  border-radius: 100px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #8a9892;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.thread-report-btn:hover {
+  border-color: #e8b4ae;
+  color: #c0392b;
+}
+@media (max-width: 560px) {
+  .thread-report-btn span {
+    display: none;
+  }
+  .thread-report-btn {
+    padding: 6px 10px;
+  }
+}
+
+/* bendera kecil di samping pesan lawan bicara */
+.message-wrapper.theirs {
+  align-items: flex-end;
+  gap: 6px;
+}
+.msg-report {
+  flex: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  opacity: 0.35;
+  padding: 4px;
+  border-radius: 6px;
+  transition: opacity 0.15s;
+}
+.message-wrapper:hover .msg-report,
+.msg-report:focus-visible {
+  opacity: 1;
+}
+.msg-report:hover {
+  background: #fdecea;
+}
+
+/* toast */
+.rp-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: #1a3c34;
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: 999px;
+  font:
+    600 0.86rem "DM Sans",
+    sans-serif;
+  z-index: 99999;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4);
+}

@@ -578,6 +578,21 @@ function renderMessage(msg) {
     bubble.appendChild(content);
   }
 
+  let reportBtn = null;
+  if (
+    msg.sender_id !== currentUser.id &&
+    msg.id &&
+    !String(msg.id).startsWith("temp-")
+  ) {
+    reportBtn = document.createElement("button");
+    reportBtn.type = "button";
+    reportBtn.className = "msg-report";
+    reportBtn.title = "Laporkan pesan ini";
+    reportBtn.setAttribute("aria-label", "Laporkan pesan ini");
+    reportBtn.textContent = "🚩";
+    reportBtn.addEventListener("click", () => reportChat(msg));
+  }
+
   // WAKTU
   const time = document.createElement("div");
 
@@ -589,8 +604,44 @@ function renderMessage(msg) {
 
   wrapper.appendChild(bubble);
 
+  if (reportBtn) wrapper.appendChild(reportBtn);
+
   return wrapper;
 }
+
+async function getChatEvidence() {
+  const { data, error } = await supabaseClient
+    .from("messages")
+    .select("sender_id, content, image_url, created_at")
+    .eq("conversation_id", activeConversationId)
+    .order("created_at", { ascending: false })
+    .limit(15);
+  if (error) throw error;
+  return (data || []).reverse().map((m) => ({
+    dari: m.sender_id === currentUser.id ? "pelapor" : "terlapor",
+    isi: String(m.content || "").slice(0, 500),
+    foto: m.image_url || null,
+    waktu: m.created_at,
+  }));
+}
+
+function reportChat(msg = null) {
+  if (!activeConversation) return;
+  const other = otherParty(activeConversation);
+  openReport({
+    type: "chat",
+    conversationId: activeConversation.id,
+    userId: other.id,
+    userName: other.name,
+    messageId: msg?.id || null,
+    messageText: msg?.content || (msg?.image_url ? "[foto]" : null),
+    getEvidence: getChatEvidence,
+  });
+}
+
+document
+  .getElementById("threadReportBtn")
+  ?.addEventListener("click", () => reportChat());
 
 // =========================================================
 // REALTIME CHAT

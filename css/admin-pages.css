@@ -111,3 +111,65 @@
   background: var(--sage-tint);
   color: var(--sage-dark);
 }
+
+.pg-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--teal);
+  margin: 18px 0 6px;
+}
+.pg-add {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pg-add .pg-search {
+  flex: 1;
+  min-width: 200px;
+  border-radius: 10px;
+}
+.pg-msg {
+  min-height: 20px;
+  font-size: 0.82rem;
+  margin-top: 8px;
+  color: var(--red);
+}
+.pg-msg.ok {
+  color: var(--sage-dark);
+}
+.pg-admin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.pg-admin img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+}
+.pg-admin .who {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.pg-admin .who small {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+.pg-you {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--sage-dark);
+  background: var(--sage-tint);
+  padding: 3px 10px;
+  border-radius: 999px;
+}

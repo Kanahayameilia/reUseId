@@ -220,6 +220,79 @@
     $("setEmail").textContent = u?.email || "-";
     $("setCampus").textContent = m.campus || "-";
     $("setId").textContent = u?.id || "-";
+    loadAdmins();
+  }
+
+  // ---------------- KELOLA ADMIN ----------------
+  // fungsi database: admin_list_admins / admin_add_admin / admin_remove_admin (bagian6)
+  function adminMsg(text, ok) {
+    const el = $("adminMsg");
+    el.textContent = text || "";
+    el.classList.toggle("ok", !!ok);
+  }
+
+  async function loadAdmins() {
+    const box = $("adminList");
+    box.innerHTML = `<p class="pg-sub">Memuat…</p>`;
+    const { data, error } = await supabaseClient.rpc("admin_list_admins");
+    if (error) {
+      console.error("admin_list_admins gagal:", error);
+      box.innerHTML = `<p class="pg-msg">Gagal memuat admin: ${esc(error.message)}<br>Pastikan <b>bagian6_kelola_admin.sql</b> sudah dijalankan.</p>`;
+      return;
+    }
+    const me = getUserId();
+    box.innerHTML = (data || [])
+      .map(
+        (a) => `
+      <div class="pg-admin">
+        <img src="${esc(a.avatar_url || FALLBACK_AVATAR)}" alt="">
+        <div class="who">${esc(a.full_name || "Tanpa nama")}<small>${esc(a.email || a.user_id)}</small></div>
+        ${
+          a.user_id === me
+            ? `<span class="pg-you">Kamu</span>`
+            : `<button type="button" class="pg-del" data-rm="${esc(a.user_id)}" data-name="${esc(a.email || a.full_name || "")}">Cabut</button>`
+        }
+      </div>`,
+      )
+      .join("");
+  }
+
+  async function addAdmin() {
+    const email = $("newAdminEmail").value.trim();
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      adminMsg("Masukkan email yang valid.");
+      return;
+    }
+    const btn = $("btnAddAdmin");
+    btn.disabled = true;
+    adminMsg("");
+    const { error } = await supabaseClient.rpc("admin_add_admin", {
+      p_email: email,
+    });
+    btn.disabled = false;
+    if (error) {
+      adminMsg(error.message);
+      return;
+    }
+    $("newAdminEmail").value = "";
+    adminMsg(email + " sekarang admin.", true);
+    loadAdmins();
+  }
+
+  async function removeAdmin(userId, name, btn) {
+    if (!confirm(`Cabut akses admin dari ${name || "pengguna ini"}?`)) return;
+    btn.disabled = true;
+    adminMsg("");
+    const { error } = await supabaseClient.rpc("admin_remove_admin", {
+      p_user_id: userId,
+    });
+    if (error) {
+      btn.disabled = false;
+      adminMsg(error.message);
+      return;
+    }
+    adminMsg("Akses admin dicabut.", true);
+    loadAdmins();
   }
 
   // ---------------- pasang listener ----------------
@@ -233,6 +306,15 @@
   $("txSearch").addEventListener("input", renderTx);
   $("txPageStatus").addEventListener("change", renderTx);
   $("setLogout").addEventListener("click", logout);
+  $("btnAddAdmin").addEventListener("click", addAdmin);
+  $("newAdminEmail").addEventListener(
+    "keydown",
+    (e) => e.key === "Enter" && addAdmin(),
+  );
+  $("adminList").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-rm]");
+    if (b) removeAdmin(b.dataset.rm, b.dataset.name, b);
+  });
   $("setReload").addEventListener("click", () => window.location.reload());
 
   // dipanggil admin.js tiap pindah menu

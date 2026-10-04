@@ -10,6 +10,27 @@
 // dengan onAuthReady(() => { ...kode lama... }) biar nggak sempat baca status
 // "belum login" yang keliru sebelum sesi kecek.
 
+// ---------- daftar kampus yang boleh daftar (Kota & Kabupaten Magelang) ----------
+// Dipakai signup.js (validasi + autocomplete) dan gate pilih-kampus di bawah.
+// Mau nambah/hapus kampus? Cukup edit daftar ini.
+const MAGELANG_CAMPUSES = [
+  "Universitas Tidar",
+  "Universitas Muhammadiyah Magelang",
+  "STMIK Bina Patria",
+  "Politeknik Muhammadiyah Magelang",
+  "Politeknik Pembangunan Pertanian Magelang",
+  "STAI Syubbanul Wathon",
+  "Akademi Teknik Tirta Wiyata",
+  "Akademi Keperawatan Karya Bhakti Nusantara",
+];
+
+function isMagelangCampus(name) {
+  const n = String(name ?? "")
+    .trim()
+    .toLowerCase();
+  return MAGELANG_CAMPUSES.some((c) => c.toLowerCase() === n);
+}
+
 let _cachedSession = null;
 let _authReady = false;
 
@@ -23,6 +44,77 @@ async function initAuth() {
   });
 
   document.dispatchEvent(new CustomEvent("auth-ready"));
+  enforceCampusGate();
+}
+
+// ---------- gate pilih kampus ----------
+// Daftar lewat form sudah divalidasi di signup.js. Tapi daftar lewat Google nggak
+// lewat form itu, jadi akunnya belum punya kampus. Selama kampus belum diisi,
+// tampilkan popup wajib pilih kampus (cuma dari daftar Magelang).
+// Akun lama yang sudah punya kampus (walau di luar Magelang) nggak diganggu.
+function enforceCampusGate() {
+  const page = window.location.pathname.split("/").pop() || "index.html";
+  const skip = [
+    "index.html",
+    "login.html",
+    "signup.html",
+    "forgot-password.html",
+    "reset-password.html",
+  ];
+  if (skip.includes(page)) return;
+
+  const user = getCurrentUser();
+  if (!user) return;
+  if (String(user.user_metadata?.campus ?? "").trim()) return;
+  if (document.getElementById("campusGate")) return;
+
+  const overlay = document.createElement("div");
+  overlay.id = "campusGate";
+  overlay.setAttribute(
+    "style",
+    "position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;font-family:'DM Sans',sans-serif;",
+  );
+  overlay.innerHTML = `
+    <div role="dialog" aria-modal="true" style="background:#fff;border-radius:16px;max-width:420px;width:100%;padding:24px;">
+      <h3 style="margin:0 0 6px;font-size:1.1rem;color:#1a3c34;">Pilih asal kampusmu</h3>
+      <p style="margin:0 0 16px;font-size:.88rem;line-height:1.5;color:#66756f;">
+        Re:Use.ID saat ini baru untuk mahasiswa perguruan tinggi di Magelang.
+        Pilih kampusmu untuk melanjutkan.
+      </p>
+      <select id="campusGateSelect" style="width:100%;padding:12px;border:1.5px solid #e6e9e7;border-radius:10px;font:inherit;margin-bottom:8px;">
+        <option value="">— Pilih kampus —</option>
+        ${MAGELANG_CAMPUSES.map((c) => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join("")}
+      </select>
+      <div id="campusGateErr" style="min-height:18px;font-size:.8rem;color:#c0392b;margin-bottom:8px;"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button type="button" id="campusGateLogout" style="padding:10px 16px;border:1px solid #d5ddd9;background:#fff;border-radius:999px;font:inherit;font-weight:700;cursor:pointer;">Keluar</button>
+        <button type="button" id="campusGateSave" style="padding:10px 18px;border:none;background:#4caf7d;color:#fff;border-radius:999px;font:inherit;font-weight:700;cursor:pointer;">Simpan</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const select = overlay.querySelector("#campusGateSelect");
+  const err = overlay.querySelector("#campusGateErr");
+  const saveBtn = overlay.querySelector("#campusGateSave");
+
+  overlay.querySelector("#campusGateLogout").addEventListener("click", logout);
+  saveBtn.addEventListener("click", async () => {
+    const campus = select.value;
+    if (!isMagelangCampus(campus)) {
+      err.textContent = "Pilih kampus dari daftar yang tersedia.";
+      return;
+    }
+    saveBtn.disabled = true;
+    const { error } = await supabaseClient.auth.updateUser({
+      data: { campus },
+    });
+    if (error) {
+      saveBtn.disabled = false;
+      err.textContent = "Gagal menyimpan: " + error.message;
+      return;
+    }
+    window.location.reload();
+  });
 }
 
 // Dipakai di halaman-halaman (browse.js, profile.js, dst) sebagai pengganti
@@ -124,9 +216,17 @@ async function signInWithGoogle(btn) {
 }
 
 function escHtml(s) {
-  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  }[c]));
+  return String(s ?? "").replace(
+    /[&<>"']/g,
+    (c) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c],
+  );
 }
 
 initAuth();

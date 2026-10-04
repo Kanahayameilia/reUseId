@@ -287,6 +287,12 @@ svg {
   background: var(--sage-tint);
   color: var(--sage-dark);
 }
+.autocomplete-empty {
+  padding: 11px 15px;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
 .autocomplete-item + .autocomplete-item {
   border-top: 1px solid var(--border);
 }

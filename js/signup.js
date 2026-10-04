@@ -1,46 +1,21 @@
 // ---------- daftar kampus untuk autocomplete ----------
-const campuses = [
-  "Universitas Tidar",
-  "Universitas Gadjah Mada",
-  "Universitas Negeri Yogyakarta",
-  "Universitas Islam Indonesia",
-  "Universitas Diponegoro",
-  "Universitas Negeri Semarang",
-  "Universitas Sebelas Maret",
-  "Institut Teknologi Bandung",
-  "Universitas Padjadjaran",
-  "Universitas Indonesia",
-  "Institut Pertanian Bogor",
-  "Universitas Brawijaya",
-  "Universitas Airlangga",
-  "Institut Teknologi Sepuluh Nopember",
-  "Universitas Negeri Malang",
-  "Universitas Muhammadiyah Magelang",
-  "Universitas Muhammadiyah Yogyakarta",
-  "Universitas Sanata Dharma",
-  "Universitas Kristen Duta Wacana",
-  "Universitas Ahmad Dahlan",
-];
+// daftar kampus ada di auth.js (MAGELANG_CAMPUSES): cuma perguruan tinggi di Kota & Kab. Magelang
+const campuses = MAGELANG_CAMPUSES;
 
 const campusInput = document.getElementById("campus");
 const campusList = document.getElementById("campusList");
 let highlightedIndex = -1;
 
-campusInput.addEventListener("input", () => {
+function renderCampusList() {
   const query = campusInput.value.trim().toLowerCase();
   highlightedIndex = -1;
 
-  if (!query) {
-    campusList.hidden = true;
-    return;
-  }
-
-  const matches = campuses
-    .filter((c) => c.toLowerCase().includes(query))
-    .slice(0, 6);
+  // daftar cuma 8 kampus, jadi kalau kosong tampilkan semuanya
+  const matches = campuses.filter((c) => c.toLowerCase().includes(query));
 
   if (matches.length === 0) {
-    campusList.hidden = true;
+    campusList.innerHTML = `<div class="autocomplete-empty">Kampus ini belum tersedia. Re:Use.ID saat ini baru untuk perguruan tinggi di Magelang.</div>`;
+    campusList.hidden = false;
     return;
   }
 
@@ -56,7 +31,10 @@ campusInput.addEventListener("input", () => {
       clearError("campus");
     });
   });
-});
+}
+
+campusInput.addEventListener("input", renderCampusList);
+campusInput.addEventListener("focus", renderCampusList);
 
 campusInput.addEventListener("keydown", (e) => {
   const items = campusList.querySelectorAll(".autocomplete-item");
@@ -157,7 +135,10 @@ form.addEventListener("submit", async (e) => {
     hasError = true;
   }
   if (!campuses.some((c) => c.toLowerCase() === campus.toLowerCase())) {
-    showError("campus", "Pilih kampus dari daftar yang tersedia.");
+    showError(
+      "campus",
+      "Re:Use.ID saat ini baru untuk perguruan tinggi di Magelang. Pilih kampusmu dari daftar.",
+    );
     hasError = true;
   }
   if (!agree) {

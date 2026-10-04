@@ -790,3 +790,24 @@ body.js-ready .reveal.visible {
     flex-direction: column;
   }
 }
+
+/* ---------- HP: navbar beranda muat di layar kecil ---------- */
+@media (max-width: 560px) {
+  .nav-inner {
+    padding: 14px 16px;
+    gap: 8px;
+  }
+  .nav-cta {
+    padding: 9px 14px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .nav-cta-outline {
+    display: none;
+  }
+}
+@media (max-width: 400px) {
+  .why-grid {
+    grid-template-columns: 1fr;
+  }
+}

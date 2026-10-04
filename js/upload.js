@@ -14,7 +14,7 @@ onAuthReady(() => {
     return;
   }
 
-    if (!isLoggedIn()) {
+  if (!isLoggedIn()) {
     window.location.href = "login.html?redirect=upload.html";
     return;
   }
@@ -47,7 +47,10 @@ onAuthReady(() => {
   });
 
   // ---------- pilih foto (klik dropzone atau drag & drop) ----------
-  dropzone.addEventListener("click", () => photoInput.click());
+  dropzone.addEventListener("click", () => {
+    ImageFilter.preload(); // siapkan model filter foto sambil user milih file
+    photoInput.click();
+  });
 
   dropzone.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -67,24 +70,42 @@ onAuthReady(() => {
     photoInput.value = "";
   });
 
+  // Foto diperiksa satu per satu (ImageFilter) sebelum masuk daftar.
+  // Antrian dipakai biar pemilihan foto beruntun nggak balapan.
+  let addChain = Promise.resolve();
+
   function addFiles(fileList) {
+    const files = Array.from(fileList);
+    addChain = addChain.then(() => processFiles(files));
+  }
+
+  async function processFiles(files) {
     errPhotos.textContent = "";
-    for (const file of fileList) {
+    const errors = [];
+    for (const file of files) {
       if (selectedFiles.length >= MAX_PHOTOS) {
-        errPhotos.textContent = `Maksimal ${MAX_PHOTOS} foto.`;
+        errors.push(`Maksimal ${MAX_PHOTOS} foto.`);
         break;
       }
       if (!ALLOWED_TYPES.includes(file.type)) {
-        errPhotos.textContent = "Format foto harus PNG, JPG, atau WEBP.";
+        errors.push("Format foto harus PNG, JPG, atau WEBP.");
         continue;
       }
       if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        errPhotos.textContent = `Ukuran tiap foto maksimal ${MAX_SIZE_MB}MB.`;
+        errors.push(`Ukuran tiap foto maksimal ${MAX_SIZE_MB}MB.`);
+        continue;
+      }
+
+      errPhotos.textContent = `Memeriksa foto "${file.name}"…`;
+      const res = await ImageFilter.check(file, { context: "item" });
+      if (!res.ok) {
+        errors.push(`${file.name}: ${res.reason}`);
         continue;
       }
       selectedFiles.push(file);
+      renderPreview();
     }
-    renderPreview();
+    errPhotos.textContent = [...new Set(errors)].join(" ");
   }
 
   function renderPreview() {
@@ -168,6 +189,7 @@ onAuthReady(() => {
     formMsg.textContent = "";
     formMsg.className = "form-msg";
 
+    await addChain; // tunggu pemeriksaan foto yang masih jalan
     if (!validate()) return;
 
     const currentUser = getCurrentUser();
@@ -233,8 +255,7 @@ onAuthReady(() => {
         photo: photoUrls[0],
         owner: currentUser.user_metadata?.full_name || getUserName(),
         avatar:
-          currentUser.user_metadata?.avatar_url ||
-          "assets/avatar-default.svg",
+          currentUser.user_metadata?.avatar_url || "assets/avatar-default.svg",
         rating: 5,
         member_since: memberSince,
         status: "Aktif",

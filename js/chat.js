@@ -1222,12 +1222,14 @@ if (chatImageButton && chatImageInput) {
       return;
     }
 
+    ImageFilter.preload(); // siapkan model filter foto sambil user milih file
+
     chatImageInput.click();
   });
 }
 
 if (chatImageInput) {
-  chatImageInput.addEventListener("change", () => {
+  chatImageInput.addEventListener("change", async () => {
     const file = chatImageInput.files?.[0];
 
     if (!file) {
@@ -1244,6 +1246,29 @@ if (chatImageInput) {
 
     if (file.size > MAX_CHAT_IMAGE_SIZE) {
       alert("Ukuran foto maksimal 5 MB.");
+
+      clearChatImage();
+
+      return;
+    }
+
+    // Periksa isi foto (format asli, ukuran, polos, konten dewasa) sebelum dipakai.
+    // Tombol kirim dikunci dulu biar pesan nggak terkirim tanpa foto yang lagi diperiksa.
+    if (chatImageButton) chatImageButton.disabled = true;
+    composerSend.disabled = true;
+    chatImagePreviewName.textContent = "Memeriksa foto…";
+    chatImagePreview.hidden = false;
+
+    let result;
+    try {
+      result = await ImageFilter.check(file, { context: "chat" });
+    } finally {
+      if (chatImageButton) chatImageButton.disabled = false;
+      composerSend.disabled = false;
+    }
+
+    if (!result.ok) {
+      alert("⚠️ Foto tidak bisa dikirim.\n\n" + result.reason);
 
       clearChatImage();
 

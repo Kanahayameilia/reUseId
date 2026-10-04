@@ -133,7 +133,10 @@ onAuthReady(async () => {
     const newPhotoPreview = document.getElementById("newPhotoPreview");
     const errPhotos = document.getElementById("err-photos");
 
-    dropzone.addEventListener("click", () => photoInput.click());
+    dropzone.addEventListener("click", () => {
+      ImageFilter.preload(); // siapkan model filter foto sambil user milih file
+      photoInput.click();
+    });
     dropzone.addEventListener("dragover", (e) => {
       e.preventDefault();
       dropzone.classList.add("dragover");
@@ -151,24 +154,41 @@ onAuthReady(async () => {
       photoInput.value = "";
     });
 
+    // Foto baru diperiksa satu per satu (ImageFilter) sebelum masuk daftar.
+    let addChain = Promise.resolve();
+
     function addFiles(fileList) {
+      const files = Array.from(fileList);
+      addChain = addChain.then(() => processFiles(files));
+    }
+
+    async function processFiles(files) {
       errPhotos.textContent = "";
-      for (const file of fileList) {
+      const errors = [];
+      for (const file of files) {
         if (existingPhotoUrls.length + newFiles.length >= MAX_PHOTOS) {
-          errPhotos.textContent = `Maksimal ${MAX_PHOTOS} foto total.`;
+          errors.push(`Maksimal ${MAX_PHOTOS} foto total.`);
           break;
         }
         if (!ALLOWED_TYPES.includes(file.type)) {
-          errPhotos.textContent = "Format foto harus PNG, JPG, atau WEBP.";
+          errors.push("Format foto harus PNG, JPG, atau WEBP.");
           continue;
         }
         if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-          errPhotos.textContent = `Ukuran tiap foto maksimal ${MAX_SIZE_MB}MB.`;
+          errors.push(`Ukuran tiap foto maksimal ${MAX_SIZE_MB}MB.`);
+          continue;
+        }
+
+        errPhotos.textContent = `Memeriksa foto "${file.name}"…`;
+        const res = await ImageFilter.check(file, { context: "item" });
+        if (!res.ok) {
+          errors.push(`${file.name}: ${res.reason}`);
           continue;
         }
         newFiles.push(file);
+        renderNewPreview();
       }
-      renderNewPreview();
+      errPhotos.textContent = [...new Set(errors)].join(" ");
     }
 
     function renderNewPreview() {

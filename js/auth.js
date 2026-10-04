@@ -72,6 +72,11 @@ async function initAuth() {
 
   document.dispatchEvent(new CustomEvent("auth-ready"));
   enforceCampusGate();
+
+  if (_cachedSession) {
+    enforceDeviceLimit();
+    startDeviceWatch();
+  }
 }
 
 // ---------- gate kampus ----------
@@ -306,7 +311,10 @@ async function setLoggedIn() {
 }
 
 async function logout() {
-  await supabaseClient.auth.signOut();
+  await unregisterThisDevice();
+  // scope "local": cuma keluar di perangkat ini. Default-nya "global" akan
+  // ikut mengeluarkan perangkat lain, padahal kita mengizinkan 2 perangkat.
+  await supabaseClient.auth.signOut({ scope: "local" });
   _cachedSession = null;
   window.location.href = "index.html";
 }
@@ -352,6 +360,145 @@ function escHtml(s) {
         "'": "&#39;",
       })[c],
   );
+}
+
+// ---------- batas perangkat: maksimal 2 login bersamaan ----------
+// Tiap perangkat/browser punya ID acak (localStorage). Saat login, perangkat
+// didaftarkan lewat fungsi database register_device(). Kalau sudah ada 2
+// perangkat lain, yang paling lama tidak aktif dikeluarkan otomatis.
+// Perangkat yang dikeluarkan sadar karena touch_device() mengembalikan false,
+// lalu logout sendiri. Dicek tiap DEVICE_POLL_MS dan saat tab dibuka lagi.
+// Butuh tabel user_devices (lihat batas-perangkat.sql). Kalau tabelnya belum
+// ada, fitur ini diam saja dan login tetap jalan normal.
+const DEVICE_POLL_MS = 20000;
+let _deviceWatchStarted = false;
+
+function makeRandomId() {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  return (
+    "d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 12)
+  );
+}
+
+function getDeviceId() {
+  try {
+    let id = localStorage.getItem("reuse_device_id");
+    if (!id) {
+      id = makeRandomId();
+      localStorage.setItem("reuse_device_id", id);
+    }
+    return id;
+  } catch {
+    window._reuseDeviceId = window._reuseDeviceId || makeRandomId();
+    return window._reuseDeviceId;
+  }
+}
+
+function getDeviceLabel() {
+  const ua = navigator.userAgent || "";
+  const os = /Android/i.test(ua)
+    ? "Android"
+    : /iPhone|iPad|iPod/i.test(ua)
+      ? "iOS"
+      : /Windows/i.test(ua)
+        ? "Windows"
+        : /Mac OS X/i.test(ua)
+          ? "macOS"
+          : /Linux/i.test(ua)
+            ? "Linux"
+            : "Perangkat";
+  const browser = /Edg\//i.test(ua)
+    ? "Edge"
+    : /OPR\//i.test(ua)
+      ? "Opera"
+      : /Chrome\//i.test(ua)
+        ? "Chrome"
+        : /Firefox\//i.test(ua)
+          ? "Firefox"
+          : /Safari\//i.test(ua)
+            ? "Safari"
+            : "Browser";
+  return browser + " di " + os;
+}
+
+const deviceFlagKey = (uid) => "reuse_device_reg_" + uid;
+
+async function enforceDeviceLimit() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  const deviceId = getDeviceId();
+  const flagKey = deviceFlagKey(user.id);
+  let registered = false;
+  try {
+    registered = localStorage.getItem(flagKey) === "1";
+  } catch {}
+
+  // Belum terdaftar di browser ini = login baru -> daftarkan (bisa mengeluarkan
+  // perangkat lain yang paling lama). Kalau sudah terdaftar tapi barisnya hilang,
+  // berarti perangkat ini yang dikeluarkan -> JANGAN daftar ulang, tapi logout.
+  if (!registered) {
+    const { error } = await supabaseClient.rpc("register_device", {
+      p_device_id: deviceId,
+      p_label: getDeviceLabel(),
+    });
+    if (error) {
+      console.warn("[perangkat] gagal mendaftar:", error.message);
+      return;
+    }
+    try {
+      localStorage.setItem(flagKey, "1");
+    } catch {}
+    return;
+  }
+
+  const { data, error } = await supabaseClient.rpc("touch_device", {
+    p_device_id: deviceId,
+  });
+  if (error) {
+    console.warn("[perangkat] gagal cek:", error.message);
+    return;
+  }
+  if (data === false) kickThisDevice();
+}
+
+function startDeviceWatch() {
+  if (_deviceWatchStarted) return;
+  _deviceWatchStarted = true;
+  setInterval(enforceDeviceLimit, DEVICE_POLL_MS);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) enforceDeviceLimit();
+  });
+}
+
+let _kicking = false;
+async function kickThisDevice() {
+  if (_kicking) return;
+  _kicking = true;
+  const uid = getUserId();
+  try {
+    if (uid) localStorage.removeItem(deviceFlagKey(uid));
+  } catch {}
+  await supabaseClient.auth.signOut({ scope: "local" });
+  _cachedSession = null;
+  alert(
+    "Akunmu login di perangkat lain. Satu akun maksimal dipakai di 2 perangkat, " +
+      "jadi perangkat ini dikeluarkan otomatis. Silakan login lagi kalau mau lanjut.",
+  );
+  window.location.href = "login.html";
+}
+
+async function unregisterThisDevice() {
+  const uid = getUserId();
+  try {
+    if (uid) {
+      localStorage.removeItem(deviceFlagKey(uid));
+      await supabaseClient
+        .from("user_devices")
+        .delete()
+        .eq("device_id", getDeviceId());
+    }
+  } catch {}
 }
 
 initAuth();

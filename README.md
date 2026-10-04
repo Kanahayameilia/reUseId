@@ -18,6 +18,7 @@ Platform barter dan donasi barang layak pakai untuk mahasiswa Magelang.
 5. Chat real-time, alur barter/donasi, lalu rating dan ulasan
 6. Laporan barang, chat, atau bug
 7. Dashboard admin untuk mengelola pengguna, listing, transaksi, dan laporan
+8. Tampilan responsif, nyaman dipakai di HP maupun komputer
 
 **Teknologi**
 

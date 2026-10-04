@@ -439,6 +439,16 @@ async function openConversation(conversationId) {
   threadActive.hidden = false;
   chatShell.classList.add("has-active"); // HP: tampilkan panel chat, sembunyikan daftar
 
+  // taruh ?id= di URL (dipakai notifications.js buat tahu chat mana yang lagi dibuka)
+  history.replaceState(
+    null,
+    "",
+    `${location.pathname}?id=${encodeURIComponent(conversationId)}`,
+  );
+
+  // tandai sudah dibaca begitu chat dibuka
+  if (window.ReuseNotif) ReuseNotif.markSeen(conversationId);
+
   threadName.textContent = other.name || "Pengguna Re:Use.ID";
 
   threadAvatar.src = other.avatar || "assets/avatar-default.svg";

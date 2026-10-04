@@ -29,7 +29,12 @@ let userLoc = null; // { lat, lng, label } — null berarti izin lokasi ditolak/
 const locationChipLabel = document.querySelector(".location-chip span");
 
 // Area layanan baru Kota & Kab. Magelang. Kalau user ada di luar area, jarak dihitung dari pusat Kota Magelang
-const MAGELANG_BOUNDS = { south: -7.72, north: -7.15, west: 110.02, east: 110.5 };
+const MAGELANG_BOUNDS = {
+  south: -7.72,
+  north: -7.15,
+  west: 110.02,
+  east: 110.5,
+};
 const MAGELANG_CENTER = { lat: -7.4706, lng: 110.2177, label: "Kota Magelang" };
 
 function insideMagelang(loc) {
@@ -69,10 +74,7 @@ async function loadSupabaseItems() {
 
     return (data || []).map((row) => ({
       ...row,
-      photo:
-        row.photo ||
-        row.photos?.[0] ||
-        "assets/item-default.svg",
+      photo: row.photo || row.photos?.[0] || "assets/item-default.svg",
     }));
   } catch (err) {
     console.error("Gagal memuat barang dari Supabase:", err);
@@ -84,8 +86,33 @@ const grid = document.getElementById("itemGrid");
 const resultCount = document.getElementById("resultCount");
 const emptyState = document.getElementById("emptyState");
 const searchInput = document.getElementById("searchInput");
-const jarakSlider = document.getElementById("jarakSlider");
-const jarakValue = document.getElementById("jarakValue");
+const jarakMinEl = document.getElementById("jarakMin");
+const jarakMaxEl = document.getElementById("jarakMax");
+const jarakMinLabel = document.getElementById("jarakMinLabel");
+const jarakMaxLabel = document.getElementById("jarakMaxLabel");
+const jarakFill = document.getElementById("jarakFill");
+
+// geser tombol jarak: minimal tidak boleh melewati maksimal (dan sebaliknya)
+function syncJarak(changed) {
+  let lo = parseFloat(jarakMinEl.value);
+  let hi = parseFloat(jarakMaxEl.value);
+  if (lo > hi) {
+    if (changed === "min") {
+      lo = hi;
+      jarakMinEl.value = lo;
+    } else {
+      hi = lo;
+      jarakMaxEl.value = hi;
+    }
+  }
+  const top = parseFloat(jarakMaxEl.max);
+  jarakMinLabel.textContent = `${lo} km`;
+  jarakMaxLabel.textContent = `${hi} km`;
+  jarakFill.style.left = `${(lo / top) * 100}%`;
+  jarakFill.style.right = `${100 - (hi / top) * 100}%`;
+  // kalau dua tombol menumpuk di ujung kanan, tombol minimal harus bisa diambil
+  jarakMinEl.style.zIndex = lo > top / 2 ? 3 : 2;
+}
 const resetBtn = document.getElementById("resetBtn");
 
 function renderCard(item) {
@@ -121,19 +148,21 @@ function getFilters() {
   const kondisi = Array.from(
     document.querySelectorAll(".f-kondisi:checked"),
   ).map((el) => el.value);
-  const jarakMax = parseFloat(jarakSlider.value);
+  const jarakMin = parseFloat(jarakMinEl.value);
+  const jarakMax = parseFloat(jarakMaxEl.value);
   const query = searchInput.value.trim().toLowerCase();
-  return { kategori, jenis, kondisi, jarakMax, query };
+  return { kategori, jenis, kondisi, jarakMin, jarakMax, query };
 }
 
 function applyFilters() {
-  const { kategori, jenis, kondisi, jarakMax, query } = getFilters();
+  const { kategori, jenis, kondisi, jarakMin, jarakMax, query } = getFilters();
 
   const filtered = ALL_ITEMS.filter((item) => {
     if (!kategori.includes(item.kategori)) return false;
     if (jenis !== "Semua" && item.jenis !== jenis) return false;
     if (!kondisi.includes(item.kondisi)) return false;
-    if (computeItemDistance(item, userLoc) > jarakMax) return false;
+    const dist = computeItemDistance(item, userLoc);
+    if (dist < jarakMin || dist > jarakMax) return false;
     if (query && !item.name.toLowerCase().includes(query)) return false;
     return true;
   });
@@ -153,10 +182,16 @@ function applyFilters() {
 document.querySelectorAll(".f-kategori, .f-jenis, .f-kondisi").forEach((el) => {
   el.addEventListener("change", applyFilters);
 });
-jarakSlider.addEventListener("input", () => {
-  jarakValue.textContent = `${jarakSlider.value} km`;
+jarakMinEl.addEventListener("input", () => {
+  syncJarak("min");
   applyFilters();
 });
+jarakMaxEl.addEventListener("input", () => {
+  syncJarak("max");
+  applyFilters();
+});
+syncJarak();
+
 searchInput.addEventListener("input", applyFilters);
 
 resetBtn.addEventListener("click", () => {
@@ -164,8 +199,9 @@ resetBtn.addEventListener("click", () => {
     .querySelectorAll(".f-kategori, .f-kondisi")
     .forEach((el) => (el.checked = true));
   document.querySelector('.f-jenis[value="Semua"]').checked = true;
-  jarakSlider.value = 10;
-  jarakValue.textContent = "10 km";
+  jarakMinEl.value = jarakMinEl.min;
+  jarakMaxEl.value = jarakMaxEl.max;
+  syncJarak();
   searchInput.value = "";
   applyFilters();
 });

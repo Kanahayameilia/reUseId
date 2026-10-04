@@ -42,11 +42,11 @@ function mapInAreaBounds(lat, lng) {
   return inBox || mapInExceptionZone(lat, lng);
 }
 
-// cek teliti pakai nama wilayah dari Nominatim ("Kota Magelang" / "Kabupaten Magelang")
+// KETAT: kalau data wilayah tidak ada / gagal diambil, titik TIDAK lolos
 function mapAddressInArea(address, lat, lng) {
   if (mapInExceptionZone(lat, lng)) return true;
   if (!mapInAreaBounds(lat, lng)) return false;
-  if (!address) return true; // gagal ambil data wilayah -> cukup pakai kotak di atas
+  if (!address) return false;
   const names = [
     address.county,
     address.city,
@@ -54,7 +54,6 @@ function mapAddressInArea(address, lat, lng) {
     address.state_district,
     address.town,
   ].filter(Boolean);
-  if (!names.length) return true;
   return names.some((n) => /magelang/i.test(n));
 }
 
@@ -157,12 +156,14 @@ function createLocationPicker(opts) {
     );
   }
 
-  function rejectPoint() {
+  function rejectPoint(msgText) {
     const back = lastValid || center;
     marker.setLatLng([back.lat, back.lng]);
     map.setView([back.lat, back.lng], map.getZoom());
     confirmed = !!lastValid;
-    const msg = `Lokasi di luar area layanan. Saat ini baru bisa untuk ${MAP_AREA_NAME}.`;
+    const msg =
+      msgText ||
+      `Lokasi di luar area layanan. Saat ini baru bisa untuk ${MAP_AREA_NAME}.`;
     setStatus("📍 " + msg, true);
     if (errEl) errEl.textContent = msg;
   }
@@ -178,12 +179,19 @@ function createLocationPicker(opts) {
 
     marker.setLatLng([lat, lng]);
     if (o.zoom) map.setView([lat, lng], o.zoom);
+    confirmed = false; // belum sah sampai pengecekan wilayah selesai
     setStatus("Memeriksa lokasi…");
 
     // 2) cek teliti: nama wilayah dari Nominatim (sekalian dipakai buat label tempat)
     const data = await mapReverseAddress(lat, lng);
     if (seq !== geoSeq) return; // sudah ada klik/geser yang lebih baru
 
+    if (!data && !mapInExceptionZone(lat, lng)) {
+      rejectPoint(
+        "Wilayah lokasi belum bisa diperiksa (koneksi / server peta sibuk). Coba klik lagi sebentar lagi.",
+      );
+      return;
+    }
     if (!mapAddressInArea(data && data.address, lat, lng)) {
       rejectPoint();
       return;
@@ -280,6 +288,22 @@ function createLocationPicker(opts) {
       true,
     );
   }
+
+  // titik lama (halaman edit) juga dicek nama wilayahnya, bukan cuma kotak kasar
+  if (initialOk) {
+    mapReverseAddress(initial.lat, initial.lng).then((data) => {
+      if (geoSeq !== 0) return; // user sudah pilih titik baru, jangan ditimpa
+      if (!data || mapAddressInArea(data.address, initial.lat, initial.lng))
+        return;
+      lastValid = null;
+      confirmed = false;
+      setStatus(
+        `📍 Titik lama di luar ${MAP_AREA_NAME}. Pilih titik baru di dalam area.`,
+        true,
+      );
+    });
+  }
+
   setTimeout(() => map.invalidateSize(), 250); // jaga-jaga ukuran kontainer berubah setelah render
 
   return {
@@ -287,7 +311,7 @@ function createLocationPicker(opts) {
     marker,
     isConfirmed: () => confirmed,
     getValue: () => {
-      const p = marker.getLatLng();
+      const p = lastValid || marker.getLatLng();
       return { lat: round(p.lat), lng: round(p.lng) };
     },
   };

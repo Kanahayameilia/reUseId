@@ -10,9 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/browse.css" />
-      <link rel="icon" type="image/png" href="assets/favicon.png" />
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+    <link rel="stylesheet" href="css/browse.css?v=2" />
     <link rel="icon" type="image/png" href="assets/favicon.png" />
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
     <link rel="stylesheet" href="css/logo.css" />
@@ -21,7 +19,17 @@
     <header class="topbar">
       <div class="topbar-inner">
         <a href="index.html" class="logo">
-             <span class="mark"><img src="assets/logo-icon.png" alt="Logo Re:Use.ID" style="width:100%;height:100%;object-fit:contain;display:block" /></span>
+          <span class="mark"
+            ><img
+              src="assets/logo-icon.png"
+              alt="Logo Re:Use.ID"
+              style="
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                display: block;
+              "
+          /></span>
           Re:Use.ID
         </a>
 
@@ -152,17 +160,31 @@
 
         <div class="filter-group">
           <h3>Jarak</h3>
-          <input
-            type="range"
-            id="jarakSlider"
-            min="0"
-            max="10"
-            step="0.5"
-            value="10"
-          />
+          <div class="dual-range">
+            <div class="dual-range-track"></div>
+            <div class="dual-range-fill" id="jarakFill"></div>
+            <input
+              type="range"
+              id="jarakMin"
+              min="0"
+              max="100"
+              step="1"
+              value="0"
+              aria-label="Jarak minimal"
+            />
+            <input
+              type="range"
+              id="jarakMax"
+              min="0"
+              max="100"
+              step="1"
+              value="100"
+              aria-label="Jarak maksimal"
+            />
+          </div>
           <div class="range-label">
-            <span>0 km</span>
-            <span id="jarakValue">10 km</span>
+            <span id="jarakMinLabel">0 km</span>
+            <span id="jarakMaxLabel">50 km</span>
           </div>
         </div>
 
@@ -208,6 +230,6 @@
     <script src="js/auth.js"></script>
     <script src="js/geo.js"></script>
     <script src="js/notifications.js"></script>
-    <script src="js/browse.js"></script>
+    <script src="js/browse.js?v=2"></script>
   </body>
 </html>

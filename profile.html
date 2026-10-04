@@ -137,6 +137,7 @@
         <button class="tab-btn active" data-tab="aktif">Barang Aktif</button>
         <button class="tab-btn" data-tab="riwayat">Riwayat Transaksi</button>
         <button class="tab-btn" data-tab="ulasan">Ulasan</button>
+        <button class="tab-btn" data-tab="laporan">Laporan Saya</button>
         <button class="tab-btn" data-tab="pengaturan">Pengaturan</button>
       </nav>
 
@@ -150,6 +151,10 @@
 
       <section id="panel-ulasan" class="tab-panel">
         <div class="review-list" id="reviewList"></div>
+      </section>
+
+      <section id="panel-laporan" class="tab-panel">
+        <div class="review-list" id="myReports"></div>
       </section>
 
       <section id="panel-pengaturan" class="tab-panel">
@@ -205,8 +210,9 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="js/supabase-client.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/report.js"></script>
+    <script src="js/my-reports.js"></script>
     <script src="js/notifications.js"></script>
     <script src="js/profile.js"></script>
-    <script src="js/report.js"></script>
   </body>
 </html>

@@ -219,3 +219,99 @@
   z-index: 99999;
   box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.4);
 }
+
+/* ---------- tab "Laporan Saya" di profil ---------- */
+.mr-empty {
+  padding: 24px 4px;
+  color: #66756f;
+  font-size: 0.9rem;
+}
+.mr-card {
+  background: #fff;
+  border: 1px solid #e6e9e7;
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  font-family: "DM Sans", sans-serif;
+}
+.mr-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.mr-type {
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: #f1f4f2;
+  color: #1a3c34;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.mr-status {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.mr-status.baru {
+  background: #fff4dd;
+  color: #9a6a00;
+}
+.mr-status.diproses {
+  background: #e8f0fc;
+  color: #2a5fb0;
+}
+.mr-status.selesai {
+  background: #eaf6ef;
+  color: #3a9265;
+}
+.mr-status.ditolak {
+  background: #f1eeea;
+  color: #6f6a65;
+}
+.mr-date {
+  margin-left: auto;
+  font-size: 0.76rem;
+  color: #8a9892;
+}
+.mr-target {
+  font-size: 0.84rem;
+  color: #66756f;
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+.mr-reason {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #1f2a26;
+}
+.mr-details {
+  font-size: 0.86rem;
+  color: #4a5852;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.mr-reply {
+  margin-top: 12px;
+  background: #eaf6ef;
+  border-left: 3px solid #4caf7d;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.mr-reply b {
+  display: block;
+  font-size: 0.76rem;
+  color: #3a9265;
+  margin-bottom: 4px;
+}
+.mr-wait {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: #8a9892;
+}

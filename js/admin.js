@@ -632,8 +632,8 @@ function openReportDetail(id) {
           )
           .join("")}</select>
       </div>
-      <div class="rp-field"><b>Catatan admin</b>
-        <textarea id="rpNote" maxlength="1000" placeholder="Tindakan yang diambil…">${esc(r.admin_note || "")}</textarea>
+      <div class="rp-field"><b>Balasan untuk pelapor (pelapor bisa membacanya)</b>
+        <textarea id="rpNote" maxlength="1000" placeholder="Contoh: Terima kasih, barang sudah kami hapus. / Bug sudah diperbaiki di versi terbaru.">${esc(r.admin_note || "")}</textarea>
       </div>
       <div class="rp-panel-actions">
         <button type="button" id="rpClose">Tutup</button>

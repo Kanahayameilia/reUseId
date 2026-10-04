@@ -1,8 +1,7 @@
 // supabaseClient ada di supabase-client.js; onAuthReady/isLoggedIn/getUserId/escHtml ada di auth.js.
 
 const FALLBACK_AVATAR = "assets/avatar-default.svg";
-const FALLBACK_PHOTO =
-  "assets/item-default.svg";
+const FALLBACK_PHOTO = "assets/item-default.svg";
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -26,6 +25,17 @@ function fmtDate(iso) {
   const nameEl = document.getElementById("phName");
   const activeGrid = document.getElementById("activeGrid");
   const reviewList = document.getElementById("reviewList");
+
+  // ---------- datang dari chat? tombol kembali balik ke percakapan tadi ----------
+  const qs = new URLSearchParams(window.location.search);
+  const fromConv = qs.get("conv");
+  if (qs.get("from") === "chat" && fromConv && UUID_RE.test(fromConv)) {
+    const back = document.querySelector(".back-link");
+    if (back) {
+      back.href = `chat.html?id=${encodeURIComponent(fromConv)}`;
+      back.lastChild.textContent = " Kembali ke Pesan";
+    }
+  }
 
   // ---------- tab ----------
   const tabBtns = document.querySelectorAll(".tab-btn");

@@ -33,6 +33,8 @@ const threadActive = document.getElementById("threadActive");
 const threadAvatar = document.getElementById("threadAvatar");
 const threadName = document.getElementById("threadName");
 const threadItemName = document.getElementById("threadItemName");
+const threadProfileLink = document.getElementById("threadProfileLink");
+const threadProfileBtn = document.getElementById("threadProfileBtn");
 const threadMessages = document.getElementById("threadMessages");
 
 const composerForm = document.getElementById("composerForm");
@@ -443,6 +445,22 @@ async function openConversation(conversationId) {
   threadItemName.textContent = conv.item_name || "";
 
   threadAvatar.alt = other.name || "Pengguna Re:Use.ID";
+
+  // link ke profil lawan bicara (user.html), bawa info chat biar tombol "kembali" ke chat ini
+  const profileHref = other.id
+    ? `user.html?id=${encodeURIComponent(other.id)}&from=chat&conv=${encodeURIComponent(conv.id)}`
+    : null;
+
+  [threadProfileLink, threadProfileBtn].forEach((a) => {
+    if (!a) return;
+    if (profileHref) {
+      a.href = profileHref;
+      a.hidden = false;
+    } else {
+      a.removeAttribute("href");
+      a.hidden = a === threadProfileBtn;
+    }
+  });
 
   showSecurityWarning();
 

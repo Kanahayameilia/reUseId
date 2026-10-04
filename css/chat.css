@@ -389,6 +389,58 @@ a {
   flex: none;
 }
 
+.thread-profile-link {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  min-width: 0;
+
+  flex: 1;
+}
+
+.thread-profile-link:hover .thread-header-name {
+  color: var(--sage-dark);
+}
+
+.thread-profile-btn {
+  flex: none;
+
+  padding: 7px 14px;
+
+  border: 1.5px solid var(--border);
+
+  border-radius: 100px;
+
+  font-size: 0.8rem;
+
+  font-weight: 700;
+
+  color: var(--teal);
+
+  white-space: nowrap;
+
+  transition:
+    border-color 0.2s,
+    color 0.2s;
+}
+
+.thread-profile-btn:hover {
+  border-color: var(--sage);
+
+  color: var(--sage-dark);
+}
+
+@media (max-width: 560px) {
+  .thread-profile-btn {
+    padding: 6px 11px;
+
+    font-size: 0.74rem;
+  }
+}
+
 .thread-header-name {
   font-weight: 700;
 
@@ -868,7 +920,6 @@ a {
   cursor: not-allowed;
 }
 
-
 /* Preview sebelum dikirim */
 
 .chat-image-preview {
@@ -915,7 +966,6 @@ a {
   font-size: 20px;
 }
 
-
 /* Foto yang sudah dikirim */
 
 .msg-image {
@@ -932,7 +982,6 @@ a {
 .msg-image:hover {
   opacity: 0.9;
 }
-
 
 /* Responsive */
 

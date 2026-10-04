@@ -2,20 +2,13 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Pesan | Re:Use.ID</title>
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin
-    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <link
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap"
@@ -25,10 +18,10 @@
     <!-- Chat CSS -->
     <link rel="stylesheet" href="css/chat.css" />
     <!-- Favicon -->
-<link rel="icon" type="image/png" href="assets/favicon.png" />
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
 
-<!-- Logo CSS -->
+    <!-- Logo CSS -->
     <link rel="stylesheet" href="css/logo.css" />
   </head>
 
@@ -39,7 +32,6 @@
 
     <header class="topbar">
       <div class="topbar-inner">
-
         <!-- Logo -->
         <a href="index.html" class="logo">
           <span class="mark">
@@ -59,10 +51,7 @@
         </a>
 
         <!-- Kembali -->
-        <a
-          href="browse.html"
-          class="back-link"
-        >
+        <a href="browse.html" class="back-link">
           <svg
             width="16"
             height="16"
@@ -81,7 +70,6 @@
 
           Kembali ke Jelajahi Barang
         </a>
-
       </div>
     </header>
 
@@ -89,60 +77,33 @@
          CHAT SHELL
     ====================================================== -->
 
-    <div
-      class="chat-shell"
-      id="chatShell"
-    >
-
+    <div class="chat-shell" id="chatShell">
       <!-- ===================================================
            CHAT LIST
       ==================================================== -->
 
-      <aside
-        class="chat-list"
-        id="chatList"
-      >
-
-        <div class="chat-list-header">
-          Pesan
-        </div>
+      <aside class="chat-list" id="chatList">
+        <div class="chat-list-header">Pesan</div>
 
         <div id="chatListBody">
-          <div class="chat-list-empty">
-            Memuat percakapan…
-          </div>
+          <div class="chat-list-empty">Memuat percakapan…</div>
         </div>
-
       </aside>
 
       <!-- ===================================================
            CHAT THREAD
       ==================================================== -->
 
-      <section
-        class="chat-thread"
-        id="chatThread"
-      >
-
+      <section class="chat-thread" id="chatThread">
         <!-- Belum memilih percakapan -->
-        <div
-          class="thread-empty"
-          id="threadEmpty"
-        >
-          Pilih percakapan di sebelah kiri
-          buat mulai chat.
+        <div class="thread-empty" id="threadEmpty">
+          Pilih percakapan di sebelah kiri buat mulai chat.
         </div>
 
         <!-- Percakapan aktif -->
-        <div
-          class="thread-active"
-          id="threadActive"
-          hidden
-        >
-
+        <div class="thread-active" id="threadActive" hidden>
           <!-- Header Chat -->
           <div class="thread-header">
-
             <a
               class="thread-back"
               href="chat.html"
@@ -151,40 +112,36 @@
               ←
             </a>
 
-            <img
-              class="thread-header-avatar"
-              id="threadAvatar"
-              src=""
-              alt="Foto profil pengguna"
-            />
+            <a
+              class="thread-profile-link"
+              id="threadProfileLink"
+              href="#"
+              title="Lihat profil"
+            >
+              <img
+                class="thread-header-avatar"
+                id="threadAvatar"
+                src=""
+                alt="Foto profil pengguna"
+              />
 
-            <div>
+              <div>
+                <div class="thread-header-name" id="threadName"></div>
 
-              <div
-                class="thread-header-name"
-                id="threadName"
-              ></div>
+                <div class="thread-header-item" id="threadItemName"></div>
+              </div>
+            </a>
 
-              <div
-                class="thread-header-item"
-                id="threadItemName"
-              ></div>
-
-            </div>
-
+            <a class="thread-profile-btn" id="threadProfileBtn" href="#">
+              Lihat Profil
+            </a>
           </div>
 
           <!-- Transaction Panel -->
-          <div
-            id="transactionPanel"
-            hidden
-          ></div>
+          <div id="transactionPanel" hidden></div>
 
           <!-- Messages -->
-          <div
-            class="thread-messages"
-            id="threadMessages"
-          ></div>
+          <div class="thread-messages" id="threadMessages"></div>
 
           <!-- Proof Input -->
           <input
@@ -195,23 +152,11 @@
           />
 
           <!-- Image Preview -->
-          <div
-            class="chat-image-preview"
-            id="chatImagePreview"
-            hidden
-          >
-
-            <img
-              id="chatImagePreviewImg"
-              src=""
-              alt="Preview foto"
-            />
+          <div class="chat-image-preview" id="chatImagePreview" hidden>
+            <img id="chatImagePreviewImg" src="" alt="Preview foto" />
 
             <div class="chat-image-preview-info">
-
-              <span
-                id="chatImagePreviewName"
-              ></span>
+              <span id="chatImagePreviewName"></span>
 
               <button
                 type="button"
@@ -220,17 +165,11 @@
               >
                 ×
               </button>
-
             </div>
-
           </div>
 
           <!-- Composer -->
-          <form
-            class="thread-composer"
-            id="composerForm"
-          >
-
+          <form class="thread-composer" id="composerForm">
             <!-- Input Foto -->
             <input
               type="file"
@@ -261,19 +200,10 @@
             />
 
             <!-- Tombol Kirim -->
-            <button
-              type="submit"
-              id="composerSend"
-            >
-              Kirim
-            </button>
-
+            <button type="submit" id="composerSend">Kirim</button>
           </form>
-
         </div>
-
       </section>
-
     </div>
 
     <!-- =====================================================
@@ -294,6 +224,5 @@
 
     <!-- Chat -->
     <script src="js/chat.js"></script>
-
   </body>
 </html>

@@ -1,4 +1,4 @@
-<img width="960" height="504" alt="image" src="https://github.com/user-attachments/assets/6772a887-dddb-414e-82e1-01dde20d2b40" />**Re:Use.ID**
+**Re:Use.ID**
 
 Platform barter dan donasi barang layak pakai untuk mahasiswa Magelang.
 

@@ -1,13 +1,12 @@
-**Re:Use.ID**
+<img width="960" height="504" alt="image" src="https://github.com/user-attachments/assets/6772a887-dddb-414e-82e1-01dde20d2b40" />**Re:Use.ID**
 
 Platform barter dan donasi barang layak pakai untuk mahasiswa Magelang.
 
 **Demo:** 
-[aged-frost-562a.kanahayameiliea.workers.dev]
+[https://reuseid.reuseid001.workers.dev/]
 
-(https://aged-frost-562a.kanahayameiliea.workers.dev/)
+<img width="1000" height="1000" alt="qrcode_424280712_83e2f39f955c7398f0d929a1982db251" src="https://github.com/user-attachments/assets/18a72ab9-ea60-4b34-93d2-9131f77df6f7" />
 
-<img src="assets/qr-reuseid.png" alt="QR demo Re:Use.ID" width="160" />
 
 **Fitur**
 
@@ -30,15 +29,6 @@ Platform barter dan donasi barang layak pakai untuk mahasiswa Magelang.
 6. Chart.js,
 7. TensorFlow.js.
 8. Hosting di Cloudflare Pages.
-
-**Cara Menjalankan**
-1. 
-```bash
-npx serve .
-```
-
-2. Buka lewat `http://localhost`, bukan klik dua kali file `.html`.
-3. Isi `js/supabase-client.js` dengan Project URL dan anon key Supabase milikmu.
 
 **Kontak**
 

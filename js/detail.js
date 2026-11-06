@@ -580,6 +580,31 @@ const FALLBACK_AVATAR = "assets/avatar-default.svg";
         return;
       }
 
+      // P0402 = kuota gratis bulan ini habis & tidak punya kredit (trigger di database)
+      if (error && error.code === "P0402") {
+        // kalau sebenarnya sudah punya pengajuan aktif untuk barang ini, buka chat lama saja
+        const { data: existing } = await supabaseClient
+          .from("transactions")
+          .select("id")
+          .eq("item_id", item.id)
+          .eq("buyer_id", me.id)
+          .in("status", ["menunggu", "diterima"])
+          .limit(1);
+        if (existing && existing.length) {
+          openConversation();
+          return;
+        }
+        if (
+          confirm(
+            "Jatah transaksi gratis bulan ini sudah habis. Beli kredit tambahan sekarang?",
+          )
+        ) {
+          const back = location.pathname.split("/").pop() + location.search;
+          location.href = "kredit.html?redirect=" + encodeURIComponent(back);
+        }
+        return;
+      }
+
       if (error) {
         alert("Gagal mengajukan: " + error.message);
         return;

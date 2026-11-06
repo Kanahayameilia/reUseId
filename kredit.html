@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kuota &amp; Kredit Transaksi | Re:Use.ID</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/profile.css" />
+    <link rel="stylesheet" href="css/kredit.css" />
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+    <link rel="stylesheet" href="css/logo.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="index.html" class="logo">
+          <span class="mark"
+            ><img
+              src="assets/logo-icon.png"
+              alt="Logo Re:Use.ID"
+              style="
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                display: block;
+              "
+          /></span>
+          Re:Use.ID
+        </a>
+        <div class="topbar-right">
+          <a href="browse.html" class="back-link" id="backLink">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M19 12H5M5 12L12 19M5 12L12 5"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Kembali
+          </a>
+          <button class="logout-link" id="logoutBtn">Keluar</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap kr-wrap">
+      <h1 class="kr-title">Kuota &amp; Kredit Transaksi</h1>
+      <p class="kr-lead" id="krLead">
+        Tiap bulan kamu dapat jatah transaksi gratis. Kalau habis, beli kredit
+        tambahan di sini.
+      </p>
+
+      <!-- sisa kuota -->
+      <section class="settings-card kr-card" id="quotaCard">
+        <h3>Kuota bulan ini</h3>
+        <div class="kr-meter" aria-hidden="true">
+          <div class="kr-meter-fill" id="meterFill" style="width: 0"></div>
+        </div>
+        <div class="kr-quota-row">
+          <div>
+            <div class="kr-big" id="quotaUsed">–</div>
+            <div class="kr-small">transaksi gratis terpakai</div>
+          </div>
+          <div>
+            <div class="kr-big" id="creditBalance">–</div>
+            <div class="kr-small">kredit tambahan</div>
+          </div>
+        </div>
+        <p class="kr-note">
+          Yang dihitung: pengajuan yang kamu ajukan (Ajukan Barter / Ajukan
+          Ambil). Pengajuan yang ditolak atau dibatalkan tidak dihitung. Jatah
+          gratis kembali penuh tiap tanggal 1.
+        </p>
+      </section>
+
+      <!-- beli kredit -->
+      <section class="settings-card kr-card">
+        <h3>Beli kredit</h3>
+        <p class="kr-note" style="margin-top: -8px">
+          1 kredit = 1 pengajuan tambahan. Kredit tidak hangus di akhir bulan.
+        </p>
+
+        <div class="kr-step">1. Pilih paket</div>
+        <div class="kr-packs" id="packs"></div>
+
+        <div class="kr-step">2. Bayar lewat QRIS</div>
+        <div class="kr-qris">
+          <div class="kr-qris-box">
+            <img
+              src="assets/qris.png"
+              alt="QRIS Re:Use.ID"
+              id="qrisImg"
+              width="220"
+              height="220"
+              onerror="
+                this.hidden = true;
+                document.getElementById('qrisMissing').hidden = false;
+              "
+            />
+            <div class="kr-qris-missing" id="qrisMissing" hidden>
+              QRIS belum dipasang.
+            </div>
+          </div>
+          <div class="kr-qris-text">
+            <div class="kr-small">Total yang harus dibayar</div>
+            <div class="kr-total" id="totalText">Rp 0</div>
+            <p class="kr-note">
+              Scan pakai m-banking atau e-wallet apa saja, lalu isi nominal
+              <b>persis</b> seperti di atas. Setelah bayar, screenshot bukti
+              transfernya.
+            </p>
+          </div>
+        </div>
+
+        <div class="kr-step">3. Upload bukti pembayaran</div>
+        <label class="kr-drop" for="proofInput" id="proofDrop">
+          <input
+            type="file"
+            id="proofInput"
+            accept="image/png, image/jpeg, image/webp"
+            hidden
+          />
+          <img id="proofPreview" alt="Pratinjau bukti" hidden />
+          <span id="proofHint"
+            >Pilih screenshot bukti (JPG / PNG, maks 3 MB)</span
+          >
+        </label>
+
+        <div class="kr-msg" id="submitMsg" role="status"></div>
+        <button
+          type="button"
+          class="btn-save-settings kr-submit"
+          id="btnSubmit"
+        >
+          Kirim bukti pembayaran
+        </button>
+        <p class="kr-note">
+          Pembayaran dicek manual oleh admin, biasanya dalam 1×24 jam. Kredit
+          masuk otomatis setelah disetujui.
+        </p>
+      </section>
+
+      <!-- riwayat -->
+      <section class="settings-card kr-card">
+        <h3>Pesanan saya</h3>
+        <div id="orderList" class="kr-orders">
+          <div class="kr-small">Memuat…</div>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/kredit.js"></script>
+  </body>
+</html>

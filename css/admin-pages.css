@@ -173,3 +173,29 @@
   padding: 3px 10px;
   border-radius: 999px;
 }
+/* ---------- Pembayaran Kredit ---------- */
+.tx-status.disetujui {
+  background: var(--sage-tint);
+  color: var(--sage-dark);
+}
+.kr-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  cursor: zoom-out;
+}
+.kr-lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 10px;
+  background: #fff;
+}
+#kreditTableBody .pg-btn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}

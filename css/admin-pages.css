@@ -199,3 +199,15 @@
   padding: 6px 12px;
   font-size: 0.8rem;
 }
+.tx-status.gratis {
+  background: #f1eeea;
+  color: #6f6a65;
+}
+.tx-status.kredit {
+  background: #fff4dd;
+  color: #9a6a00;
+}
+.tx-status.langganan {
+  background: var(--sage-tint);
+  color: var(--sage-dark);
+}

@@ -589,16 +589,42 @@
         <div id="view-kredit" hidden>
           <header class="main-header">
             <div>
-              <h1>Pembayaran Kredit</h1>
+              <h1>Kredit &amp; Pembayaran</h1>
               <p>
-                Cek bukti QRIS, lalu setujui supaya kredit masuk ke pengguna
+                Cek bukti QRIS, lihat siapa pengguna gratis, kredit, dan
+                langganan
               </p>
             </div>
           </header>
 
+          <section class="kpi-row">
+            <article class="kpi-card">
+              <div class="kpi-label">Pengguna gratis</div>
+              <div class="kpi-number" id="kpiGratis">-</div>
+              <div class="kpi-trend">belum punya kredit / langganan</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-label">Pengguna kredit</div>
+              <div class="kpi-number" id="kpiKredit">-</div>
+              <div class="kpi-trend">saldo kredit lebih dari 0</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-label">Langganan aktif</div>
+              <div class="kpi-number" id="kpiLangganan">-</div>
+              <div class="kpi-trend up">pengajuan unlimited</div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-label">Pendapatan bulan ini</div>
+              <div class="kpi-number" id="kpiPendapatan">-</div>
+              <div class="kpi-trend" id="kpiPendapatanNote">
+                dari pesanan yang disetujui
+              </div>
+            </article>
+          </section>
+
           <section class="table-card">
             <div class="table-head">
-              <h3>Pesanan Kredit</h3>
+              <h3>Pesanan Kredit &amp; Langganan</h3>
               <div class="table-filters">
                 <select id="kreditStatusFilter">
                   <option value="Semua">Semua Status</option>
@@ -625,6 +651,41 @@
               </table>
             </div>
             <div class="table-footer"><span id="kreditInfo"></span></div>
+          </section>
+
+          <section class="table-card" style="margin-top: 22px">
+            <div class="table-head">
+              <h3>Pengguna &amp; Paket</h3>
+              <div class="table-filters">
+                <input
+                  type="search"
+                  class="pg-search"
+                  id="planSearch"
+                  placeholder="Cari nama atau email…"
+                />
+                <select id="planFilter">
+                  <option value="Semua">Semua Paket</option>
+                  <option value="gratis">Gratis</option>
+                  <option value="kredit">Kredit</option>
+                  <option value="langganan">Langganan</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Pengguna</th>
+                    <th>Paket</th>
+                    <th>Transaksi bulan ini</th>
+                    <th>Total bayar</th>
+                    <th>Pembayaran terakhir</th>
+                  </tr>
+                </thead>
+                <tbody id="planTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer"><span id="planInfo"></span></div>
           </section>
         </div>
 

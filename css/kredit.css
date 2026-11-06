@@ -55,6 +55,32 @@
   flex-wrap: wrap;
 }
 
+/* banner langganan aktif */
+.kr-sub {
+  margin: -4px 0 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--sage-tint);
+  color: var(--sage-dark);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+/* kelompok paket (kredit / langganan) */
+.kr-group {
+  margin: 14px 0 8px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+.kr-group:first-child {
+  margin-top: 0;
+}
+.kr-group small {
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
 /* langkah-langkah */
 .kr-step {
   font-weight: 800;
@@ -205,6 +231,26 @@
 .kr-chip.disetujui {
   background: var(--sage-tint);
   color: var(--sage-dark);
+}
+.kr-chip.gratis {
+  background: #eef4f0;
+  color: #3f6354;
+}
+.kr-chip.habis {
+  background: var(--red-tint);
+  color: var(--red);
+}
+.kr-chip.kredit {
+  background: #fdf2e0;
+  color: #9a6b1e;
+}
+.kr-chip.langganan {
+  background: var(--sage);
+  color: #fff;
+}
+h3 .kr-chip {
+  margin-left: 8px;
+  vertical-align: middle;
 }
 .kr-chip.ditolak {
   background: var(--red-tint);

@@ -55,12 +55,16 @@
       <h1 class="kr-title">Kuota &amp; Kredit Transaksi</h1>
       <p class="kr-lead" id="krLead">
         Tiap bulan kamu dapat jatah transaksi gratis. Kalau habis, beli kredit
-        tambahan di sini.
+        per pengajuan atau berlangganan supaya bebas ajukan sebanyak apa pun.
       </p>
 
       <!-- sisa kuota -->
       <section class="settings-card kr-card" id="quotaCard">
-        <h3>Kuota bulan ini</h3>
+        <h3>
+          Kuota bulan ini
+          <span class="kr-chip" id="planPill" hidden></span>
+        </h3>
+        <p class="kr-sub" id="subInfo" hidden></p>
         <div class="kr-meter" aria-hidden="true">
           <div class="kr-meter-fill" id="meterFill" style="width: 0"></div>
         </div>
@@ -83,9 +87,11 @@
 
       <!-- beli kredit -->
       <section class="settings-card kr-card">
-        <h3>Beli kredit</h3>
+        <h3>Beli kredit atau langganan</h3>
         <p class="kr-note" style="margin-top: -8px">
-          1 kredit = 1 pengajuan tambahan. Kredit tidak hangus di akhir bulan.
+          1 kredit = 1 pengajuan tambahan dan tidak hangus di akhir bulan.
+          Langganan = pengajuan tidak terbatas selama masa aktif. Kalau
+          diperpanjang saat masih aktif, sisa harinya tidak hangus.
         </p>
 
         <div class="kr-step">1. Pilih paket</div>
@@ -110,7 +116,9 @@
             </div>
           </div>
           <div class="kr-qris-text">
-            <div class="kr-small">Total yang harus dibayar</div>
+            <div class="kr-small">
+              Total yang harus dibayar (<span id="totalFor"></span>)
+            </div>
             <div class="kr-total" id="totalText">Rp 0</div>
             <p class="kr-note">
               Scan pakai m-banking atau e-wallet apa saja, lalu isi nominal
@@ -144,7 +152,7 @@
         </button>
         <p class="kr-note">
           Pembayaran dicek manual oleh admin, biasanya dalam 1×24 jam. Kredit
-          masuk otomatis setelah disetujui.
+          atau langganan aktif otomatis setelah disetujui.
         </p>
       </section>
 

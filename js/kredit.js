@@ -1,22 +1,35 @@
 // =========================================================
-// Re:Use.ID - KUOTA & KREDIT TRANSAKSI (kredit.html)
+// Re:Use.ID - KUOTA, KREDIT & LANGGANAN TRANSAKSI (kredit.html)
 // =========================================================
 // supabaseClient: supabase-client.js. onAuthReady/isLoggedIn/getUserId/logout/
-// escHtml: auth.js. Fungsi & tabel database:  .
+// escHtml: auth.js. Fungsi & tabel database: migrasi SQL bagian 6 dan 7.
 //
-// Harga dan nominal dihitung di DATABASE (fungsi credit_price() + trigger),
+// Harga dan nominal dihitung di DATABASE (credit_price(), sub_price() + trigger),
 // halaman ini cuma menampilkannya. Ganti harga di SQL, bukan di sini.
 
 (function () {
   const $ = (id) => document.getElementById(id);
-  const PACKS = [1, 3, 5]; // pilihan jumlah kredit yang ditampilkan
+
+  // pilihan yang ditampilkan: kind 'kredit' (qty = jumlah kredit)
+  // atau 'langganan' (qty = jumlah bulan)
+  const PACKS = [
+    { kind: "kredit", qty: 1 },
+    { kind: "kredit", qty: 3 },
+    { kind: "kredit", qty: 5 },
+    { kind: "langganan", qty: 1 },
+    { kind: "langganan", qty: 3 },
+  ];
   const MAX_PROOF = 3 * 1024 * 1024; // 3 MB, sama dengan batas bucket
 
-  let price = 0;
-  let qty = PACKS[0];
+  const price = { kredit: 0, langganan: 0 }; // harga satuan dari database
+  let selected = { kind: "kredit", qty: 1 };
   let proofFile = null;
 
   const rupiah = (n) => "Rp " + Number(n || 0).toLocaleString("id-ID");
+  const packKey = (p) => `${p.kind}:${p.qty}`;
+  const packTotal = (p) => p.qty * price[p.kind];
+  const packLabel = (p) =>
+    p.kind === "langganan" ? `Langganan ${p.qty} bulan` : `${p.qty} kredit`;
 
   function setMsg(text, kind) {
     const el = $("submitMsg");
@@ -32,6 +45,16 @@
       const u = new URL(redirect, location.href);
       if (u.origin === location.origin) $("backLink").href = u.href;
     } catch {}
+  }
+
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
   }
 
   // ---------- kuota ----------
@@ -51,28 +74,68 @@
     const fill = $("meterFill");
     fill.style.width = pct + "%";
     fill.classList.toggle("full", row.terpakai >= limit);
+
+    // pil status: Langganan / Kredit / Gratis
+    const pill = $("planPill");
+    const sisa = Math.max(0, limit - row.terpakai);
+    let tier, text;
+    if (row.langganan_sampai) [tier, text] = ["langganan", "Langganan"];
+    else if (row.kredit > 0) [tier, text] = ["kredit", "Pengguna kredit"];
+    else if (sisa === 0) [tier, text] = ["habis", "Gratis · habis"];
+    else [tier, text] = ["gratis", "Pengguna gratis"];
+    pill.textContent = text;
+    pill.className = "kr-chip " + tier;
+    pill.hidden = false;
+
+    // langganan aktif -> pengajuan unlimited sampai tanggal ini
+    const sub = $("subInfo");
+    if (row.langganan_sampai) {
+      sub.textContent = `Langganan aktif sampai ${fmtDate(row.langganan_sampai)}. Pengajuan tidak terbatas selama masa aktif.`;
+      sub.hidden = false;
+      fill.classList.remove("full");
+    } else {
+      sub.hidden = true;
+    }
   }
 
   // ---------- paket ----------
-  function renderPacks() {
-    $("packs").innerHTML = PACKS.map(
-      (n) => `
+  function packHtml(p) {
+    const sub =
+      p.kind === "langganan"
+        ? `${rupiah(packTotal(p))} · unlimited`
+        : rupiah(packTotal(p));
+    return `
       <label class="kr-pack">
-        <input type="radio" name="pack" value="${n}" ${n === qty ? "checked" : ""}>
-        <b>${n} kredit</b>
-        <span>${rupiah(n * price)}</span>
-      </label>`,
-    ).join("");
-    $("packs").addEventListener("change", (e) => {
+        <input type="radio" name="pack" value="${packKey(p)}" ${packKey(p) === packKey(selected) ? "checked" : ""}>
+        <b>${packLabel(p)}</b>
+        <span>${sub}</span>
+      </label>`;
+  }
+
+  function renderPacks() {
+    const kredit = PACKS.filter((p) => p.kind === "kredit");
+    const langganan = price.langganan
+      ? PACKS.filter((p) => p.kind === "langganan")
+      : []; // migrasi langganan belum dijalankan -> sembunyikan
+    $("packs").innerHTML =
+      `<div class="kr-group">Kredit <small>(Rp ${price.kredit.toLocaleString("id-ID")} per pengajuan, tidak hangus)</small></div>
+       <div class="kr-packs">${kredit.map(packHtml).join("")}</div>` +
+      (langganan.length
+        ? `<div class="kr-group">Langganan <small>(pengajuan tidak terbatas selama aktif)</small></div>
+           <div class="kr-packs">${langganan.map(packHtml).join("")}</div>`
+        : "");
+    $("packs").onchange = (e) => {
       if (e.target.name !== "pack") return;
-      qty = Number(e.target.value);
+      const [kind, qty] = e.target.value.split(":");
+      selected = { kind, qty: Number(qty) };
       updateTotal();
-    });
+    };
     updateTotal();
   }
 
   function updateTotal() {
-    $("totalText").textContent = rupiah(qty * price);
+    $("totalText").textContent = rupiah(packTotal(selected));
+    $("totalFor").textContent = packLabel(selected);
   }
 
   // ---------- bukti ----------
@@ -126,10 +189,13 @@
       return;
     }
 
-    // amount diisi ulang oleh trigger di database (qty x harga)
-    const { error } = await supabaseClient
-      .from("credit_orders")
-      .insert({ qty, amount: qty * price, proof_path: path });
+    // amount diisi ulang oleh trigger di database (jumlah x harga satuan)
+    const { error } = await supabaseClient.from("credit_orders").insert({
+      kind: selected.kind,
+      qty: selected.qty,
+      amount: packTotal(selected),
+      proof_path: path,
+    });
 
     if (error) {
       // bukti yang sudah terlanjur ke-upload dibersihkan lagi
@@ -145,7 +211,7 @@
     $("proofPreview").hidden = true;
     $("proofHint").hidden = false;
     setMsg(
-      "Bukti terkirim. Admin akan mengecek dan menambahkan kreditmu.",
+      "Bukti terkirim. Admin akan mengecek dan mengaktifkan pesananmu.",
       "ok",
     );
     btn.disabled = false;
@@ -173,11 +239,20 @@
   }
 
   async function loadOrders() {
-    const { data, error } = await supabaseClient
+    // kolom kind baru ada setelah migrasi langganan; kalau belum, ambil tanpa kind
+    let res = await supabaseClient
       .from("credit_orders")
-      .select("id, qty, amount, status, note, created_at")
+      .select("id, kind, qty, amount, status, note, created_at")
       .order("created_at", { ascending: false })
       .limit(20);
+    if (res.error) {
+      res = await supabaseClient
+        .from("credit_orders")
+        .select("id, qty, amount, status, note, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20);
+    }
+    const { data, error } = res;
 
     const box = $("orderList");
     if (error) {
@@ -193,7 +268,7 @@
         (o) => `
       <div class="kr-order">
         <div>
-          <b>${o.qty} kredit · ${rupiah(o.amount)}</b>
+          <b>${escHtml(packLabel({ kind: o.kind || "kredit", qty: o.qty }))} · ${rupiah(o.amount)}</b>
           <div class="kr-small">${fmtDateTime(o.created_at)}</div>
           ${o.note ? `<div class="kr-small">Catatan admin: ${escHtml(o.note)}</div>` : ""}
         </div>
@@ -220,13 +295,18 @@
     const { data: p, error } = await supabaseClient.rpc("credit_price");
     if (error || !p) {
       setMsg(
-        "Fitur kredit belum aktif. Jalankan   dulu.",
+        "Fitur kredit belum aktif. Jalankan dulu SQL kredit di Supabase.",
         "err",
       );
       $("btnSubmit").disabled = true;
       return;
     }
-    price = Number(p);
+    price.kredit = Number(p);
+
+    // harga langganan ada setelah migrasi langganan; kalau belum, paketnya disembunyikan
+    const { data: sp, error: spErr } = await supabaseClient.rpc("sub_price");
+    price.langganan = !spErr && sp ? Number(sp) : 0;
+
     renderPacks();
     loadQuota();
     loadOrders();
